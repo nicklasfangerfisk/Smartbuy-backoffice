@@ -29,8 +29,15 @@ import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import BrightnessAutoRoundedIcon from '@mui/icons-material/BrightnessAutoRounded';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import EditRoundedIcon from '@mui/icons-material/EditRounded';
+import Modal from '@mui/joy/Modal';
+import ModalDialog from '@mui/joy/ModalDialog';
+import DialogTitle from '@mui/joy/DialogTitle';
+import DialogContent from '@mui/joy/DialogContent';
+import DialogActions from '@mui/joy/DialogActions';
 
 import ColorSchemeToggle from './ColorSchemeToggle';
+import UserDialog from './UserDialog';
 import { closeSidebar } from '../utils';
 import { useEffect, useState } from 'react';
 import { supabase } from '../utils/supabaseClient';
@@ -69,16 +76,64 @@ function Toggler({
   );
 }
 
-export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'orders' | 'products' | 'messages' | 'users') => void, view: string }) {
+export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'orders' | 'products' | 'messages' | 'users' | 'suppliers' | 'purchaseorders') => void, view: string }) {
   const [users, setUsers] = useState<any[]>([]);
+  const [user, setUser] = useState<any>(null); // Auth user
+  const [userProfile, setUserProfile] = useState<any>(null); // Contextual user row
+  const [editOpen, setEditOpen] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editAvatar, setEditAvatar] = useState('');
+  const [userDialogOpen, setUserDialogOpen] = useState(false);
   useEffect(() => {
     async function fetchUsers() {
       const { data, error } = await supabase.from('users').select('*');
-      console.log('Supabase users fetch:', { data, error }); // Debug log
       if (!error && data) setUsers(data);
     }
     fetchUsers();
+
+    async function handleAuthUser(authUser: any) {
+      setUser(authUser);
+      if (authUser) {
+        // Try to fetch user row
+        let { data: userRow } = await supabase.from('users').select('*').eq('id', authUser.id).single();
+        if (!userRow) {
+          // If not found, upsert as employee by default
+          await supabase.from('users').upsert({
+            id: authUser.id,
+            email: authUser.email,
+            name: authUser.user_metadata?.full_name || null,
+            avatar_url: authUser.user_metadata?.avatar_url || null,
+            role: 'employee',
+          });
+          userRow = { ...authUser, role: 'employee' };
+        }
+        // Do NOT sign out or block user here based on role; only set profile state
+        setUserProfile(userRow);
+        setEditName(userRow.name || '');
+        setEditAvatar(userRow.avatar_url || '');
+      } else {
+        setUserProfile(null);
+        setEditName('');
+        setEditAvatar('');
+      }
+    }
+
+    supabase.auth.getUser().then(({ data }) => handleAuthUser(data.user));
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      handleAuthUser(session?.user ?? null);
+    });
+    return () => { listener?.subscription.unsubscribe(); };
   }, []);
+
+  const handleEditProfile = async () => {
+    if (!user) return;
+    await supabase.from('users').update({ name: editName, avatar_url: editAvatar }).eq('id', user.id);
+    // Refresh user profile
+    const { data: userRows } = await supabase.from('users').select('*').eq('id', user.id).single();
+    setUserProfile(userRows || null);
+    setEditOpen(false);
+  };
+
   return (
     <Sheet
       className="Sidebar"
@@ -274,42 +329,6 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
                     </ListItemContent>
                   </ListItemButton>
                 </ListItem>
-                <ListItem nested>
-                  <Toggler
-                    renderToggle={({ open, setOpen }) => (
-                      <ListItemButton onClick={() => setOpen(!open)}>
-                        <GroupRoundedIcon />
-                        <ListItemContent>
-                          <Typography level="body-sm">Customers</Typography>
-                        </ListItemContent>
-                        <KeyboardArrowDownIcon
-                          sx={[
-                            open ? { transform: 'rotate(180deg)' } : { transform: 'none' },
-                          ]}
-                        />
-                      </ListItemButton>
-                    )}
-                  >
-                    <List sx={{ gap: 0.5 }}>
-                      {users.length === 0 && (
-                        <ListItem>
-                          <Typography level="body-sm" sx={{ pl: 2 }} color="neutral">
-                            No users found
-                          </Typography>
-                        </ListItem>
-                      )}
-                      {users.map((user) => (
-                        <ListItem key={user.id}>
-                          <ListItemButton>
-                            <ListItemContent>
-                              <Typography level="body-sm">{user.name || user.email || user.id}</Typography>
-                            </ListItemContent>
-                          </ListItemButton>
-                        </ListItem>
-                      ))}
-                    </List>
-                  </Toggler>
-                </ListItem>
               </List>
             </Toggler>
           </ListItem>
@@ -349,28 +368,49 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
         {/* Settings Button (stick to bottom) */}
       </Box>
       <Box sx={{ mt: 'auto', mb: 2 }}>
-        <ListItem>
-          <ListItemButton>
-            <SettingsRoundedIcon />
-            Settings
-          </ListItemButton>
-        </ListItem>
+        <List sx={{ p: 0 }}>
+          <ListItem sx={{ p: 0, alignItems: 'stretch' }}>
+            <ListItemButton sx={{ width: '100%', alignItems: 'center', minHeight: 40 }}>
+              <SettingsRoundedIcon sx={{ mr: 1 }} />
+              <ListItemContent sx={{ display: 'flex', alignItems: 'center', p: 0 }}>
+                <Typography level="body-sm">Settings</Typography>
+              </ListItemContent>
+            </ListItemButton>
+          </ListItem>
+          <ListItem sx={{ p: 0, alignItems: 'stretch' }}>
+            <ListItemButton onClick={async () => { await supabase.auth.signOut(); }} sx={{ width: '100%', alignItems: 'center', minHeight: 40 }}>
+              <LogoutRoundedIcon sx={{ mr: 1 }} />
+              <ListItemContent sx={{ display: 'flex', alignItems: 'center', p: 0 }}>
+                <Typography level="body-sm">Logout</Typography>
+              </ListItemContent>
+            </ListItemButton>
+          </ListItem>
+        </List>
       </Box>
       <Divider />
-      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', minHeight: 48 }}>
         <Avatar
           variant="outlined"
           size="sm"
-          src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=286"
+          src={userProfile?.avatar_url || user?.user_metadata?.avatar_url || undefined}
+          onClick={() => setUserDialogOpen(true)}
+          sx={{ cursor: 'pointer' }}
         />
-        <Box sx={{ minWidth: 0, flex: 1 }}>
-          <Typography level="title-sm">Siriwat K.</Typography>
-          <Typography level="body-xs">siriwatk@test.com</Typography>
+        <Box sx={{ minWidth: 0, flex: 1, cursor: 'pointer' }} onClick={() => setUserDialogOpen(true)}>
+          <Typography level="title-sm">{userProfile?.name || user?.user_metadata?.full_name || user?.email || 'Not signed in'}</Typography>
+          <Typography level="body-xs">{userProfile?.email || user?.email || ''}</Typography>
         </Box>
-        <IconButton size="sm" variant="plain" color="neutral">
-          <LogoutRoundedIcon />
-        </IconButton>
       </Box>
+      <UserDialog
+        open={userDialogOpen}
+        onClose={() => setUserDialogOpen(false)}
+        userProfile={userProfile}
+        editName={editName}
+        setEditName={setEditName}
+        editAvatar={editAvatar}
+        setEditAvatar={setEditAvatar}
+        onSave={handleEditProfile}
+      />
     </Sheet>
   );
 }

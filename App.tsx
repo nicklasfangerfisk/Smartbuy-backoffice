@@ -22,6 +22,8 @@ import ProductTable from './components/ProductTable';
 import UsersTable from './components/UsersTable';
 import Suppliers from './components/Suppliers';
 import PurchaseOrderTable from './components/PurchaseOrderTable';
+import Login from './components/Login';
+import { supabase } from './utils/supabaseClient';
 import { useState } from 'react';
 
 function Home() {
@@ -81,6 +83,26 @@ function DashboardHome() {
 
 export default function JoyOrderDashboardTemplate() {
   const [view, setView] = React.useState<'home' | 'orders' | 'products' | 'messages' | 'users' | 'suppliers' | 'purchaseorders'>('home');
+  const [authChecked, setAuthChecked] = React.useState(false);
+  const [user, setUser] = React.useState<any>(null);
+
+  React.useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user);
+      setAuthChecked(true);
+    });
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => { listener?.subscription.unsubscribe(); };
+  }, []);
+
+  if (!authChecked) return null;
+  if (!user) return <Login onLogin={async () => {
+    const { data } = await supabase.auth.getUser();
+    setUser(data.user);
+  }} />;
+
   return (
     <CssVarsProvider disableTransitionOnChange>
       <CssBaseline />
