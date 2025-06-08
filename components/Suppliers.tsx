@@ -142,7 +142,7 @@ export default function Suppliers() {
                       <Input placeholder="Email" value={editForm.email} onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))} />
                       <Input placeholder="Phone" value={editForm.phone} onChange={e => setEditForm(f => ({ ...f, phone: e.target.value }))} />
                       <Input placeholder="Address" value={editForm.address} onChange={e => setEditForm(f => ({ ...f, address: e.target.value }))} />
-                      <input type="file" accept="image/*" onChange={e => setEditImageFile(e.target.files?.[0] || null)} />
+                      <input type="file" accept="image/*" onChange={e => setEditImageFile(e.target.files?.[0] || null)} style={{ minWidth: 180 }} />
                       <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
                         <Button type="submit" loading={savingEdit} startDecorator={<SaveIcon />}>Save</Button>
                         <Button type="button" variant="outlined" color="neutral" onClick={handleCancelEdit} startDecorator={<CancelIcon />}>Cancel</Button>

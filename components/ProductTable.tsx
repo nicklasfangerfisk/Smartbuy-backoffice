@@ -195,7 +195,7 @@ export default function ProductTable() {
         <tbody>
           {products.map((product) => (
             <tr key={product.id}>
-              <td>{product.id}</td>
+              <td>{product.uuid}</td>
               {/* Show image if available */}
               <td>
                 {product.ImageUrl ? (
@@ -242,7 +242,7 @@ export default function ProductTable() {
                       <EditIcon />
                     </IconButton>
                     <IconButton size="sm" color="neutral" onClick={() => setEditId(null)} disabled={submitting || imageUploading} type="button">
-                      ✕
+                      {'\u2715'}
                     </IconButton>
                     <Button
                       component="label"
