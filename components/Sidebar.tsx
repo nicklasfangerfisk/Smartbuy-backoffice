@@ -248,14 +248,6 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
                     </ListItemContent>
                   </ListItemButton>
                 </ListItem>
-                <ListItem>
-                  <ListItemButton selected={view === 'products'} onClick={() => setView('products')}>
-                    <AssignmentRoundedIcon />
-                    <ListItemContent>
-                      <Typography level="body-sm">Products</Typography>
-                    </ListItemContent>
-                  </ListItemButton>
-                </ListItem>
                 <ListItem nested>
                   <Toggler
                     renderToggle={({ open, setOpen }) => (
@@ -351,6 +343,14 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
               )}
             >
               <List sx={{ gap: 0.5 }}>
+                <ListItem>
+                  <ListItemButton selected={view === 'products'} onClick={() => setView('products')}>
+                    <AssignmentRoundedIcon />
+                    <ListItemContent>
+                      <Typography level="body-sm">Products</Typography>
+                    </ListItemContent>
+                  </ListItemButton>
+                </ListItem>
                 <ListItem>
                   <ListItemButton selected={view === 'suppliers'} onClick={() => setView('suppliers')}>
                     Suppliers

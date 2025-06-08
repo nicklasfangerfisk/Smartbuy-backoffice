@@ -86,7 +86,7 @@ export default function UserDialog({ open, onClose, userProfile, editName, setEd
               <input
                 type="file"
                 accept="image/*"
-                style={{ display: 'none' }}
+                sx={{ display: 'none' }}
                 ref={fileInputRef}
                 onChange={handleFileChange}
                 disabled={uploading}
