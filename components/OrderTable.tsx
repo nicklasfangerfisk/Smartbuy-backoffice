@@ -26,6 +26,7 @@ import MenuItem from '@mui/joy/MenuItem';
 import Dropdown from '@mui/joy/Dropdown';
 import { supabase } from '../utils/supabaseClient';
 import OrderTableCreate from './OrderTableCreate';
+import OrderTableDetails from './OrderTableDetails';
 
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import SearchIcon from '@mui/icons-material/Search';
@@ -50,7 +51,8 @@ type OrderRow = {
   date: string;
   status: OrderStatus;
   customer: Customer;
-  items: { id: string; name?: string }[];
+  order_number_display?: string;
+  order_total?: number;
   created_by?: string;
   created_by_name?: string;
   created_by_email?: string;
@@ -139,8 +141,6 @@ export default function OrderTable() {
         uuid: order.uuid,
         date: order.date || order.created_at || '',
         status: order.status || 'Paid',
-        items: order.items || [],
-        created_by: order.created_by || '',
         customer: order.customer
           ? order.customer
           : {
@@ -148,6 +148,9 @@ export default function OrderTable() {
               name: order.customer_name || 'Unknown',
               email: order.customer_email || '',
             },
+        order_number_display: order.order_number_display,
+        order_total: typeof order.order_total === 'number' ? order.order_total : 0,
+        created_by: order.created_by || '',
         created_by_name: order.created_by_name || '',
         created_by_email: order.created_by_email || '',
       }));
@@ -162,33 +165,25 @@ export default function OrderTable() {
     fetchOrders();
   }, []);
 
-  // Fetch order items from Supabase OrderItems table when modal opens
-  React.useEffect(() => {
-    async function fetchOrderItems(orderUuid: string) {
-      setOrderItemsLoading(true);
-      const { data, error } = await supabase
-        .from('OrderItems')
-        .select('uuid as id, quantity, product_uuid, products(ProductName)')
-        .eq('orderitems_order_uuid', orderUuid); // Use correct FK column name
-      if (!error && data) {
-        setOrderItems(
-          data.map((item: any) => ({
-            id: item.id,
-            name: item.products?.ProductName || item.product_uuid, // Show product name if available, else uuid
-            quantity: item.quantity,
-          }))
-        );
-      } else {
-        setOrderItems([]);
-      }
-      setOrderItemsLoading(false);
-    }
-    if (orderDetailsOpen && selectedOrder) {
-      fetchOrderItems(selectedOrder.uuid);
+  // Move fetchOrderItems outside of useEffect so it can be passed as a prop
+  async function fetchOrderItems(orderUuid: string) {
+    // Join OrderItems with Products to get ProductName
+    const { data, error } = await supabase
+      .from('OrderItems')
+      .select('uuid, quantity, product_uuid, order_uuid, Products:product_uuid(ProductName)')
+      .eq('order_uuid', orderUuid);
+    console.log('Raw OrderItems data:', { data, error, orderUuid }); // Debug log
+    if (!error && data) {
+      return data.map((item: any) => ({
+        id: item.uuid, // Use the real column name
+        product_uuid: item.product_uuid,
+        product_name: item.Products?.ProductName || item.product_uuid, // fallback to uuid if name missing
+        quantity: item.quantity,
+      }));
     } else {
-      setOrderItems([]);
+      return [];
     }
-  }, [orderDetailsOpen, selectedOrder]);
+  }
 
   const renderFilters = () => (
     <React.Fragment>
@@ -229,17 +224,17 @@ export default function OrderTable() {
     </React.Fragment>
   );
 
-  // Update handleCreateOrder to accept product_id: string | null, quantity, and price
-  async function handleCreateOrder(orderItems: { product_uuid: string | null; quantity: number; price: number }[]) {
-    console.log('orderItems received:', orderItems); // Debug log
+  // Update handleCreateOrder to accept orderDiscount
+  async function handleCreateOrder(orderItems: { product_uuid: string | null; quantity: number; unitprice: number; discount: number }[], orderDiscount: number) {
     setCreating(true);
-    // 1. Create the order
+    // 1. Create the order with order-level discount
     const { data: orderData, error: orderError } = await supabase.from('Orders').insert([
       {
         date: newOrder.date,
         status: newOrder.status,
         customer_name: newOrder.customer_name,
         customer_email: newOrder.customer_email,
+        discount: orderDiscount,
       },
     ]).select();
     if (orderError || !orderData || !orderData[0]) {
@@ -253,31 +248,26 @@ export default function OrderTable() {
       const itemsToInsert = orderItems
         .filter(item => item.product_uuid && item.product_uuid.length > 0)
         .map(item => ({
-          order_uuid: orderUuid, // Use correct FK column name for OrderItems (UUID FK)
-          product_uuid: item.product_uuid, // UUID FK for product
+          order_uuid: orderUuid,
+          product_uuid: item.product_uuid,
           quantity: item.quantity,
-          price: item.price,
+          unitprice: item.unitprice,
+          discount: item.discount,
         }));
-      console.log('OrderItems to insert:', itemsToInsert); // Debug log
       if (itemsToInsert.length > 0) {
         const { data: itemsData, error: itemsError } = await supabase.from('OrderItems').insert(itemsToInsert);
-        console.log('OrderItems insert result:', { itemsData, itemsError }); // Add this line
         if (itemsError) {
-          console.error('OrderItems insert error:', itemsError); // Debug log
           setCreating(false);
           alert('Order created, but failed to add items: ' + itemsError.message);
           return;
         }
-      } else {
-        console.warn('No valid order items to insert.');
       }
     }
     setCreating(false);
     setCreateOpen(false);
     setNewOrder({ date: '', status: 'Paid', customer_name: '', customer_email: '' });
-    // Refetch orders after a delay to allow for DB consistency
     setTimeout(() => {
-      fetchOrders(); // Refresh orders in-place instead of reloading the page
+      fetchOrders();
     }, 1000);
   }
 
@@ -362,20 +352,11 @@ export default function OrderTable() {
         >
           <thead>
             <tr>
-              <th>
-                <Checkbox
-                  indeterminate={selected.length > 0 && selected.length < rows.length}
-                  checked={rows.length > 0 && selected.length === rows.length}
-                  onChange={(e) => {
-                    setSelected(e.target.checked ? rows.map((row) => row.uuid) : []);
-                  }}
-                  sx={{ m: 0 }}
-                />
-              </th>
+              <th>Order #</th>
               <th>Date</th>
               <th>Status</th>
               <th>Customer</th>
-              <th>Items</th>
+              <th>Total</th>
               <th style={{ width: 120 }} />
             </tr>
           </thead>
@@ -399,18 +380,7 @@ export default function OrderTable() {
                 onClick={() => handleOrderDetailsOpen(row)}
                 style={{ cursor: 'pointer' }}
               >
-                <td>
-                  <Checkbox
-                    checked={selected.indexOf(row.uuid) !== -1}
-                    onChange={(e) => {
-                      const newSelected = e.target.checked
-                        ? [...selected, row.uuid]
-                        : selected.filter((id) => id !== row.uuid);
-                      setSelected(newSelected);
-                    }}
-                    sx={{ m: 0 }}
-                  />
-                </td>
+                <td>{row.order_number_display || '-'}</td>
                 <td>{new Date(row.date).toLocaleString()}</td>
                 <td>
                   <Chip
@@ -442,9 +412,7 @@ export default function OrderTable() {
                   </Box>
                 </td>
                 <td>
-                  {row.items && row.items.length > 0
-                    ? row.items.map((item: any) => item.name || item.id).join(', ')
-                    : '-'}
+                  {typeof row.order_total === 'number' ? `$${row.order_total.toFixed(2)}` : '-'}
                 </td>
                 <td>
                   <RowMenu />
@@ -479,100 +447,12 @@ export default function OrderTable() {
           </Box>
         </Box>
       </Box>
-      <Modal
+      <OrderTableDetails
         open={orderDetailsOpen}
         onClose={handleOrderDetailsClose}
-        aria-labelledby="order-details-modal"
-      >
-        <ModalDialog
-          aria-labelledby="order-details-modal"
-          sx={{ maxWidth: 600, width: '100%' }}
-        >
-          <ModalClose />
-          <Typography id="order-details-modal" level="title-md" fontWeight="lg" sx={{ mb: 2 }}>
-            Order Details
-          </Typography>
-          {selectedOrder && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Typography level="body-sm" sx={{ color: 'text.secondary' }}>
-                  Order ID: {selectedOrder.uuid}
-                </Typography>
-                <Typography level="body-sm" sx={{ color: 'text.secondary' }}>
-                  Date: {new Date(selectedOrder.date).toLocaleString()}
-                </Typography>
-                <Typography level="body-sm" sx={{ color: 'text.secondary' }}>
-                  Status:{' '}
-                  <Chip
-                    variant="soft"
-                    color={
-                      selectedOrder.status === 'Paid'
-                        ? 'success'
-                        : selectedOrder.status === 'Refunded'
-                        ? 'danger'
-                        : 'neutral'
-                    }
-                    size="sm"
-                    sx={{ textTransform: 'capitalize' }}
-                  >
-                    {selectedOrder.status}
-                  </Chip>
-                </Typography>
-              </Box>
-              <Divider />
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Typography level="body-sm" fontWeight="md">
-                  Customer Information
-                </Typography>
-                <Typography level="body-sm" sx={{ color: 'text.secondary' }}>
-                  Name: {selectedOrder.customer.name}
-                </Typography>
-                <Typography level="body-sm" sx={{ color: 'text.secondary' }}>
-                  Email: {selectedOrder.customer.email}
-                </Typography>
-              </Box>
-              <Divider />
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Typography level="body-sm" fontWeight="md">
-                  Ordered Items
-                </Typography>
-                {orderItemsLoading ? (
-                  <Typography level="body-sm" sx={{ color: 'text.secondary' }}>
-                    Loading items...
-                  </Typography>
-                ) : (
-                  <Table size="sm" sx={{ minWidth: 500 }}>
-                    <thead>
-                      <tr>
-                        <th>Product</th>
-                        <th style={{ textAlign: 'right' }}>Quantity</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {orderItems.length === 0 ? (
-                        <tr>
-                          <td colSpan={2} style={{ textAlign: 'center', padding: '16px' }}>
-                            <Typography level="body-sm" sx={{ color: 'text.secondary' }}>
-                              No items found for this order.
-                            </Typography>
-                          </td>
-                        </tr>
-                      ) : (
-                        orderItems.map((item) => (
-                          <tr key={item.id}>
-                            <td>{item.name}</td>
-                            <td style={{ textAlign: 'right' }}>{item.quantity}</td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </Table>
-                )}
-              </Box>
-            </Box>
-          )}
-        </ModalDialog>
-      </Modal>
+        selectedOrder={selectedOrder}
+        fetchOrderItems={fetchOrderItems}
+      />
       <Modal
         open={createOpen}
         onClose={handleCloseCreate}
