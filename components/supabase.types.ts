@@ -78,6 +78,8 @@ export type Database = {
           discount: number
           "Order reference": string | null
           order_items_count: number | null
+          order_number: number
+          order_number_display: string | null
           order_total: number | null
           Origin: string | null
           status: Database["public"]["Enums"]["order_status"] | null
@@ -93,6 +95,8 @@ export type Database = {
           discount?: number
           "Order reference"?: string | null
           order_items_count?: number | null
+          order_number?: never
+          order_number_display?: string | null
           order_total?: number | null
           Origin?: string | null
           status?: Database["public"]["Enums"]["order_status"] | null
@@ -108,6 +112,8 @@ export type Database = {
           discount?: number
           "Order reference"?: string | null
           order_items_count?: number | null
+          order_number?: never
+          order_number_display?: string | null
           order_total?: number | null
           Origin?: string | null
           status?: Database["public"]["Enums"]["order_status"] | null
