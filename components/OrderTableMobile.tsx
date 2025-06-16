@@ -36,6 +36,11 @@ export interface OrderTableMobileItem {
   };
 }
 
+interface OrderTableMobileProps {
+  orders: OrderTableMobileItem[];
+  onRowClick?: (orderId: string) => void;
+}
+
 function RowMenu() {
   return (
     <Dropdown>
@@ -56,7 +61,7 @@ function RowMenu() {
   );
 }
 
-export default function OrderTableMobile({ orders }: { orders: OrderTableMobileItem[] }) {
+export default function OrderTableMobile({ orders, onRowClick }: OrderTableMobileProps) {
   return (
     <Box>
       {orders.map((listItem) => (
@@ -66,7 +71,9 @@ export default function OrderTableMobile({ orders }: { orders: OrderTableMobileI
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'start',
+              cursor: onRowClick ? 'pointer' : undefined,
             }}
+            onClick={() => onRowClick?.(listItem.id)}
           >
             <ListItemContent sx={{ display: 'flex', gap: 2, alignItems: 'start' }}>
               <ListItemDecorator>
@@ -93,9 +100,6 @@ export default function OrderTableMobile({ orders }: { orders: OrderTableMobileI
                   <Typography level="body-xs">{listItem.id}</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                  <Link level="body-sm" component="button">
-                    Download
-                  </Link>
                   <RowMenu />
                 </Box>
               </div>

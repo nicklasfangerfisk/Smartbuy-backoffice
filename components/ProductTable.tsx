@@ -10,6 +10,9 @@ import IconButton from '@mui/joy/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import ImageIcon from '@mui/icons-material/Image';
+import Card from '@mui/joy/Card';
+import LinearProgress from '@mui/joy/LinearProgress';
+import ProductTableForm from './ProductTableForm';
 
 export default function ProductTable() {
   const [products, setProducts] = React.useState<any[]>([]);
@@ -20,10 +23,12 @@ export default function ProductTable() {
     CostPrice: '',
   });
   const [submitting, setSubmitting] = React.useState(false);
-  const [editId, setEditId] = React.useState<number | null>(null);
-  const [editForm, setEditForm] = React.useState({ ProductName: '', SalesPrice: '', CostPrice: '' });
+  const [editDialogOpen, setEditDialogOpen] = React.useState(false);
+  const [addDialogOpen, setAddDialogOpen] = React.useState(false);
+  const [editProduct, setEditProduct] = React.useState<any>(null);
   const [imageFile, setImageFile] = React.useState<File | null>(null);
   const [imageUploading, setImageUploading] = React.useState(false);
+  const [search, setSearch] = React.useState('');
 
   React.useEffect(() => {
     async function fetchProducts() {
@@ -92,207 +97,177 @@ export default function ProductTable() {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (uuid: string) => {
     setSubmitting(true);
-    const { error } = await supabase.from('Products').delete().eq('id', id);
+    const { error } = await supabase.from('Products').delete().eq('uuid', uuid);
     setSubmitting(false);
     if (!error) {
-      setProducts(products.filter((p) => p.id !== id));
+      setProducts(products.filter((p) => p.uuid !== uuid));
     }
   };
 
   const startEdit = (product: any) => {
-    setEditId(product.id);
-    setEditForm({
-      ProductName: product.ProductName,
-      SalesPrice: product.SalesPrice,
-      CostPrice: product.CostPrice,
-    });
+    setEditProduct(product);
+    setEditDialogOpen(true);
   };
 
-  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEditForm({ ...editForm, [e.target.name]: e.target.value });
-  };
-
-  const handleEditSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editId === null) return;
+  const handleEditDialogSave = async (values: { ProductName: string; SalesPrice: string; CostPrice: string }) => {
+    if (!editProduct) return;
     setSubmitting(true);
-    const { error } = await supabase.from('Products').update({
-      ProductName: editForm.ProductName,
-      SalesPrice: parseFloat(editForm.SalesPrice),
-      CostPrice: parseFloat(editForm.CostPrice),
-    }).eq('id', editId);
+    console.log('Editing product:', editProduct);
+    console.log('Form values:', values);
+    const { error, data } = await supabase.from('Products').update({
+      ProductName: values.ProductName,
+      SalesPrice: parseFloat(values.SalesPrice),
+      CostPrice: parseFloat(values.CostPrice),
+    }).eq('uuid', editProduct.uuid).select();
+    if (error) {
+      console.error('Supabase update error:', error);
+      alert('Failed to update product: ' + error.message);
+    } else {
+      console.log('Update result:', data);
+    }
     setSubmitting(false);
+    setEditDialogOpen(false);
+    setEditProduct(null);
     if (!error) {
-      setEditId(null);
-      setEditForm({ ProductName: '', SalesPrice: '', CostPrice: '' });
       // Refresh products
       const { data } = await supabase.from('Products').select('*');
       if (data) setProducts(data);
     }
   };
 
+  const handleAddDialogSave = async (values: { ProductName: string; SalesPrice: string; CostPrice: string }) => {
+    setSubmitting(true);
+    const { data, error } = await supabase.from('Products').insert([
+      {
+        ProductName: values.ProductName,
+        SalesPrice: parseFloat(values.SalesPrice),
+        CostPrice: parseFloat(values.CostPrice),
+        CreatedAt: new Date().toISOString(),
+      },
+    ]).select();
+    setSubmitting(false);
+    setAddDialogOpen(false);
+    if (!error) {
+      // Refresh products
+      const { data } = await supabase.from('Products').select('*');
+      if (data) setProducts(data);
+    }
+  };
+
+  // Filter products by search
+  const filteredProducts = products.filter((product) =>
+    product.ProductName?.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
-    <Sheet sx={{ width: '100%', borderRadius: 'sm', overflow: 'auto', mt: 2 }}>
-      <Typography level="h3" sx={{ mb: 2 }}>
-        Products
-      </Typography>
-      <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', gap: 2, mb: 2 }}>
+    <div style={{ padding: 32 }}>
+      <Typography level="h2" sx={{ mb: 2 }}>Products</Typography>
+      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <Input
-          name="ProductName"
-          placeholder="Product name"
-          value={form.ProductName}
-          onChange={handleChange}
-          required
-        />
-        <Input
-          name="SalesPrice"
-          placeholder="Sales price"
-          type="number"
-          value={form.SalesPrice}
-          onChange={handleChange}
-          required
-        />
-        <Input
-          name="CostPrice"
-          placeholder="Cost price"
-          type="number"
-          value={form.CostPrice}
-          onChange={handleChange}
-          required
+          placeholder="Search products..."
+          sx={{ flex: 1 }}
+          value={search}
+          onChange={e => setSearch(e.target.value)}
         />
         <Button
-          component="label"
-          variant="outlined"
-          startDecorator={<ImageIcon />}
+          onClick={() => setAddDialogOpen(true)}
+          loading={submitting || imageUploading}
           disabled={submitting || imageUploading}
+          variant="solid"
         >
-          {imageFile ? imageFile.name : 'Upload Image'}
-          <input
-            type="file"
-            accept="image/*"
-            hidden
-            onChange={handleImageChange}
-          />
-        </Button>
-        <Button type="submit" loading={submitting || imageUploading} disabled={submitting || imageUploading} variant="solid">
           Add Product
         </Button>
       </Box>
-      <Table stickyHeader hoverRow>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Image</th>
-            <th>Product</th>
-            <th>Sales price</th>
-            <th>Cost price</th>
-            <th>Created</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {products.map((product) => (
-            <tr key={product.id}>
-              <td>{product.uuid}</td>
-              {/* Show image if available */}
-              <td>
-                {product.ImageUrl ? (
-                  <img
-                    src={product.ImageUrl}
-                    alt={product.ProductName}
-                    style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 4 }}
-                  />
-                ) : (
-                  <span style={{ color: '#aaa' }}>No image</span>
-                )}
-              </td>
-              {editId === product.id ? (
-                <>
-                  <td>
-                    <Input
-                      name="ProductName"
-                      value={editForm.ProductName}
-                      onChange={handleEditChange}
-                      size="sm"
-                    />
-                  </td>
-                  <td>
-                    <Input
-                      name="SalesPrice"
-                      type="number"
-                      value={editForm.SalesPrice}
-                      onChange={handleEditChange}
-                      size="sm"
-                    />
-                  </td>
-                  <td>
-                    <Input
-                      name="CostPrice"
-                      type="number"
-                      value={editForm.CostPrice}
-                      onChange={handleEditChange}
-                      size="sm"
-                    />
-                  </td>
-                  <td>{product.CreatedAt}</td>
-                  <td style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-                    <IconButton size="sm" color="primary" onClick={handleEditSubmit} disabled={submitting || imageUploading} type="button">
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton size="sm" color="neutral" onClick={() => setEditId(null)} disabled={submitting || imageUploading} type="button">
-                      {'\u2715'}
-                    </IconButton>
-                    <Button
-                      component="label"
-                      size="sm"
-                      variant="outlined"
-                      startDecorator={<ImageIcon />}
-                      disabled={submitting || imageUploading}
-                      sx={{ minWidth: 0, px: 1 }}
-                    >
-                      <input
-                        type="file"
-                        accept="image/*"
-                        hidden
-                        onChange={async (e) => {
-                          if (e.target.files && e.target.files[0]) {
-                            setImageUploading(true);
-                            const file = e.target.files[0];
-                            await uploadImageToStorage(file, product.id);
-                            // Refresh products after upload
-                            const { data } = await supabase.from('Products').select('*');
-                            if (data) setProducts(data);
-                            setImageUploading(false);
-                          }
-                        }}
-                      />
-                      <ImageIcon />
-                    </Button>
-                  </td>
-                </>
-              ) : (
-                <>
-                  <td>{product.ProductName}</td>
-                  <td>{product.SalesPrice}</td>
-                  <td>{product.CostPrice}</td>
-                  <td>{product.CreatedAt}</td>
-                  <td>
-                    <IconButton size="sm" color="primary" onClick={() => startEdit(product)} disabled={submitting}>
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton size="sm" color="danger" onClick={() => handleDelete(product.id)} disabled={submitting}>
-                      <DeleteIcon />
-                    </IconButton>
-                  </td>
-                </>
-              )}
+      <ProductTableForm
+        open={addDialogOpen}
+        onClose={() => setAddDialogOpen(false)}
+        product={null}
+        onSave={handleAddDialogSave}
+      />
+      <ProductTableForm
+        open={editDialogOpen}
+        onClose={() => { setEditDialogOpen(false); setEditProduct(null); }}
+        product={editProduct}
+        onSave={handleEditDialogSave}
+      />
+      <Card>
+        {loading && <LinearProgress />}
+        <Table aria-label="Products" sx={{ minWidth: 700 }}>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Image</th>
+              <th>Product</th>
+              <th>Sales price</th>
+              <th>Cost price</th>
+              <th>Created</th>
+              <th>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </Table>
-      {loading && <Typography>Loading...</Typography>}
-    </Sheet>
+          </thead>
+          <tbody>
+            {filteredProducts.map((product) => (
+              <tr key={product.uuid}>
+                <td>{product.uuid}</td>
+                <td>
+                  {product.ImageUrl ? (
+                    <img
+                      src={product.ImageUrl}
+                      alt={product.ProductName}
+                      style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 4 }}
+                    />
+                  ) : (
+                    <span style={{ color: '#aaa' }}>No image</span>
+                  )}
+                </td>
+                <td>{product.ProductName}</td>
+                <td>{product.SalesPrice}</td>
+                <td>{product.CostPrice}</td>
+                <td>{product.CreatedAt}</td>
+                <td>
+                  <IconButton size="sm" color="primary" onClick={() => startEdit(product)} disabled={submitting}>
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton size="sm" color="danger" onClick={() => handleDelete(product.uuid)} disabled={submitting}>
+                    <DeleteIcon />
+                  </IconButton>
+                  <IconButton
+                    component="label"
+                    size="sm"
+                    color="neutral"
+                    disabled={submitting || imageUploading}
+                    sx={{ minWidth: 0, px: 1 }}
+                  >
+                    <input
+                      type="file"
+                      accept="image/*"
+                      hidden
+                      onChange={async (e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          setImageUploading(true);
+                          const file = e.target.files[0];
+                          await uploadImageToStorage(file, product.id);
+                          // Refresh products after upload
+                          const { data } = await supabase.from('Products').select('*');
+                          if (data) setProducts(data);
+                          setImageUploading(false);
+                        }
+                      }}
+                    />
+                    <ImageIcon />
+                  </IconButton>
+                </td>
+              </tr>
+            ))}
+            {filteredProducts.length === 0 && !loading && (
+              <tr>
+                <td colSpan={7} style={{ textAlign: 'center', color: '#888' }}>No products found.</td>
+              </tr>
+            )}
+          </tbody>
+        </Table>
+      </Card>
+    </div>
   );
 }

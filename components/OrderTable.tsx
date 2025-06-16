@@ -27,6 +27,10 @@ import Dropdown from '@mui/joy/Dropdown';
 import { supabase } from '../utils/supabaseClient';
 import OrderTableCreate from './OrderTableCreate';
 import OrderTableDetails from './OrderTableDetails';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import OrderTableMobile, { OrderTableMobileItem } from './OrderTableMobile';
+import Card from '@mui/joy/Card';
+import LinearProgress from '@mui/joy/LinearProgress';
 
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import SearchIcon from '@mui/icons-material/Search';
@@ -56,6 +60,8 @@ type OrderRow = {
   created_by?: string;
   created_by_name?: string;
   created_by_email?: string;
+  // Add category for filtering (optional, fallback to 'purchase')
+  category?: string;
 };
 
 type Order = 'asc' | 'desc';
@@ -129,6 +135,13 @@ export default function OrderTable() {
     customer_email: '',
   });
 
+  const [statusFilter, setStatusFilter] = React.useState<string>('');
+  const [categoryFilter, setCategoryFilter] = React.useState<string>('all');
+  const [customerFilter, setCustomerFilter] = React.useState<string>('all');
+  const [search, setSearch] = React.useState('');
+
+  const isMobile = useMediaQuery('(max-width:600px)');
+
   // Move fetchOrders outside useEffect so it can be called after order creation
   async function fetchOrders() {
     setLoading(true);
@@ -153,6 +166,7 @@ export default function OrderTable() {
         created_by: order.created_by || '',
         created_by_name: order.created_by_name || '',
         created_by_email: order.created_by_email || '',
+        category: order.category || 'purchase', // fallback
       }));
       setRows(mapped);
     } else if (error) {
@@ -170,20 +184,32 @@ export default function OrderTable() {
     // Join OrderItems with Products to get ProductName
     const { data, error } = await supabase
       .from('OrderItems')
-      .select('uuid, quantity, product_uuid, order_uuid, Products:product_uuid(ProductName)')
+      .select('*, Products:product_uuid(ProductName)')
       .eq('order_uuid', orderUuid);
-    console.log('Raw OrderItems data:', { data, error, orderUuid }); // Debug log
     if (!error && data) {
       return data.map((item: any) => ({
-        id: item.uuid, // Use the real column name
-        product_uuid: item.product_uuid,
-        product_name: item.Products?.ProductName || item.product_uuid, // fallback to uuid if name missing
-        quantity: item.quantity,
+        ...item,
+        product_name: item.Products?.ProductName || item.product_uuid,
       }));
     } else {
       return [];
     }
   }
+
+  // Collect unique statuses, categories, and customers from rows
+  const statusOptions = Array.from(new Set(rows.map(r => r.status)));
+  // For category, you may want to extract from order data if available, else keep static
+  const categoryOptions = ['all', 'refund', 'purchase', 'debit']; // TODO: make dynamic if possible
+  const customerOptions = Array.from(new Set(rows.map(r => r.customer.name)));
+
+  // Filter rows based on search and status
+  const filteredRows = rows.filter(row => {
+    const matchesSearch =
+      row.order_number_display?.toString().toLowerCase().includes(search.toLowerCase()) ||
+      row.customer?.name?.toLowerCase().includes(search.toLowerCase());
+    const statusMatch = !statusFilter || row.status === statusFilter;
+    return matchesSearch && statusMatch;
+  });
 
   const renderFilters = () => (
     <React.Fragment>
@@ -192,33 +218,41 @@ export default function OrderTable() {
         <Select
           size="sm"
           placeholder="Filter by status"
+          value={statusFilter}
+          onChange={(_e, val) => setStatusFilter(val || '')}
           slotProps={{ button: { sx: { whiteSpace: 'nowrap' } } }}
         >
-          <Option value="paid">Paid</Option>
-          <Option value="pending">Pending</Option>
-          <Option value="refunded">Refunded</Option>
-          <Option value="cancelled">Cancelled</Option>
+          <Option value="">All</Option>
+          {statusOptions.map(status => (
+            <Option key={status} value={status}>{status}</Option>
+          ))}
         </Select>
       </FormControl>
       <FormControl size="sm">
         <FormLabel>Category</FormLabel>
-        <Select size="sm" placeholder="All">
-          <Option value="all">All</Option>
-          <Option value="refund">Refund</Option>
-          <Option value="purchase">Purchase</Option>
-          <Option value="debit">Debit</Option>
+        <Select
+          size="sm"
+          placeholder="All"
+          value={categoryFilter}
+          onChange={(_e, val) => setCategoryFilter(val || 'all')}
+        >
+          {categoryOptions.map(category => (
+            <Option key={category} value={category}>{category.charAt(0).toUpperCase() + category.slice(1)}</Option>
+          ))}
         </Select>
       </FormControl>
       <FormControl size="sm">
         <FormLabel>Customer</FormLabel>
-        <Select size="sm" placeholder="All">
+        <Select
+          size="sm"
+          placeholder="All"
+          value={customerFilter}
+          onChange={(_e, val) => setCustomerFilter(val || 'all')}
+        >
           <Option value="all">All</Option>
-          <Option value="olivia">Olivia Rhye</Option>
-          <Option value="steve">Steve Hampton</Option>
-          <Option value="ciaran">Ciaran Murray</Option>
-          <Option value="marina">Marina Macdonald</Option>
-          <Option value="charles">Charles Fulton</Option>
-          <Option value="jay">Jay Hoper</Option>
+          {customerOptions.map(customer => (
+            <Option key={customer} value={customer}>{customer}</Option>
+          ))}
         </Select>
       </FormControl>
     </React.Fragment>
@@ -290,66 +324,63 @@ export default function OrderTable() {
     setSelectedOrder(null);
   };
 
+  // Convert OrderRow[] to OrderListItem[] for mobile
+  const orderListItems: OrderTableMobileItem[] = rows.map((row) => ({
+    id: row.order_number_display || row.uuid,
+    date: row.date,
+    status: row.status,
+    customer: row.customer,
+  }));
+
+  if (isMobile) {
+    const handleMobileRowClick = (orderId: string) => {
+      const found = rows.find(row => (row.order_number_display || row.uuid) === orderId);
+      if (found) {
+        setSelectedOrder(found);
+        setOrderDetailsOpen(true);
+      }
+    };
+    return <>
+      <OrderTableMobile orders={orderListItems} onRowClick={handleMobileRowClick} />
+      <OrderTableDetails
+        open={orderDetailsOpen}
+        onClose={() => setOrderDetailsOpen(false)}
+        selectedOrder={selectedOrder}
+        fetchOrderItems={fetchOrderItems}
+      />
+    </>;
+  }
   return (
-    <Sheet
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 2,
-        p: 3,
-        borderRadius: 'sm',
-        boxShadow: 'md',
-        bgcolor: 'background.default',
-      }}
-    >
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-        <Typography level="h4" fontWeight="lg">
-          Orders
-        </Typography>
-        <Typography level="body-sm" sx={{ color: 'text.secondary' }}>
-          Manage customer orders, view order details, and update order status.
-        </Typography>
-      </Box>
-      <Divider />
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
-          <Button
-            variant="solid"
-            onClick={handleOpenCreate}
-            startDecorator={<CheckRoundedIcon />}
-          >
-            Create Order
-          </Button>
-          <Button
-            variant="outlined"
-            color="neutral"
-            onClick={() => {}}
-            startDecorator={<FilterAltIcon />}
-            endDecorator={<ArrowDropDownIcon />}
-            sx={{ flex: 1 }}
-          >
-            Filter
-          </Button>
-          <Button
-            variant="outlined"
-            color="neutral"
-            onClick={() => {}}
-            startDecorator={<SearchIcon />}
-            sx={{ flex: 1 }}
-          >
-            Search
-          </Button>
-        </Box>
-        {renderFilters()}
-      </Box>
-      <Divider />
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <Table
-          aria-labelledby="tableTitle"
-          sx={{ minWidth: 800 }}
-          stickyHeader
-          color="neutral"
+    <Box sx={{ p: 4 }}>
+      <Typography level="h2" sx={{ mb: 2, textAlign: 'left' }}>Orders</Typography>
+      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+        <Input
+          placeholder="Search orders..."
+          sx={{ flex: 1 }}
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+        <Select
+          placeholder="Filter status"
+          value={statusFilter}
+          onChange={(_, value) => setStatusFilter(value ?? '')}
+          sx={{ minWidth: 160 }}
         >
+          <Option value="">All Statuses</Option>
+          {statusOptions.map(status => (
+            <Option key={status} value={status}>{status}</Option>
+          ))}
+        </Select>
+        <Button
+          onClick={handleOpenCreate}
+          variant="solid"
+        >
+          Create Order
+        </Button>
+      </Box>
+      <Card>
+        {loading && <LinearProgress />}
+        <Table aria-label="Orders" sx={{ minWidth: 800 }}>
           <thead>
             <tr>
               <th>Order #</th>
@@ -361,20 +392,12 @@ export default function OrderTable() {
             </tr>
           </thead>
           <tbody>
-            {rows.length === 0 && (
+            {filteredRows.length === 0 && !loading && (
               <tr>
-                <td colSpan={6} style={{ textAlign: 'center', padding: '16px' }}>
-                  {loading ? (
-                    <Typography level="body-sm">Loading orders...</Typography>
-                  ) : (
-                    <Typography level="body-sm" sx={{ color: 'text.secondary' }}>
-                      No orders found.
-                    </Typography>
-                  )}
-                </td>
+                <td colSpan={6} style={{ textAlign: 'center', color: '#888' }}>No orders found.</td>
               </tr>
             )}
-            {rows.map((row) => (
+            {filteredRows.map((row) => (
               <tr
                 key={row.uuid}
                 onClick={() => handleOrderDetailsOpen(row)}
@@ -421,32 +444,7 @@ export default function OrderTable() {
             ))}
           </tbody>
         </Table>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography level="body-xs" sx={{ color: 'text.secondary' }}>
-            {`Showing ${rows.length} ${rows.length === 1 ? 'order' : 'orders'}`}
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <Button
-              variant="outlined"
-              color="neutral"
-              onClick={() => {}}
-              disabled={loading}
-              startDecorator={<KeyboardArrowLeftIcon />}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outlined"
-              color="neutral"
-              onClick={() => {}}
-              disabled={loading}
-              endDecorator={<KeyboardArrowRightIcon />}
-            >
-              Next
-            </Button>
-          </Box>
-        </Box>
-      </Box>
+      </Card>
       <OrderTableDetails
         open={orderDetailsOpen}
         onClose={handleOrderDetailsClose}
@@ -476,6 +474,6 @@ export default function OrderTable() {
           />
         </ModalDialog>
       </Modal>
-    </Sheet>
+    </Box>
   );
 }

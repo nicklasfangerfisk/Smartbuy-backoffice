@@ -4,12 +4,13 @@ import Grid from '@mui/joy/Grid';
 import Box from '@mui/joy/Box';
 import Typography from '@mui/joy/Typography';
 import Button from '@mui/joy/Button';
-import Input from '@mui/joy/Input';
 import { supabase } from '../utils/supabaseClient';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
 import SupplierDisplay from './SupplierDisplay';
+import SupplierForm from './SupplierForm';
+import Input from '@mui/joy/Input';
 
 export default function Suppliers() {
   const [suppliers, setSuppliers] = React.useState<any[]>([]);
@@ -23,6 +24,8 @@ export default function Suppliers() {
   const [editImageFile, setEditImageFile] = React.useState<File | null>(null);
   const [savingEdit, setSavingEdit] = React.useState(false);
   const [selectedSupplier, setSelectedSupplier] = React.useState<any | null>(null);
+  const [addOpen, setAddOpen] = React.useState(false);
+  const [search, setSearch] = React.useState('');
 
   React.useEffect(() => {
     async function fetchSuppliers() {
@@ -113,22 +116,48 @@ export default function Suppliers() {
     setEditImageFile(null);
   }
 
+  // Filter suppliers by name, contact_name, email, phone, or address
+  const filteredSuppliers = suppliers.filter(supplier => {
+    const q = search.toLowerCase();
+    return (
+      supplier.name?.toLowerCase().includes(q) ||
+      supplier.contact_name?.toLowerCase().includes(q) ||
+      supplier.email?.toLowerCase().includes(q) ||
+      supplier.phone?.toLowerCase().includes(q) ||
+      supplier.address?.toLowerCase().includes(q)
+    );
+  });
+
   return (
     <Box sx={{ p: 4 }}>
       <Typography level="h2" sx={{ mb: 2 }}>Suppliers</Typography>
-      <Box component="form" onSubmit={handleCreateSupplier} sx={{ display: 'flex', gap: 2, mb: 4, flexWrap: 'wrap', alignItems: 'center' }}>
-        <Input required placeholder="Name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} sx={{ minWidth: 180 }} />
-        <Input placeholder="Contact Name" value={form.contact_name} onChange={e => setForm(f => ({ ...f, contact_name: e.target.value }))} sx={{ minWidth: 180 }} />
-        <Input placeholder="Email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} sx={{ minWidth: 180 }} />
-        <Input placeholder="Phone" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} sx={{ minWidth: 140 }} />
-        <Input placeholder="Address" value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} sx={{ minWidth: 220 }} />
-        <input type="file" accept="image/*" onChange={e => setImageFile(e.target.files?.[0] || null)} style={{ minWidth: 180 }} />
-        <Button type="submit" loading={creating} variant="solid">Add Supplier</Button>
+      <Box sx={{ display: 'flex', gap: 2, mb: 3, alignItems: 'center', justifyContent: 'space-between' }}>
+        <Input
+          placeholder="Search suppliers..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          sx={{ flex: 1 }}
+        />
+        <Button variant="solid" onClick={() => setAddOpen(true)} sx={{ minWidth: 140 }}>
+          Add Supplier
+        </Button>
       </Box>
+      <SupplierForm
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        onSaved={() => {
+          setAddOpen(false);
+          // Refresh suppliers list
+          supabase.from('Suppliers').select('*').then(({ data }) => {
+            if (data) setSuppliers(data);
+          });
+        }}
+        mode="add"
+      />
       {loading && <Typography>Loading...</Typography>}
       {error && <Typography color="danger">Error: {error}</Typography>}
       <Grid container spacing={2}>
-        {suppliers.map((supplier) => (
+        {filteredSuppliers.map((supplier) => (
           <Grid xs={12} md={4} key={supplier.id}>
             <Card variant="outlined" sx={{ cursor: editId === supplier.id ? 'default' : 'pointer' }} onClick={() => {
               if (editId !== supplier.id) setSelectedSupplier(supplier);
@@ -137,16 +166,10 @@ export default function Suppliers() {
                 <Box sx={{ flex: 1 }}>
                   {editId === supplier.id ? (
                     <Box component="form" onSubmit={handleSaveEdit} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                      <Input required placeholder="Name" value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} />
-                      <Input placeholder="Contact Name" value={editForm.contact_name} onChange={e => setEditForm(f => ({ ...f, contact_name: e.target.value }))} />
-                      <Input placeholder="Email" value={editForm.email} onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))} />
-                      <Input placeholder="Phone" value={editForm.phone} onChange={e => setEditForm(f => ({ ...f, phone: e.target.value }))} />
-                      <Input placeholder="Address" value={editForm.address} onChange={e => setEditForm(f => ({ ...f, address: e.target.value }))} />
-                      <input type="file" accept="image/*" onChange={e => setEditImageFile(e.target.files?.[0] || null)} style={{ minWidth: 180 }} />
-                      <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-                        <Button type="submit" loading={savingEdit} startDecorator={<SaveIcon />}>Save</Button>
-                        <Button type="button" variant="outlined" color="neutral" onClick={handleCancelEdit} startDecorator={<CancelIcon />}>Cancel</Button>
-                      </Box>
+                      <input type="hidden" value={supplier.id} />
+                      <input type="hidden" value={supplier.image_url} />
+                      <Button type="submit" loading={savingEdit} startDecorator={<SaveIcon />}>Save</Button>
+                      <Button type="button" variant="outlined" color="neutral" onClick={handleCancelEdit} startDecorator={<CancelIcon />}>Cancel</Button>
                     </Box>
                   ) : (
                     <>

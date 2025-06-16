@@ -154,6 +154,54 @@ export type Database = {
         }
         Relationships: []
       }
+      purchaseorderitems: {
+        Row: {
+          created_at: string | null
+          id: string
+          notes: string | null
+          product_id: string
+          purchase_order_id: string
+          quantity: number
+          total: number | null
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          product_id: string
+          purchase_order_id: string
+          quantity: number
+          total?: number | null
+          unit_price: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          product_id?: string
+          purchase_order_id?: string
+          quantity?: number
+          total?: number | null
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchaseorderitems_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "Products"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "purchaseorderitems_purchase_order_id_fkey"
+            columns: ["purchase_order_id"]
+            isOneToOne: false
+            referencedRelation: "PurchaseOrders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       PurchaseOrders: {
         Row: {
           created_at: string | null

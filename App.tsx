@@ -2,21 +2,18 @@ import * as React from 'react';
 import { CssVarsProvider } from '@mui/joy/styles';
 import CssBaseline from '@mui/joy/CssBaseline';
 import Box from '@mui/joy/Box';
-import Button from '@mui/joy/Button';
-import Breadcrumbs from '@mui/joy/Breadcrumbs';
 import Link from '@mui/joy/Link';
 import Typography from '@mui/joy/Typography';
 
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
-import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import Card from '@mui/joy/Card';
 import Grid from '@mui/joy/Grid';
+import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
 
 import Sidebar from './components/Sidebar';
 import OrderTable from './components/OrderTable';
-import OrderList from './components/OrderList';
 import Header from './components/Header';
 import ProductTable from './components/ProductTable';
 import UsersTable from './components/UsersTable';
@@ -25,6 +22,8 @@ import PurchaseOrderTable from './components/PurchaseOrderTable';
 import Login from './components/Login';
 import { supabase } from './utils/supabaseClient';
 import { useState } from 'react';
+import MobileMenu, { MobileMenuItem } from './components/MobileMenu';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 function Home() {
   return (
@@ -160,6 +159,13 @@ export default function JoyOrderDashboardTemplate() {
   const [view, setView] = React.useState<'home' | 'orders' | 'products' | 'messages' | 'users' | 'suppliers' | 'purchaseorders'>('home');
   const [authChecked, setAuthChecked] = React.useState(false);
   const [user, setUser] = React.useState<any>(null);
+  const isMobile = useMediaQuery('(max-width:600px)');
+  // Define which menu items to show in the mobile menu
+  const mobileMenuItems: MobileMenuItem[] = [
+    { label: 'Home', icon: <HomeRoundedIcon />, value: 'home' },
+    { label: 'Orders', icon: <ShoppingCartRoundedIcon />, value: 'orders' },
+    { label: 'Products', icon: <DashboardRoundedIcon />, value: 'products' },
+  ];
 
   React.useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -194,7 +200,7 @@ export default function JoyOrderDashboardTemplate() {
               sm: 'calc(12px + var(--Header-height))',
               md: 3,
             },
-            pb: { xs: 2, sm: 2, md: 3 },
+            pb: { xs: 8, sm: 2, md: 3 }, // add space for mobile menu
             flex: 1,
             display: 'flex',
             flexDirection: 'column',
@@ -206,57 +212,7 @@ export default function JoyOrderDashboardTemplate() {
           {view === 'home' && <DashboardHome />}
           {view === 'orders' && (
             <>
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Breadcrumbs
-                  size="sm"
-                  aria-label="breadcrumbs"
-                  separator={<ChevronRightRoundedIcon fontSize="small" />}
-                  sx={{ pl: 0 }}
-                >
-                  <Link
-                    underline="none"
-                    color="neutral"
-                    href="#"
-                    aria-label="Home"
-                    onClick={() => setView('home')}
-                  >
-                    <HomeRoundedIcon />
-                  </Link>
-                  <Link
-                    underline="hover"
-                    color="neutral"
-                    href="#"
-                    sx={{ fontSize: 12, fontWeight: 500 }}
-                    onClick={() => setView('orders')}
-                  >
-                    Orders
-                  </Link>
-                </Breadcrumbs>
-              </Box>
-              <Box
-                sx={{
-                  display: 'flex',
-                  mb: 1,
-                  gap: 1,
-                  flexDirection: { xs: 'column', sm: 'row' },
-                  alignItems: { xs: 'start', sm: 'center' },
-                  flexWrap: 'wrap',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <Typography level="h2" component="h1">
-                  Orders
-                </Typography>
-                <Button
-                  color="primary"
-                  startDecorator={<DownloadRoundedIcon />}
-                  size="sm"
-                >
-                  Download PDF
-                </Button>
-              </Box>
               <OrderTable />
-              <OrderList />
             </>
           )}
           {view === 'products' && <ProductTable />}
@@ -265,6 +221,13 @@ export default function JoyOrderDashboardTemplate() {
           {view === 'suppliers' && <Suppliers />}
           {view === 'purchaseorders' && <PurchaseOrderTable />}
         </Box>
+        {isMobile && (
+          <MobileMenu
+            items={mobileMenuItems}
+            value={view}
+            onChange={setView}
+          />
+        )}
       </Box>
     </CssVarsProvider>
   );

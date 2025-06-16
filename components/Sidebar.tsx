@@ -35,6 +35,8 @@ import ModalDialog from '@mui/joy/ModalDialog';
 import DialogTitle from '@mui/joy/DialogTitle';
 import DialogContent from '@mui/joy/DialogContent';
 import DialogActions from '@mui/joy/DialogActions';
+import StorefrontIcon from '@mui/icons-material/Storefront';
+import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 
 import ColorSchemeToggle from './ColorSchemeToggle';
 import UserDialog from './UserDialog';
@@ -353,11 +355,13 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
                 </ListItem>
                 <ListItem>
                   <ListItemButton selected={view === 'suppliers'} onClick={() => setView('suppliers')}>
+                    <StorefrontIcon sx={{ mr: 0.5 }} />
                     Suppliers
                   </ListItemButton>
                 </ListItem>
                 <ListItem>
                   <ListItemButton selected={view === 'purchaseorders'} onClick={() => setView('purchaseorders')}>
+                    <AssignmentTurnedInIcon sx={{ mr: 0.5 }} />
                     Purchase Orders
                   </ListItemButton>
                 </ListItem>

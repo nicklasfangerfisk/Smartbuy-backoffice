@@ -95,7 +95,7 @@ export default function OrderTableDetails({ open, onClose, selectedOrder, fetchO
                     ) : (
                       orderItems.map(function(item) {
                         return (
-                          <tr key={item.id || item.uuid}>
+                          <tr key={item.uuid}>
                             <td>{item.product_name || item.name || item.product_uuid}</td>
                             <td style={{ textAlign: 'right' }}>{item.quantity ?? '-'}</td>
                             <td style={{ textAlign: 'right' }}>{item.unitprice != null ? `$${Number(item.unitprice).toFixed(2)}` : '-'}</td>
