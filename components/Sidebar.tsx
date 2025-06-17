@@ -316,6 +316,17 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
                   </ListItemButton>
                 </ListItem>
                 <ListItem>
+                  <ListItemButton selected={view === 'tickets'} onClick={() => setView('tickets')}>
+                    <AssignmentRoundedIcon />
+                    <ListItemContent>
+                      <Typography level="body-sm">Tickets</Typography>
+                    </ListItemContent>
+                    <Chip size="sm" color="primary" variant="solid">
+                      2
+                    </Chip>
+                  </ListItemButton>
+                </ListItem>
+                <ListItem>
                   <ListItemButton selected={view === 'users'} onClick={() => setView('users')}>
                     <GroupRoundedIcon />
                     <ListItemContent>
@@ -363,6 +374,36 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
                   <ListItemButton selected={view === 'purchaseorders'} onClick={() => setView('purchaseorders')}>
                     <AssignmentTurnedInIcon sx={{ mr: 0.5 }} />
                     Purchase Orders
+                  </ListItemButton>
+                </ListItem>
+              </List>
+            </Toggler>
+          </ListItem>
+
+          {/* Marketing Accordion - expanded by default */}
+          <ListItem nested>
+            <Toggler defaultExpanded={true}
+              renderToggle={({ open, setOpen }) => (
+                <ListItemButton onClick={() => setOpen(!open)}>
+                  <AssignmentRoundedIcon />
+                  <ListItemContent>
+                    <Typography level="title-sm">Marketing</Typography>
+                  </ListItemContent>
+                  <KeyboardArrowDownIcon
+                    sx={[
+                      open ? { transform: 'rotate(180deg)' } : { transform: 'none' },
+                    ]}
+                  />
+                </ListItemButton>
+              )}
+            >
+              <List sx={{ gap: 0.5 }}>
+                <ListItem>
+                  <ListItemButton selected={view === 'smscampaigns'} onClick={() => setView('smscampaigns')}>
+                    <AssignmentRoundedIcon />
+                    <ListItemContent>
+                      <Typography level="body-sm">SMS Campaigns</Typography>
+                    </ListItemContent>
                   </ListItemButton>
                 </ListItem>
               </List>

@@ -14,7 +14,7 @@ import Add from '@mui/icons-material/Add';
 import SupplierForm from './SupplierForm';
 import Box from '@mui/joy/Box';
 import Chip from '@mui/joy/Chip';
-import PurchaseOrderItemsEditor from './PurchaseOrderItemsEditor';
+import PurchaseOrderItemsEditor, { type PurchaseOrderItem } from './PurchaseOrderItemsEditor';
 import { useEffect } from 'react';
 
 interface PurchaseOrderFormProps {
@@ -39,7 +39,7 @@ export default function PurchaseOrderForm({ open, onClose, onCreated, mode = 'ad
   const [suppliers, setSuppliers] = React.useState<any[]>([]);
   const [supplierInput, setSupplierInput] = React.useState('');
   const [addSupplierOpen, setAddSupplierOpen] = React.useState(false);
-  const [items, setItems] = React.useState<any[]>([{ product_id: null, quantity: 1, unit_price: 0 }]);
+  const [items, setItems] = React.useState<PurchaseOrderItem[]>([{ product_id: null, quantity: 1, unit_price: 0 }]);
 
   // Add a ref to store the last created supplier id
   const lastCreatedSupplierId = React.useRef<string | null>(null);
@@ -64,12 +64,12 @@ export default function PurchaseOrderForm({ open, onClose, onCreated, mode = 'ad
   }, [open, mode, order]);
 
   // After adding a supplier, refresh and select the new supplier
-  const handleSupplierAdded = async (newSupplierId?: string) => {
+  const handleSupplierAdded = async (newSupplierId?: string | number) => {
     console.log('[PurchaseOrderForm] handleSupplierAdded called');
     const { data } = await supabase.from('Suppliers').select('id, name');
     setSuppliers(data || []);
     if (newSupplierId) {
-      setSupplierId(newSupplierId);
+      setSupplierId(String(newSupplierId));
       console.log('[PurchaseOrderForm] New supplier set:', newSupplierId);
     }
     setAddSupplierOpen(false);

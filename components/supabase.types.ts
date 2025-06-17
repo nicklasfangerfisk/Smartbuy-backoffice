@@ -273,6 +273,95 @@ export type Database = {
         }
         Relationships: []
       }
+      ticketactivities: {
+        Row: {
+          activity_type: string
+          direction: string | null
+          id: string
+          message: string | null
+          meta: Json | null
+          sender_id: string | null
+          sender_name: string | null
+          ticket_id: string
+          timestamp: string | null
+        }
+        Insert: {
+          activity_type: string
+          direction?: string | null
+          id?: string
+          message?: string | null
+          meta?: Json | null
+          sender_id?: string | null
+          sender_name?: string | null
+          ticket_id: string
+          timestamp?: string | null
+        }
+        Update: {
+          activity_type?: string
+          direction?: string | null
+          id?: string
+          message?: string | null
+          meta?: Json | null
+          sender_id?: string | null
+          sender_name?: string | null
+          ticket_id?: string
+          timestamp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticketactivities_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticketactivities_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tickets: {
+        Row: {
+          created_at: string | null
+          id: string
+          requester_id: string | null
+          requester_name: string | null
+          status: string
+          subject: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          requester_id?: string | null
+          requester_name?: string | null
+          status?: string
+          subject: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          requester_id?: string | null
+          requester_name?: string | null
+          status?: string
+          subject?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users: {
         Row: {
           avatar_url: string | null
@@ -341,7 +430,7 @@ export type Tables<
   }
     ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never,
 > = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
   ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
       Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {

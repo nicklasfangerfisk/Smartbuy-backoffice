@@ -6,9 +6,29 @@ import Input from '@mui/joy/Input';
 import Autocomplete from '@mui/joy/Autocomplete';
 import Box from '@mui/joy/Box';
 
-export default function PurchaseOrderItemsEditor({ orderId, editable, onItemsChange, initialItems = [] }) {
-  const [items, setItems] = React.useState(initialItems);
-  const [products, setProducts] = React.useState([]);
+// Types for product and item
+interface Product {
+  uuid: string;
+  ProductName: string;
+}
+
+export interface PurchaseOrderItem {
+  product_id: string | null;
+  quantity: number;
+  unit_price: number;
+  notes?: string | null;
+}
+
+interface PurchaseOrderItemsEditorProps {
+  orderId?: string;
+  editable: boolean;
+  onItemsChange?: (items: PurchaseOrderItem[]) => void;
+  initialItems?: PurchaseOrderItem[];
+}
+
+export default function PurchaseOrderItemsEditor({ orderId, editable, onItemsChange, initialItems = [] }: PurchaseOrderItemsEditorProps) {
+  const [items, setItems] = React.useState<PurchaseOrderItem[]>(initialItems);
+  const [products, setProducts] = React.useState<Product[]>([]);
   const [loading, setLoading] = React.useState(false);
 
   React.useEffect(() => {
@@ -17,22 +37,33 @@ export default function PurchaseOrderItemsEditor({ orderId, editable, onItemsCha
     });
   }, []);
 
-  const handleItemChange = (idx, field, value) => {
-    setItems(items => items.map((item, i) => i === idx ? { ...item, [field]: value } : item));
-    if (onItemsChange) onItemsChange(items);
+  const handleItemChange = (idx: number, field: keyof PurchaseOrderItem, value: any) => {
+    setItems(items => {
+      const newItems = items.map((item, i) => i === idx ? { ...item, [field]: value } : item);
+      if (onItemsChange) onItemsChange(newItems);
+      return newItems;
+    });
   };
 
   const handleAddItem = () => {
-    setItems(items => [...items, { product_id: null, quantity: 1, unit_price: 0 }]);
+    setItems(items => {
+      const newItems = [...items, { product_id: null, quantity: 1, unit_price: 0 }];
+      if (onItemsChange) onItemsChange(newItems);
+      return newItems;
+    });
   };
 
-  const handleRemoveItem = idx => {
-    setItems(items => items.filter((_, i) => i !== idx));
-    if (onItemsChange) onItemsChange(items);
+  const handleRemoveItem = (idx: number) => {
+    setItems(items => {
+      const newItems = items.filter((_, i) => i !== idx);
+      if (onItemsChange) onItemsChange(newItems);
+      return newItems;
+    });
   };
 
   React.useEffect(() => {
     if (onItemsChange) onItemsChange(items);
+    // eslint-disable-next-line
   }, [items]);
 
   return (
@@ -53,8 +84,8 @@ export default function PurchaseOrderItemsEditor({ orderId, editable, onItemsCha
               <td>
                 <Autocomplete
                   options={products}
-                  getOptionLabel={option => option.ProductName}
-                  value={products.find(p => p.uuid === item.product_id) || null}
+                  getOptionLabel={(option) => option.ProductName}
+                  value={products.find((p) => p.uuid === item.product_id) || null}
                   onChange={(_e, value) => handleItemChange(idx, 'product_id', value ? value.uuid : null)}
                   disabled={!editable}
                   sx={{ minWidth: 180 }}

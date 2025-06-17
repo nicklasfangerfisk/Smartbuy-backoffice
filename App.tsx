@@ -24,6 +24,8 @@ import { supabase } from './utils/supabaseClient';
 import { useState } from 'react';
 import MobileMenu, { MobileMenuItem } from './components/MobileMenu';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import TicketList from './components/TicketList';
+import SmsCampaignsTable from './components/SmsCampaignsTable';
 
 function Home() {
   return (
@@ -156,7 +158,7 @@ function DashboardHome() {
 }
 
 export default function JoyOrderDashboardTemplate() {
-  const [view, setView] = React.useState<'home' | 'orders' | 'products' | 'messages' | 'users' | 'suppliers' | 'purchaseorders'>('home');
+  const [view, setView] = React.useState<'home' | 'orders' | 'products' | 'messages' | 'users' | 'suppliers' | 'purchaseorders' | 'tickets' | 'smscampaigns'>('home');
   const [authChecked, setAuthChecked] = React.useState(false);
   const [user, setUser] = React.useState<any>(null);
   const isMobile = useMediaQuery('(max-width:600px)');
@@ -194,13 +196,13 @@ export default function JoyOrderDashboardTemplate() {
           component="main"
           className="MainContent"
           sx={{
-            px: { xs: 2, md: 6 },
-            pt: {
+            px: view === 'tickets' ? 0 : { xs: 2, md: 6 },
+            pt: view === 'tickets' ? 0 : {
               xs: 'calc(12px + var(--Header-height))',
               sm: 'calc(12px + var(--Header-height))',
               md: 3,
             },
-            pb: { xs: 8, sm: 2, md: 3 }, // add space for mobile menu
+            pb: view === 'tickets' ? 0 : { xs: 8, sm: 2, md: 3 },
             flex: 1,
             display: 'flex',
             flexDirection: 'column',
@@ -210,16 +212,14 @@ export default function JoyOrderDashboardTemplate() {
           }}
         >
           {view === 'home' && <DashboardHome />}
-          {view === 'orders' && (
-            <>
-              <OrderTable />
-            </>
-          )}
+          {view === 'orders' && <OrderTable />}
           {view === 'products' && <ProductTable />}
           {view === 'messages' && <Messages />}
           {view === 'users' && <UsersTable />}
           {view === 'suppliers' && <Suppliers />}
           {view === 'purchaseorders' && <PurchaseOrderTable />}
+          {view === 'tickets' && <TicketList />}
+          {view === 'smscampaigns' && <SmsCampaignsTable />}
         </Box>
         {isMobile && (
           <MobileMenu
