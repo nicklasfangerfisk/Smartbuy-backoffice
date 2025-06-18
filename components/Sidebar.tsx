@@ -189,9 +189,7 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
         onClick={() => closeSidebar()}
       />
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-        <IconButton variant="soft" color="primary" size="sm">
-          <BrightnessAutoRoundedIcon />
-        </IconButton>
+        <img src="/favicon.svg" alt="Logo" style={{ width: 28, height: 28, borderRadius: 6 }} />
         <Typography level="title-lg">Smartbuy</Typography>
         <ColorSchemeToggle sx={{ ml: 'auto' }} />
       </Box>
