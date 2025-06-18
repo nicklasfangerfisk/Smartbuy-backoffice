@@ -13,13 +13,13 @@ import { toggleSidebar } from '../utils';
 export interface MobileMenuItem {
   label: string;
   icon: React.ReactNode;
-  value: "home" | "orders" | "products" | "messages" | "users" | "suppliers" | "purchaseorders";
+  value: "home" | "orders" | "products" | "messages" | "users" | "suppliers" | "purchaseorders" | "tickets" | "smscampaigns";
 }
 
 interface MobileMenuProps {
   items: MobileMenuItem[];
-  value: "home" | "orders" | "products" | "messages" | "users" | "suppliers" | "purchaseorders";
-  onChange: (value: "home" | "orders" | "products" | "messages" | "users" | "suppliers" | "purchaseorders") => void;
+  value: "home" | "orders" | "products" | "messages" | "users" | "suppliers" | "purchaseorders" | "tickets" | "smscampaigns";
+  onChange: (value: "home" | "orders" | "products" | "messages" | "users" | "suppliers" | "purchaseorders" | "tickets" | "smscampaigns") => void;
 }
 
 export default function MobileMenu({ items, value, onChange }: MobileMenuProps) {

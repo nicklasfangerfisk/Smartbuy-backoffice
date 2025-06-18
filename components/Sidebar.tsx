@@ -78,7 +78,7 @@ function Toggler({
   );
 }
 
-export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'orders' | 'products' | 'messages' | 'users' | 'suppliers' | 'purchaseorders') => void, view: string }) {
+export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'orders' | 'products' | 'messages' | 'users' | 'suppliers' | 'purchaseorders' | 'tickets' | 'smscampaigns') => void, view: string }) {
   const [users, setUsers] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null); // Auth user
   const [userProfile, setUserProfile] = useState<any>(null); // Contextual user row

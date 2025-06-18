@@ -167,7 +167,7 @@ export default function TicketList() {
                       Online
                     </Chip>
                   </Box>
-                  <Typography level="body-xs" color="neutral">@{selectedTicket.requester_username || 'user'}</Typography>
+                  <Typography level="body-xs" color="neutral">@{selectedTicket.requester_name || 'user'}</Typography>
                 </Box>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -177,10 +177,10 @@ export default function TicketList() {
                   color="neutral"
                   startDecorator={<PhoneInTalkRoundedIcon />}
                   component="a"
-                  href={selectedTicket.requester_phone ? `tel:${selectedTicket.requester_phone}` : undefined}
+                  href={selectedTicket.requester_name ? `tel:${selectedTicket.requester_name}` : undefined}
                   target="_self"
                   rel="noopener"
-                  disabled={!selectedTicket.requester_phone}
+                  disabled={!selectedTicket.requester_name}
                 >
                   Call
                 </Button>
