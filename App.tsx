@@ -190,8 +190,9 @@ export default function JoyOrderDashboardTemplate() {
     <CssVarsProvider disableTransitionOnChange>
       <CssBaseline />
       <Box sx={{ display: 'flex', minHeight: '100dvh' }}>
-        <Header />
         <Sidebar setView={setView} view={view} />
+        {/* Only show Header on desktop or when not in mobile tickets view */}
+        {!(isMobile && view === 'tickets') && <Header />}
         <Box
           component="main"
           className="MainContent"

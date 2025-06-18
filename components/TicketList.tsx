@@ -18,14 +18,20 @@ import FormatItalicRoundedIcon from '@mui/icons-material/FormatItalicRounded';
 import StrikethroughSRoundedIcon from '@mui/icons-material/StrikethroughSRounded';
 import FormatListBulletedRoundedIcon from '@mui/icons-material/FormatListBulletedRounded';
 import PhoneInTalkRoundedIcon from '@mui/icons-material/PhoneInTalkRounded';
+import BeachAccessIcon from '@mui/icons-material/BeachAccess';
 import { useTickets, useTicketActivities } from './useTickets';
 import { supabase } from '../utils/supabaseClient';
 import TicketForm from './TicketForm';
 import { FormControl, Textarea } from '@mui/joy';
 import { Stack } from '@mui/system';
 import { Sheet } from '@mui/joy';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import TicketListMobile from './TicketListMobile';
+import Snackbar from '@mui/joy/Snackbar';
+import Select from '@mui/joy/Select';
+import Option from '@mui/joy/Option';
 
-export default function TicketList() {
+export default function TicketList({ ...props }) {
   const [search, setSearch] = React.useState('');
   const [status, setStatus] = React.useState<'Open' | 'Pending' | 'Closed' | 'All'>('Open');
   const [createOpen, setCreateOpen] = React.useState(false);
@@ -37,9 +43,18 @@ export default function TicketList() {
     return statusMatch && (subjectMatch || requesterMatch);
   });
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
+  const isMobile = useMediaQuery('(max-width:600px)');
+  const [snackbarOpen, setSnackbarOpen] = React.useState(false);
+  const [snackbarMessage, setSnackbarMessage] = React.useState('');
+
   React.useEffect(() => {
-    if (!selectedId && filtered.length > 0) setSelectedId(filtered[0].id);
-  }, [filtered, selectedId]);
+    if (!isMobile && !selectedId && filtered.length > 0) {
+      setSelectedId(filtered[0].id);
+    }
+    // Do not clear selectedId on mobile
+    // eslint-disable-next-line
+  }, [filtered, isMobile]);
+
   const selectedTicket = filtered.find(t => t.id === selectedId) || filtered[0];
   const { activities, refresh: refreshActivities } = useTicketActivities(selectedTicket?.id || null);
   const [activityMessage, setActivityMessage] = React.useState('');
@@ -73,6 +88,28 @@ export default function TicketList() {
     refreshActivities();
   }
 
+  async function handleResolveTicket(ticketId: string) {
+    const { error } = await supabase.from('tickets').update({ status: 'Closed' }).eq('id', ticketId);
+    if (!error) {
+      setSnackbarMessage('Ticket was resolved successfully');
+      setSnackbarOpen(true);
+      refresh();
+    }
+    // Optionally handle error
+  }
+
+  async function handleReopenTicket(ticketId: string) {
+    const { error } = await supabase.from('tickets').update({ status: 'Open' }).eq('id', ticketId);
+    if (!error) {
+      setSnackbarMessage('The ticket was reopened successfully');
+      setSnackbarOpen(true);
+      setStatus('Open');
+      setSelectedId(ticketId);
+      refresh();
+    }
+    // Optionally handle error
+  }
+
   // Formatting helpers for message input
   function insertAtCursor(before: string, after: string = before) {
     const textarea = document.querySelector('textarea[aria-label="Message"]') as HTMLTextAreaElement;
@@ -93,6 +130,251 @@ export default function TicketList() {
   function handleStrike() { insertAtCursor('~~', '~~'); }
   function handleBullet() { insertAtCursor('\n- ', ''); }
 
+  // Prepare mobile items
+  const mobileTickets = filtered.map(ticket => ({
+    id: ticket.id,
+    subject: ticket.subject,
+    status: ticket.status,
+    requester_name: ticket.requester_name,
+    updated_at: ticket.updated_at,
+  }));
+
+  const allClosed = filtered.length > 0 && filtered.every(t => t.status === 'Closed');
+
+  // Only show the beach splash if there are tickets, all are closed, and the filter is set to 'Open'
+  const allClosedSplash = filtered.length > 0 && filtered.every(t => t.status === 'Closed') && (status === 'Open');
+
+  if (isMobile) {
+    if (allClosedSplash) {
+      return (
+        <Box sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '60vh',
+          gap: 2,
+        }}>
+          <BeachAccessIcon sx={{ fontSize: 80, color: '#1976d2' }} />
+          <Typography level="h3" sx={{ fontWeight: 700, textAlign: 'center' }}>
+            All done, you can now go to the beach
+          </Typography>
+        </Box>
+      );
+    }
+    // Show list if no ticket selected, otherwise show chat
+    if (!selectedId) {
+      return (
+        <TicketListMobile
+          tickets={mobileTickets}
+          onRowClick={id => setSelectedId(id)}
+          selectedId={selectedId}
+        />
+      );
+    }
+    // Show chat view for selected ticket (reuse desktop chat UI)
+    return (
+      <Box sx={{
+        height: '100dvh',
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        zIndex: 1200,
+        background: '#f7f8fa',
+        pb: '56px',
+      }}>
+        {/* Only render chat header on desktop, not mobile */}
+        {!isMobile && selectedTicket && (
+          <Box sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            px: 2,
+            py: 1.5,
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+            backgroundColor: 'background.body',
+            zIndex: 1,
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Avatar size="md" />
+              <Box>
+                <Typography level="title-md" sx={{ fontWeight: 'lg' }}>{selectedTicket.requester_name || 'User'}</Typography>
+                <Typography level="body-xs" color="neutral">@{selectedTicket.requester_name || 'user'}</Typography>
+              </Box>
+            </Box>
+          </Box>
+        )}
+        <Box sx={{ flex: 1, overflow: 'auto', p: 2, display: 'flex', flexDirection: 'column', gap: 2, bgcolor: '#f7f8fa', minHeight: 0 }}>
+          {activities.map((act, idx) => {
+            const isOutbound = act.direction === 'outbound';
+            return (
+              <Box key={act.id || idx} sx={{ display: 'flex', flexDirection: isOutbound ? 'row-reverse' : 'row', alignItems: 'flex-end', gap: 1.5 }}>
+                {!isOutbound && (
+                  <Avatar size="sm" />
+                )}
+                <Box sx={{
+                  maxWidth: '70%',
+                  minWidth: 'auto',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: isOutbound ? 'flex-end' : 'flex-start',
+                }}>
+                  <Box
+                    sx={{
+                      p: 1.25,
+                      borderRadius: 'lg',
+                      boxShadow: 'sm',
+                      mb: 0.5,
+                      backgroundColor: isOutbound ? 'var(--joy-palette-primary-solidBg)' : 'background.body',
+                      color: isOutbound ? '#fff' : 'var(--joy-palette-text-primary)',
+                    }}
+                  >
+                    <Typography level="body-sm" sx={{ color: isOutbound ? '#fff' : 'inherit' }}>{act.message}</Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', gap: 1, mb: 0.25 }}>
+                    <Typography level="body-xs">{act.sender_name || (isOutbound ? 'You' : 'User')}</Typography>
+                    <Typography level="body-xs" sx={{ color: 'text.tertiary' }}>{act.timestamp ? new Date(act.timestamp).toLocaleString() : ''}</Typography>
+                  </Box>
+                </Box>
+                {isOutbound && (
+                  <Avatar size="sm" />
+                )}
+              </Box>
+            );
+          })}
+          <div ref={messagesEndRef} />
+          {activities.length === 0 && (
+            <Typography color="neutral">No communication yet.</Typography>
+          )}
+        </Box>
+        <Box sx={{
+          p: 2,
+          background: '#fff',
+          borderTop: '1px solid #e0e0e0',
+          borderRadius: 0,
+          boxShadow: '0 -2px 8px 0 rgba(0,0,0,0.02)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 1,
+          zIndex: 2,
+        }}>
+          <FormControl sx={{ m: 0 }}>
+            <Textarea
+              placeholder="Type something here…"
+              aria-label="Message"
+              value={activityMessage}
+              minRows={3}
+              maxRows={10}
+              onChange={e => setActivityMessage(e.target.value)}
+              onKeyDown={event => {
+                if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+                  handleSendActivity();
+                }
+              }}
+              disabled={selectedTicket.status === 'Closed'}
+              endDecorator={
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 1, pr: 1, pl: 1, borderTop: '1px solid', borderColor: 'divider', background: 'transparent', gap: 1, width: '100%' }}>
+                  <Box sx={{ display: 'flex', gap: 0.5 }}>
+                    <IconButton size="sm" variant="plain" color="neutral" onClick={handleBold} disabled={selectedTicket.status === 'Closed'}><FormatBoldRoundedIcon /></IconButton>
+                    <IconButton size="sm" variant="plain" color="neutral" onClick={handleItalic} disabled={selectedTicket.status === 'Closed'}><FormatItalicRoundedIcon /></IconButton>
+                    <IconButton size="sm" variant="plain" color="neutral" onClick={handleStrike} disabled={selectedTicket.status === 'Closed'}><StrikethroughSRoundedIcon /></IconButton>
+                    <IconButton size="sm" variant="plain" color="neutral" onClick={handleBullet} disabled={selectedTicket.status === 'Closed'}><FormatListBulletedRoundedIcon /></IconButton>
+                  </Box>
+                  <Box sx={{ flex: 1 }} />
+                  <Button
+                    size="sm"
+                    color="primary"
+                    sx={{ alignSelf: 'center', borderRadius: 'sm', ml: 1 }}
+                    endDecorator={<SendRoundedIcon />}
+                    onClick={handleSendActivity}
+                    disabled={sending || !activityMessage.trim() || selectedTicket.status === 'Closed'}
+                    title={selectedTicket.status === 'Closed' ? 'Ticket needs to be reopened to respond' : ''}
+                  >
+                    Send
+                  </Button>
+                </Box>
+              }
+              sx={{
+                '& textarea:first-of-type': {
+                  minHeight: 72,
+                  background: '#f7f8fa',
+                },
+                background: '#f7f8fa',
+                borderRadius: 'md',
+                boxShadow: 'xs',
+                border: '1px solid',
+                borderColor: 'divider',
+              }}
+            />
+          </FormControl>
+          {sendError && <Typography color="danger" sx={{ px: 2, pb: 1 }}>{sendError}</Typography>}
+        </Box>
+      </Box>
+    );
+  }
+
+  // Desktop view
+  if (allClosedSplash) {
+    return (
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '60vh',
+        gap: 2,
+      }}>
+        <BeachAccessIcon sx={{ fontSize: 80, color: '#1976d2' }} />
+        <Typography level="h3" sx={{ fontWeight: 700, textAlign: 'center' }}>
+          All done, you can now go to the beach
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (!isMobile && filtered.length === 0) {
+    return (
+      <Box sx={{ display: 'flex', height: '100%', minHeight: 0, background: '#f7f8fa', borderRadius: 2, overflow: 'hidden', boxShadow: 1, width: '100%', maxWidth: '100vw' }}>
+        {/* Left: Ticket List */}
+        <Box sx={{ width: 340, minWidth: 0, maxWidth: 340, borderRight: '1px solid #e0e0e0', background: '#fff', display: 'flex', flexDirection: 'column', overflowX: 'hidden', overflowY: 'auto' }}>
+          <Box sx={{ p: 2, borderBottom: '1px solid #e0e0e0', display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Typography level="h4">Tickets</Typography>
+              <Button size="sm" onClick={() => setCreateOpen(true)} variant="solid">New</Button>
+            </Box>
+            <Input
+              placeholder="Search tickets..."
+              startDecorator={<SearchRoundedIcon />}
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              sx={{ width: '100%' }}
+            />
+            <Select
+              size="sm"
+              value={status}
+              onChange={(_, value) => setStatus(value as 'Open' | 'Pending' | 'Closed' | 'All')}
+              sx={{ mt: 1, width: '100%' }}
+            >
+              <Option value="Open">Open</Option>
+              <Option value="Pending">Pending</Option>
+              <Option value="Closed">Closed</Option>
+              <Option value="All">All</Option>
+            </Select>
+          </Box>
+          <Typography color="neutral" sx={{ textAlign: 'center', mt: 4 }}>
+            No tickets found.
+          </Typography>
+        </Box>
+        {/* Right: Ticket Conversation (empty) */}
+        <Box sx={{ flex: 1, background: '#f7f8fa', minWidth: 0 }} />
+      </Box>
+    );
+  }
+
   return (
     <Box sx={{ display: 'flex', height: '100%', minHeight: 0, background: '#f7f8fa', borderRadius: 2, overflow: 'hidden', boxShadow: 1, width: '100%', maxWidth: '100vw' }}>
       {/* Left: Ticket List */}
@@ -109,6 +391,17 @@ export default function TicketList() {
             onChange={e => setSearch(e.target.value)}
             sx={{ width: '100%' }}
           />
+          <Select
+            size="sm"
+            value={status}
+            onChange={(_, value) => setStatus(value as 'Open' | 'Pending' | 'Closed' | 'All')}
+            sx={{ mt: 1, width: '100%' }}
+          >
+            <Option value="Open">Open</Option>
+            <Option value="Pending">Pending</Option>
+            <Option value="Closed">Closed</Option>
+            <Option value="All">All</Option>
+          </Select>
         </Box>
         <List sx={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', p: 0, minWidth: 0 }}>
           {filtered.map(ticket => (
@@ -187,16 +480,26 @@ export default function TicketList() {
                 <Button size="sm" variant="outlined" color="neutral">
                   View profile
                 </Button>
-                <Button
-                  size="sm"
-                  variant="solid"
-                  color="primary"
-                  onClick={() => {
-                    // Do nothing for now
-                  }}
-                >
-                  Resolve
-                </Button>
+                {selectedTicket.status === 'Closed' ? (
+                  <Button
+                    size="sm"
+                    variant="solid"
+                    color="danger"
+                    onClick={() => handleReopenTicket(selectedTicket.id)}
+                  >
+                    Reopen
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="solid"
+                    color="primary"
+                    onClick={() => handleResolveTicket(selectedTicket.id)}
+                    disabled={selectedTicket.status === 'Closed'}
+                  >
+                    Resolve
+                  </Button>
+                )}
               </Box>
             </Box>
             <Box sx={{ flex: 1, overflow: 'auto', p: 3, display: 'flex', flexDirection: 'column', gap: 2, bgcolor: '#f7f8fa' }}>
@@ -285,6 +588,7 @@ export default function TicketList() {
                         handleSendActivity();
                       }
                     }}
+                    disabled={selectedTicket.status === 'Closed'}
                     endDecorator={
                       <Stack
                         direction="row"
@@ -294,16 +598,17 @@ export default function TicketList() {
                           flexGrow: 1,
                           py: 1,
                           pr: 1,
+                          pl: 1,
                           borderTop: '1px solid',
                           borderColor: 'divider',
                           background: 'transparent',
                         }}
                       >
                         <Box>
-                          <IconButton size="sm" variant="plain" color="neutral" onClick={handleBold}><FormatBoldRoundedIcon /></IconButton>
-                          <IconButton size="sm" variant="plain" color="neutral" onClick={handleItalic}><FormatItalicRoundedIcon /></IconButton>
-                          <IconButton size="sm" variant="plain" color="neutral" onClick={handleStrike}><StrikethroughSRoundedIcon /></IconButton>
-                          <IconButton size="sm" variant="plain" color="neutral" onClick={handleBullet}><FormatListBulletedRoundedIcon /></IconButton>
+                          <IconButton size="sm" variant="plain" color="neutral" onClick={handleBold} disabled={selectedTicket.status === 'Closed'}><FormatBoldRoundedIcon /></IconButton>
+                          <IconButton size="sm" variant="plain" color="neutral" onClick={handleItalic} disabled={selectedTicket.status === 'Closed'}><FormatItalicRoundedIcon /></IconButton>
+                          <IconButton size="sm" variant="plain" color="neutral" onClick={handleStrike} disabled={selectedTicket.status === 'Closed'}><StrikethroughSRoundedIcon /></IconButton>
+                          <IconButton size="sm" variant="plain" color="neutral" onClick={handleBullet} disabled={selectedTicket.status === 'Closed'}><FormatListBulletedRoundedIcon /></IconButton>
                         </Box>
                         <Button
                           size="sm"
@@ -311,7 +616,8 @@ export default function TicketList() {
                           sx={{ alignSelf: 'center', borderRadius: 'sm' }}
                           endDecorator={<SendRoundedIcon />}
                           onClick={handleSendActivity}
-                          disabled={sending || !activityMessage.trim()}
+                          disabled={sending || !activityMessage.trim() || selectedTicket.status === 'Closed'}
+                          title={selectedTicket.status === 'Closed' ? 'Ticket needs to be reopened to respond' : ''}
                         >
                           Send
                         </Button>
@@ -336,6 +642,17 @@ export default function TicketList() {
           </>
         )}
       </Box>
+      {/* Snackbar for confirmation */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={2500}
+        onClose={() => setSnackbarOpen(false)}
+        color="success"
+        variant="soft"
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        {snackbarMessage}
+      </Snackbar>
     </Box>
   );
 }
