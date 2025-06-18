@@ -1,5 +1,6 @@
 import React from 'react';
-import Dialog from '@mui/joy/ModalDialog';
+import Modal from '@mui/joy/Modal';
+import ModalDialog from '@mui/joy/ModalDialog';
 import DialogTitle from '@mui/joy/DialogTitle';
 import DialogContent from '@mui/joy/DialogContent';
 import DialogActions from '@mui/joy/DialogActions';
@@ -38,41 +39,43 @@ const TicketResForm: React.FC<TicketResFormProps> = ({ open, onClose, onSubmit }
   }, [open]);
 
   return (
-    <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Resolve Ticket</DialogTitle>
-      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 320 }}>
-        <Select
-          value={resolution}
-          onChange={(_, value) => setResolution(value || '')}
-          placeholder="Select resolution"
-          required
-        >
-          {resolutionOptions.map(opt => (
-            <Option key={opt} value={opt}>{opt}</Option>
-          ))}
-        </Select>
-        <Textarea
-          minRows={3}
-          placeholder="Resolution comment to customer..."
-          value={resolutionComment}
-          onChange={e => setResolutionComment(e.target.value)}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button variant="plain" onClick={onClose}>Cancel</Button>
-        <Button
-          variant="solid"
-          color="primary"
-          disabled={!resolution}
-          onClick={() => {
-            onSubmit(resolution, resolutionComment);
-            onClose();
-          }}
-        >
-          Submit
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <Modal open={open} onClose={onClose}>
+      <ModalDialog>
+        <DialogTitle>Resolve Ticket</DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 320 }}>
+          <Select
+            value={resolution}
+            onChange={(_, value) => setResolution(value || '')}
+            placeholder="Select resolution"
+            required
+          >
+            {resolutionOptions.map(opt => (
+              <Option key={opt} value={opt}>{opt}</Option>
+            ))}
+          </Select>
+          <Textarea
+            minRows={3}
+            placeholder="Resolution comment to customer..."
+            value={resolutionComment}
+            onChange={e => setResolutionComment(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button variant="plain" onClick={onClose}>Cancel</Button>
+          <Button
+            variant="solid"
+            color="primary"
+            disabled={!resolution}
+            onClick={() => {
+              onSubmit(resolution, resolutionComment);
+              onClose();
+            }}
+          >
+            Submit
+          </Button>
+        </DialogActions>
+      </ModalDialog>
+    </Modal>
   );
 };
 
