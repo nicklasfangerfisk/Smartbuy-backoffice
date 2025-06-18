@@ -45,7 +45,7 @@ export default function UsersTable() {
       let usersError = null;
       if (role === 'employee') {
         // Employees see all users
-        const { data, error } = await supabase.from('users').select('*').order('created_at', { ascending: true });
+        const { data, error } = await supabase.from('users').select('*');
         usersData = data || [];
         usersError = error;
       } else {
