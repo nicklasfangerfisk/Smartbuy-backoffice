@@ -14,5 +14,12 @@
     "outDir": "./dist"
   },
   "include": ["./**/*.ts", "./**/*.tsx"],
-  "exclude": ["node_modules", "supabase/functions", "supabase/functions/set-user-role.ts", "supabase/functions/set-user-role/index.ts"]
+  "exclude": [
+    "node_modules",
+    "api",
+    "utils/twilioClient.ts",
+    "supabase/functions",
+    "supabase/functions/set-user-role.ts",
+    "supabase/functions/set-user-role/index.ts"
+  ]
 }
