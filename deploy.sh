@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash 1
 set -e
 npm run build
 cp .nojekyll dist/
