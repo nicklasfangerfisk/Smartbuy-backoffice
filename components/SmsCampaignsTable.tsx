@@ -4,6 +4,7 @@ import Typography from '@mui/joy/Typography';
 import Table from '@mui/joy/Table';
 import Card from '@mui/joy/Card';
 import Button from '@mui/joy/Button';
+import { supabase } from '../utils/supabaseClient';
 
 // Dummy data for now
 const campaigns = [
@@ -12,12 +13,40 @@ const campaigns = [
 ];
 
 export default function SmsCampaignsTable() {
+  const [sending, setSending] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [success, setSuccess] = React.useState<string | null>(null);
+
+  async function handleSendCampaign() {
+    setSending(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const resp = await fetch('/api/send-sms-campaign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: 'This is a test SMS campaign!' })
+      });
+      const result = await resp.json();
+      if (!resp.ok) throw new Error(result.error || 'Failed to send SMS');
+      setSuccess(`Sent to ${result.sent} recipients!`);
+    } catch (err: any) {
+      setError(err.message || String(err));
+    } finally {
+      setSending(false);
+    }
+  }
+
   return (
     <Card sx={{ p: 2, m: 2 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography level="h4">SMS Campaigns</Typography>
-        <Button variant="solid" color="primary">New Campaign</Button>
+        <Button variant="solid" color="primary" onClick={handleSendCampaign} loading={sending}>
+          Send Test Campaign
+        </Button>
       </Box>
+      {error && <Typography color="danger">{error}</Typography>}
+      {success && <Typography color="success">{success}</Typography>}
       <Table>
         <thead>
           <tr>

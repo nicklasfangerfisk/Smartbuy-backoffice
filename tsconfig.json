@@ -13,5 +13,6 @@
     "noEmit": false,
     "outDir": "./dist"
   },
-  "include": ["./**/*.ts", "./**/*.tsx"]
+  "include": ["./**/*.ts", "./**/*.tsx"],
+  "exclude": ["node_modules", "supabase/functions", "supabase/functions/set-user-role.ts", "supabase/functions/set-user-role/index.ts"]
 }

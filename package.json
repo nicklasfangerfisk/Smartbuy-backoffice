@@ -34,7 +34,8 @@
     "@mui/styled-engine": "^5.16.14",
     "@mui/system": "^5.17.1",
     "@supabase/supabase-js": "^2.49.10",
-    "dotenv": "^16.5.0"
+    "dotenv": "^16.5.0",
+    "twilio": "^5.7.1"
   },
   "homepage": "https://nicklasfangerfisk.github.io/Smartbuy-backoffice/"
 }

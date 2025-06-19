@@ -130,13 +130,15 @@ export default function TicketList({ ...props }) {
   function handleStrike() { insertAtCursor('~~', '~~'); }
   function handleBullet() { insertAtCursor('\n- ', ''); }
 
+  const allowedStatuses = ['Open', 'Pending', 'Closed'] as const;
+
   // Prepare mobile items
   const mobileTickets = filtered.map(ticket => ({
     id: ticket.id,
     subject: ticket.subject,
-    status: ticket.status,
-    requester_name: ticket.requester_name,
-    updated_at: ticket.updated_at,
+    status: allowedStatuses.includes(ticket.status as any) ? (ticket.status as 'Open' | 'Pending' | 'Closed') : 'Open',
+    requester_name: ticket.requester_name ?? '',
+    updated_at: ticket.updated_at ?? undefined,
   }));
 
   const allClosed = filtered.length > 0 && filtered.every(t => t.status === 'Closed');

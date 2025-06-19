@@ -5,6 +5,7 @@ import Chip from '@mui/joy/Chip';
 import Typography from '@mui/joy/Typography';
 import Divider from '@mui/joy/Divider';
 import BeachAccessIcon from '@mui/icons-material/BeachAccess';
+import { ColorPaletteProp } from '@mui/joy/styles';
 
 export interface TicketListMobileItem {
   id: string;
@@ -21,7 +22,7 @@ interface TicketListMobileProps {
   status?: 'Open' | 'Pending' | 'Closed' | 'All';
 }
 
-const statusColors = {
+const statusColors: Record<string, { color: ColorPaletteProp; label: string }> = {
   Open: { color: 'success', label: 'Open' },
   Pending: { color: 'warning', label: 'Pending' },
   Closed: { color: 'neutral', label: 'Closed' },
