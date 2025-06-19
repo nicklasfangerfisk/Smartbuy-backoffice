@@ -1,1 +1,1 @@
-# smartback
+# smartback Backoffice app
