@@ -181,10 +181,11 @@ export default function JoyOrderDashboardTemplate() {
   }, []);
 
   if (!authChecked) return null;
-  if (!user) return <Login onLogin={async () => {
-    const { data } = await supabase.auth.getUser();
-    setUser(data.user);
-  }} />;
+  // TEMPORARY: Disable login, always show app
+  // if (!user) return <Login onLogin={async () => {
+  //   const { data } = await supabase.auth.getUser();
+  //   setUser(data.user);
+  // }} />;
 
   return (
     <CssVarsProvider disableTransitionOnChange>
