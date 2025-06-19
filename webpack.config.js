@@ -32,6 +32,9 @@ module.exports = {
         VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY,
       }),
     }),
+    new webpack.ProvidePlugin({
+      process: 'process/browser',
+    }),
   ],
   devServer: {
     static: './dist',
