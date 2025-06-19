@@ -6,7 +6,7 @@ require('dotenv').config();
 module.exports = {
   entry: './index.tsx',
   output: {
-    path: path.resolve(__dirname, 'docs'),
+    path: path.resolve(__dirname, 'public'),
     filename: 'bundle.js',
     clean: true,
   },
