@@ -13,6 +13,8 @@ import ImageIcon from '@mui/icons-material/Image';
 import Card from '@mui/joy/Card';
 import LinearProgress from '@mui/joy/LinearProgress';
 import ProductTableForm from './ProductTableForm';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import ProductTableMobile from './ProductTableMobile';
 
 export default function ProductTable() {
   const [products, setProducts] = React.useState<any[]>([]);
@@ -29,6 +31,7 @@ export default function ProductTable() {
   const [imageFile, setImageFile] = React.useState<File | null>(null);
   const [imageUploading, setImageUploading] = React.useState(false);
   const [search, setSearch] = React.useState('');
+  const isMobile = useMediaQuery('(max-width: 600px)');
 
   React.useEffect(() => {
     async function fetchProducts() {
@@ -160,6 +163,10 @@ export default function ProductTable() {
   const filteredProducts = products.filter((product) =>
     product.ProductName?.toLowerCase().includes(search.toLowerCase())
   );
+
+  if (isMobile) {
+    return <ProductTableMobile />;
+  }
 
   return (
     <div style={{ padding: 32 }}>
