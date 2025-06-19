@@ -12,6 +12,9 @@ const campaigns = [
   { id: 2, name: 'Flash Sale', sent: 800, status: 'Scheduled', date: '2025-06-15' },
 ];
 
+// Get API base URL from environment variable or default to local
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '/api';
+
 export default function SmsCampaignsTable() {
   const [sending, setSending] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -22,7 +25,7 @@ export default function SmsCampaignsTable() {
     setError(null);
     setSuccess(null);
     try {
-      const resp = await fetch('/api/send-sms-campaign', {
+      const resp = await fetch(`${API_BASE_URL}/send-sms-campaign`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: 'This is a test SMS campaign!' })
@@ -70,3 +73,5 @@ export default function SmsCampaignsTable() {
     </Card>
   );
 }
+
+// To configure the backend API endpoint in production, set REACT_APP_API_BASE_URL in your build environment (e.g., in GitHub Pages or Netlify).
