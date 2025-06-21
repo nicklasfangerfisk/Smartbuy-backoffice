@@ -165,7 +165,7 @@ export default function ProductTable() {
   );
 
   if (isMobile) {
-    return <ProductTableMobile products={products} />;
+    return <ProductTableMobile />;
   }
   return (
     <Box sx={{ width: '100%', minHeight: '100dvh', bgcolor: 'background.body', borderRadius: 2, boxShadow: 2, p: 4 }}>
