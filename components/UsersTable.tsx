@@ -109,11 +109,11 @@ export default function UsersTable() {
   return (
     <Sheet sx={{
       width: '100%',
+      minHeight: '100dvh',
       borderRadius: 'sm',
       overflow: 'auto',
       mt: { xs: 1, sm: 2 },
       p: { xs: 1, sm: 2 },
-      minHeight: { xs: '60dvh', sm: 'auto' },
       boxShadow: { xs: 'sm', sm: 'md' },
       maxWidth: { xs: '100vw', sm: '100%' },
       bgcolor: 'background.body',

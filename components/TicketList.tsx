@@ -378,7 +378,7 @@ export default function TicketList({ ...props }) {
   }
 
   return (
-    <Box sx={{ display: 'flex', height: '100%', minHeight: 0, background: '#f7f8fa', borderRadius: 2, overflow: 'hidden', boxShadow: 1, width: '100%', maxWidth: '100vw' }}>
+    <Box sx={{ width: '100%', minHeight: '100dvh', bgcolor: 'background.body', borderRadius: 2, boxShadow: 2, p: 4 }}>
       {/* Left: Ticket List */}
       <Box sx={{ width: 340, minWidth: 0, maxWidth: 340, borderRight: '1px solid #e0e0e0', background: '#fff', display: 'flex', flexDirection: 'column', overflowX: 'hidden', overflowY: 'auto' }}>
         <Box sx={{ p: 2, borderBottom: '1px solid #e0e0e0', display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}>

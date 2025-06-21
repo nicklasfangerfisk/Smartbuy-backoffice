@@ -41,7 +41,7 @@ export default function SmsCampaignsTable() {
   }
 
   return (
-    <Card sx={{ p: 2, m: 2 }}>
+    <Card sx={{ width: '100%', minHeight: '100dvh', p: 4, m: 2, bgcolor: 'background.body', borderRadius: 2, boxShadow: 2 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography level="h4">SMS Campaigns</Typography>
         <Button variant="solid" color="primary" onClick={handleSendCampaign} loading={sending}>

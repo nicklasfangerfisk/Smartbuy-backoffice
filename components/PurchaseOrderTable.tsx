@@ -67,7 +67,7 @@ export default function PurchaseOrderTable() {
   });
 
   return (
-    <Box sx={{ p: 4 }}>
+    <Box sx={{ width: '100%', minHeight: '100dvh', bgcolor: 'background.body', borderRadius: 2, boxShadow: 2, p: 4 }}>
       <Typography level="h2" sx={{ mb: 2 }}>Purchase Orders</Typography>
       <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <Input

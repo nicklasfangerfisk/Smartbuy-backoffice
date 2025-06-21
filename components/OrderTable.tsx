@@ -333,25 +333,26 @@ export default function OrderTable() {
   }));
 
   if (isMobile) {
-    const handleMobileRowClick = (orderId: string) => {
-      const found = rows.find(row => (row.order_number_display || row.uuid) === orderId);
-      if (found) {
-        setSelectedOrder(found);
-        setOrderDetailsOpen(true);
-      }
-    };
-    return <>
-      <OrderTableMobile orders={orderListItems} onRowClick={handleMobileRowClick} />
-      <OrderTableDetails
-        open={orderDetailsOpen}
-        onClose={() => setOrderDetailsOpen(false)}
+    // Move all mobile-specific logic and rendering to OrderTableMobile
+    return (
+      <OrderTableMobile
+        orders={orderListItems}
+        onRowClick={(orderId: string) => {
+          const found = rows.find(row => (row.order_number_display || row.uuid) === orderId);
+          if (found) {
+            setSelectedOrder(found);
+            setOrderDetailsOpen(true);
+          }
+        }}
+        orderDetailsOpen={orderDetailsOpen}
         selectedOrder={selectedOrder}
         fetchOrderItems={fetchOrderItems}
+        onCloseOrderDetails={() => setOrderDetailsOpen(false)}
       />
-    </>;
+    );
   }
   return (
-    <Box sx={{ p: 4 }}>
+    <Box sx={{ width: '100%', minHeight: '100dvh', bgcolor: 'background.body', borderRadius: 2, boxShadow: 2, p: 4 }}>
       <Typography level="h2" sx={{ mb: 2, textAlign: 'left' }}>Orders</Typography>
       <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <Input
