@@ -170,6 +170,10 @@ export default function JoyOrderDashboardTemplate() {
   ];
 
   React.useEffect(() => {
+    supabase.auth.getUser().then(
+      (res) => console.log('[Supabase Test] getUser result:', res),
+      (err) => console.error('[Supabase Test] getUser error:', err)
+    );
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user);
       setAuthChecked(true);
@@ -181,16 +185,15 @@ export default function JoyOrderDashboardTemplate() {
   }, []);
 
   if (!authChecked) return null;
-  // TEMPORARY: Disable login, always show app
-  // if (!user) return <Login onLogin={async () => {
-  //   const { data } = await supabase.auth.getUser();
-  //   setUser(data.user);
-  // }} />;
+  if (!user) return <Login onLogin={async () => {
+    const { data } = await supabase.auth.getUser();
+    setUser(data.user);
+  }} />;
 
   return (
     <CssVarsProvider disableTransitionOnChange>
       <CssBaseline />
-      <Box sx={{ display: 'flex', minHeight: '100dvh' }}>
+      <Box sx={{ display: 'flex', minHeight: '100dvh', width: '100vw', overflow: 'hidden', position: 'fixed', inset: 0 }}>
         <Sidebar setView={setView} view={view} />
         {/* Only show Header on desktop or when not in mobile tickets view */}
         {!(isMobile && view === 'tickets') && <Header />}
@@ -206,11 +209,9 @@ export default function JoyOrderDashboardTemplate() {
             },
             pb: view === 'tickets' ? 0 : { xs: 8, sm: 2, md: 3 },
             flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
             minWidth: 0,
-            height: '100dvh',
             gap: 1,
+            overflow: 'auto',
           }}
         >
           {view === 'home' && <DashboardHome />}

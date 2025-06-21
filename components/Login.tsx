@@ -18,6 +18,7 @@ export default function Login({ onLogin }: { onLogin: () => void }) {
     setError(null);
     const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password });
     if (authError) {
+      console.error('[Login] Auth error:', authError);
       setError(authError.message);
       setLoading(false);
       return;
@@ -31,6 +32,7 @@ export default function Login({ onLogin }: { onLogin: () => void }) {
     }
     let { data: userRow, error: userError } = await supabase.from('users').select('*').eq('id', userId).single();
     if (userError || !userRow) {
+      console.error('[Login] User fetch error:', userError);
       // If not found, upsert as employee by default
       const { error: upsertError } = await supabase.from('users').upsert({
         id: userId,
@@ -49,6 +51,9 @@ export default function Login({ onLogin }: { onLogin: () => void }) {
       while (retries > 0) {
         await new Promise(res => setTimeout(res, 300));
         const { data: retryRow, error: retryError } = await supabase.from('users').select('*').eq('id', userId).single();
+        if (retryError) {
+          console.error('[Login] Retry user fetch error:', retryError);
+        }
         if (retryRow && !retryError) {
           userRow = retryRow;
           userError = null;

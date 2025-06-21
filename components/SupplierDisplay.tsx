@@ -34,11 +34,11 @@ export default function SupplierDisplay({ supplier, onClose }: { supplier: any, 
   }, [supplier.id]);
 
   return (
-    <Box sx={{ display: 'flex', height: '100dvh', width: '100vw', bgcolor: 'background.body', position: 'fixed', inset: 0, zIndex: 12000 }}>
+    <Box sx={{ display: 'flex', minHeight: '100dvh', width: '100vw', bgcolor: 'background.body', position: 'fixed', inset: 0, zIndex: 12000 }}>
       {/* Sidebar */}
       <Sidebar setView={onClose} view="suppliers" />
       {/* Main content */}
-      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'row', height: '100dvh', width: '100vw' }}>
+      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'row', width: '100vw' }}>
         {/* Left: Supplier Info */}
         <Box sx={{ flex: 1, p: 4, display: 'flex', flexDirection: 'column', gap: 4, minWidth: 340, maxWidth: 420, borderRight: '1px solid', borderColor: 'divider' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>

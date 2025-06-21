@@ -177,7 +177,7 @@ export default function TicketList({ ...props }) {
     // Show chat view for selected ticket (reuse desktop chat UI)
     return (
       <Box sx={{
-        height: '100dvh',
+        flex: 1,
         display: 'flex',
         flexDirection: 'column',
         position: 'fixed',

@@ -147,7 +147,7 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
         },
         transition: 'transform 0.4s, width 0.4s',
         zIndex: 10000,
-        height: '100dvh',
+        minHeight: '100dvh',
         width: 'var(--Sidebar-width)',
         top: 0,
         p: 2,
