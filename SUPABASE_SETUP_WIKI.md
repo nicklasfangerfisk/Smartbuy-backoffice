@@ -34,8 +34,8 @@ npx supabase gen types typescript --project-id <your-project-id> > components/su
 ## 4. Environment Variables
 Add your Supabase credentials to your environment:
 ```env
-VITE_SUPABASE_URL=your-supabase-url
-VITE_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_URL=your-supabase-url
+SUPABASE_ANON_KEY=your-anon-key
 ```
 
 ## 5. Usage in the App

@@ -27,10 +27,8 @@ module.exports = {
       template: './public/index.html',
     }),
     new webpack.DefinePlugin({
-      'import.meta.env': JSON.stringify({
-        VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL,
-        VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY,
-      }),
+      'process.env.SUPABASE_URL': JSON.stringify(process.env.SUPABASE_URL),
+      'process.env.SUPABASE_ANON_KEY': JSON.stringify(process.env.SUPABASE_ANON_KEY),
     }),
     new webpack.ProvidePlugin({
       process: 'process/browser',
