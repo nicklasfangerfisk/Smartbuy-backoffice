@@ -24,6 +24,7 @@ import BlockIcon from '@mui/icons-material/Block';
 import AutorenewRoundedIcon from '@mui/icons-material/AutorenewRounded';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
+import OrderTableDetails from './OrderTableDetails';
 
 export interface OrderTableMobileItem {
   id: string;
@@ -39,6 +40,10 @@ export interface OrderTableMobileItem {
 interface OrderTableMobileProps {
   orders: OrderTableMobileItem[];
   onRowClick?: (orderId: string) => void;
+  orderDetailsOpen: boolean;
+  selectedOrder: any;
+  fetchOrderItems: (orderUuid: string) => Promise<any[]>;
+  onCloseOrderDetails: () => void;
 }
 
 function RowMenu() {
@@ -61,9 +66,10 @@ function RowMenu() {
   );
 }
 
-export default function OrderTableMobile({ orders, onRowClick }: OrderTableMobileProps) {
+export default function OrderTableMobile({ orders, onRowClick, orderDetailsOpen, selectedOrder, fetchOrderItems, onCloseOrderDetails }: OrderTableMobileProps) {
   return (
-    <Box>
+    <Box sx={{ width: '100vw', minHeight: '100dvh', bgcolor: 'background.body', borderRadius: 2, boxShadow: 2, p: { xs: 2, md: 4 }, position: 'fixed', inset: 0, zIndex: 12000 }}>
+      <Typography level="h2" sx={{ mb: 2, textAlign: 'left' }}>Orders</Typography>
       {orders.map((listItem) => (
         <List key={listItem.id} size="sm" sx={{ '--ListItem-paddingX': 0 }}>
           <ListItem
@@ -120,6 +126,12 @@ export default function OrderTableMobile({ orders, onRowClick }: OrderTableMobil
           <ListDivider />
         </List>
       ))}
+      <OrderTableDetails
+        open={orderDetailsOpen}
+        onClose={onCloseOrderDetails}
+        selectedOrder={selectedOrder}
+        fetchOrderItems={fetchOrderItems}
+      />
     </Box>
   );
 }
