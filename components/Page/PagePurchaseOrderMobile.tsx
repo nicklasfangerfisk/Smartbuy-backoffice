@@ -3,13 +3,16 @@ import Box from '@mui/joy/Box';
 import Typography from '@mui/joy/Typography';
 import GeneralTableMobile from '../general/GeneralTableMobile';
 
-interface PagePurchaseOrderMobileItem {
+export interface PagePurchaseOrderMobileItem {
   id: string;
   order_number: string;
   order_date: string;
   status: string;
   total: number;
   supplier_name: string;
+  Suppliers?: {
+    name: string;
+  };
 }
 
 const PagePurchaseOrderMobile: React.FC<{ orders: PagePurchaseOrderMobileItem[] }> = ({ orders }) => {

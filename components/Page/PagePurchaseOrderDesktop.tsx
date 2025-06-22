@@ -11,9 +11,14 @@ import Option from '@mui/joy/Option';
 import PurchaseOrderForm from '../Dialog/PurchaseOrderForm';
 import Chip from '@mui/joy/Chip';
 import GeneralTable from '../general/GeneralTable';
+import type { PagePurchaseOrderMobileItem } from './PagePurchaseOrderMobile';
 
-export default function PurchaseOrderTable() {
-  const [orders, setOrders] = useState<any[]>([]);
+interface PagePurchaseOrderDesktopProps {
+  orders: PagePurchaseOrderMobileItem[];
+}
+
+export default function PurchaseOrderTable({ orders: initialOrders }: PagePurchaseOrderDesktopProps) {
+  const [orders, setOrders] = useState<PagePurchaseOrderMobileItem[]>(initialOrders);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -70,7 +75,7 @@ export default function PurchaseOrderTable() {
     { id: 'order_number', label: 'Order Number', minWidth: 100 },
     { id: 'order_date', label: 'Order Date', minWidth: 100 },
     { id: 'status', label: 'Status', minWidth: 100 },
-    { id: 'total', label: 'Total', minWidth: 100, format: (value: number) => `$${value.toFixed(2)}` },
+    { id: 'total', label: 'Total', minWidth: 100, format: (value: number | null) => value != null ? `$${value.toFixed(2)}` : '$0.00' },
     { id: 'notes', label: 'Notes', minWidth: 200 },
     { id: 'supplier_name', label: 'Supplier', minWidth: 150 },
   ];

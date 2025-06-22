@@ -2,7 +2,7 @@
 # Regenerate Supabase types and update the date in the types file
 
 PROJECT_ID=tfzvtzqybgbzxcxozdes
-TYPES_FILE="components/supabase.types.ts"
+TYPES_FILE="components/general/supabase.types.ts"
 DATE_STR="$(date +%Y-%m-%d)"
 
 echo "Generating Supabase types..."

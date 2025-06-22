@@ -28,7 +28,7 @@ import { supabase } from '../../utils/supabaseClient';
 import OrderTableCreate from '../Dialog/OrderTableCreate';
 import OrderTableDetails from '../Dialog/OrderTableDetails';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import PageOrderMobile, { OrderTableMobileItem } from './PageOrderMobile';
+import PageOrderMobile, { PageOrderMobileItem } from './PageOrderMobile';
 import Card from '@mui/joy/Card';
 import LinearProgress from '@mui/joy/LinearProgress';
 
@@ -176,8 +176,26 @@ export default function OrderTable() {
   }
 
   React.useEffect(() => {
+    console.log('Fetching orders...');
     fetchOrders();
   }, []);
+
+  // Add logs for state updates
+  React.useEffect(() => {
+    console.log('Rows updated:', rows);
+  }, [rows]);
+
+  React.useEffect(() => {
+    console.log('Status filter updated:', statusFilter);
+  }, [statusFilter]);
+
+  React.useEffect(() => {
+    console.log('Category filter updated:', categoryFilter);
+  }, [categoryFilter]);
+
+  React.useEffect(() => {
+    console.log('Customer filter updated:', customerFilter);
+  }, [customerFilter]);
 
   // Move fetchOrderItems outside of useEffect so it can be passed as a prop
   async function fetchOrderItems(orderUuid: string) {

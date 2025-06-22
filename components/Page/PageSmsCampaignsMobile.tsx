@@ -3,7 +3,7 @@ import Box from '@mui/joy/Box';
 import Typography from '@mui/joy/Typography';
 import GeneralTableMobile from '../general/GeneralTableMobile';
 
-interface PageSmsCampaignsMobileItem {
+export interface PageSmsCampaignsMobileItem {
   id: number;
   name: string;
   sent: number;

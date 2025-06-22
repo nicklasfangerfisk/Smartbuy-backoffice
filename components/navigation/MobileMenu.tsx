@@ -23,7 +23,19 @@ interface MobileMenuProps {
 }
 
 export default function MobileMenu({ items, value, onChange }: MobileMenuProps) {
-  const muiTheme = React.useMemo(() => createTheme(), []);
+  const muiTheme = React.useMemo(() => createTheme({
+    components: {
+      MuiTableRow: {
+        styleOverrides: {
+          root: {
+            '&:hover': {
+              backgroundColor: 'rgba(0, 0, 0, 0.04)',
+            },
+          },
+        },
+      },
+    },
+  }), []);
   return (
     <ThemeProvider theme={muiTheme}>
       <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1200 }}>

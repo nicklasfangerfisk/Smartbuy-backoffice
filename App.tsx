@@ -28,7 +28,28 @@ import MobileMenu, { MobileMenuItem } from './components/navigation/MobileMenu';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import TicketList from './components/Page/PageTicketDesktop';
 import PageSmsCampaignsDesktop from './components/Page/PageSmsCampaignsDesktop';
-import PageSmsCampaignsMobile from './components/Page/PageSmsCampaignsMobile';
+import PageSmsCampaignsMobile, { PageSmsCampaignsMobileItem } from './components/Page/PageSmsCampaignsMobile';
+import { User, UserResponse } from '@supabase/supabase-js';
+import { PagePurchaseOrderMobileItem } from './components/Page/PagePurchaseOrderMobile';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import PageDashboard from './components/Page/PageDashboard';
+import { Database } from './components/general/supabase.types';
+
+type AppUser = Database['public']['Tables']['users']['Row'] & { phone: string | null };
+
+const muiTheme = createTheme({
+  components: {
+    MuiTableRow: {
+      styleOverrides: {
+        root: {
+          '&:hover': {
+            backgroundColor: 'rgba(0, 0, 0, 0.04)',
+          } as React.CSSProperties,
+        },
+      },
+    },
+  },
+});
 
 function Home() {
   return (
@@ -52,120 +73,13 @@ function Messages() {
   );
 }
 
-function DashboardHome() {
-  const [totalSales, setTotalSales] = React.useState<number | null>(null);
-  const [orderCount, setOrderCount] = React.useState<number | null>(null);
-  const [customerCount, setCustomerCount] = React.useState<number | null>(null);
-  const [salesChange, setSalesChange] = React.useState<number | null>(null);
-  const [ordersChange, setOrdersChange] = React.useState<number | null>(null);
-  const [customersChange, setCustomersChange] = React.useState<number | null>(null);
-  const [initialLoading, setInitialLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
-    let isMounted = true;
-    let first = true;
-    async function fetchDashboardStats() {
-      if (first) setInitialLoading(true);
-      setError(null);
-      // Date ranges: last 30 days and previous 30 days
-      const now = new Date();
-      const end = now.toISOString().slice(0, 10);
-      const start = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-      const prevStart = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-      const prevEnd = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000 - 1).toISOString().slice(0, 10);
-
-      const ordersRes = await supabase
-        .from('Orders')
-        .select('order_total, customer_email, date', { count: 'exact' })
-        .not('order_total', 'is', null);
-      if (ordersRes.error || !ordersRes.data) {
-        if (isMounted) setError('Failed to fetch order stats');
-        if (first) setInitialLoading(false);
-        return;
-      }
-      const orders = ordersRes.data;
-      const ordersThis = orders.filter((o: any) => o.date && o.date >= start && o.date <= end);
-      const ordersPrev = orders.filter((o: any) => o.date && o.date >= prevStart && o.date <= prevEnd);
-      const sumThis = ordersThis.reduce((acc: number, row: any) => acc + (typeof row.order_total === 'number' ? row.order_total : 0), 0);
-      const sumPrev = ordersPrev.reduce((acc: number, row: any) => acc + (typeof row.order_total === 'number' ? row.order_total : 0), 0);
-      const countThis = ordersThis.length;
-      const countPrev = ordersPrev.length;
-      const customersThis = new Set(ordersThis.map((o: any) => o.customer_email).filter(Boolean));
-      const customersPrev = new Set(ordersPrev.map((o: any) => o.customer_email).filter(Boolean));
-      const pct = (curr: number, prev: number) => prev === 0 ? (curr > 0 ? 100 : 0) : ((curr - prev) / prev) * 100;
-      if (isMounted) {
-        setTotalSales(sumThis);
-        setOrderCount(countThis);
-        setCustomerCount(customersThis.size);
-        setSalesChange(pct(sumThis, sumPrev));
-        setOrdersChange(pct(countThis, countPrev));
-        setCustomersChange(pct(customersThis.size, customersPrev.size));
-      }
-      if (first) setInitialLoading(false);
-      first = false;
-    }
-    fetchDashboardStats();
-    const interval = setInterval(fetchDashboardStats, 10000);
-    return () => { isMounted = false; clearInterval(interval); };
-  }, []);
-
-  function formatChange(val: number | null) {
-    if (val == null) return '—';
-    const sign = val > 0 ? '+' : val < 0 ? '−' : '';
-    return `${sign}${Math.abs(Math.round(val))}%`;
-  }
-
-  return (
-    <Box sx={{ p: 4 }}>
-      <Typography level="h2" sx={{ mb: 2 }}>
-        <DashboardRoundedIcon sx={{ mr: 1, verticalAlign: 'middle' }} /> Dashboard
-      </Typography>
-      <Grid container spacing={2}>
-        <Grid xs={12} md={4}>
-          <Card variant="outlined">
-            <Typography level="h4">Total Sales</Typography>
-            <Typography level="h2" color="success">
-              {initialLoading ? 'Loading...' : error ? '—' : `$${totalSales?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-            </Typography>
-            <Typography level="body-sm" color="neutral">
-              {initialLoading ? '' : formatChange(salesChange)} from last 30 days
-            </Typography>
-          </Card>
-        </Grid>
-        <Grid xs={12} md={4}>
-          <Card variant="outlined">
-            <Typography level="h4">Orders</Typography>
-            <Typography level="h2" color="primary">
-              {initialLoading ? 'Loading...' : error ? '—' : orderCount?.toLocaleString()}
-            </Typography>
-            <Typography level="body-sm" color="neutral">
-              {initialLoading ? '' : formatChange(ordersChange)} from last 30 days
-            </Typography>
-          </Card>
-        </Grid>
-        <Grid xs={12} md={4}>
-          <Card variant="outlined">
-            <Typography level="h4">Customers</Typography>
-            <Typography level="h2" color="warning">
-              {initialLoading ? 'Loading...' : error ? '—' : customerCount?.toLocaleString()}
-            </Typography>
-            <Typography level="body-sm" color="neutral">
-              {initialLoading ? '' : formatChange(customersChange)} new last 30 days
-            </Typography>
-          </Card>
-        </Grid>
-      </Grid>
-    </Box>
-  );
-}
-
 export default function JoyOrderDashboardTemplate() {
   const [view, setView] = React.useState<'home' | 'orders' | 'products' | 'messages' | 'users' | 'suppliers' | 'purchaseorders' | 'tickets' | 'smscampaigns'>('home');
   const [authChecked, setAuthChecked] = React.useState(false);
   const [user, setUser] = React.useState<any>(null);
   const [campaigns, setCampaigns] = React.useState<PageSmsCampaignsMobileItem[]>([]);
-  const [users, setUsers] = React.useState<User[]>([]);
+  const [orders, setOrders] = React.useState<PagePurchaseOrderMobileItem[]>([]);
+  const [users, setUsers] = React.useState<AppUser[]>([]);
   const [loadingUsers, setLoadingUsers] = React.useState(false);
   const [errorUsers, setErrorUsers] = React.useState<string | null>(null);
   const isMobile = useMediaQuery('(max-width:600px)');
@@ -178,12 +92,14 @@ export default function JoyOrderDashboardTemplate() {
 
   React.useEffect(() => {
     supabase.auth.getUser().then(
-      (res: UserResponse) => console.log('[Supabase Test] getUser result:', res),
-      (err: Error) => console.error('[Supabase Test] getUser error:', err)
+      (res: UserResponse) => { /* console.log('[Supabase Test] getUser result:', res); */ },
+      (err: Error) => { /* console.error('[Supabase Test] getUser error:', err); */ }
     );
 
     supabase.auth.getUser().then(({ data }: UserResponse) => {
-      setUser(data.user);
+      if (data && data.user) {
+        setUser(data.user);
+      }
       setAuthChecked(true);
     });
 
@@ -203,7 +119,7 @@ export default function JoyOrderDashboardTemplate() {
         if (error) throw error;
         setCampaigns(data || []);
       } catch (err) {
-        console.error('Failed to fetch campaigns:', err);
+        /* console.error('Failed to fetch campaigns:', err); */
       }
     }
 
@@ -217,7 +133,14 @@ export default function JoyOrderDashboardTemplate() {
       try {
         const { data, error } = await supabase.from('users').select('*');
         if (error) throw error;
-        setUsers(data || []);
+        setUsers(
+          (data || []).map((user) => ({
+            ...user,
+            name: user.name || '',
+            last_login: user.last_login || '',
+            phone: user.phone ?? null, // Ensure 'phone' is explicitly set to null if undefined
+          }))
+        );
       } catch (err) {
         setErrorUsers('Failed to fetch users');
       } finally {
@@ -234,47 +157,53 @@ export default function JoyOrderDashboardTemplate() {
   }} />;
 
   return (
-    <CssVarsProvider disableTransitionOnChange>
-      <CssBaseline />
-      <Box sx={{ display: 'flex', minHeight: '100dvh', width: '100vw', overflow: 'hidden', position: 'fixed', inset: 0 }}>
-        <Sidebar setView={setView} view={view} />
-        {/* Only show Header on desktop or when not in mobile tickets view */}
-        {!(isMobile && view === 'tickets') && <Header />}
-        <Box
-          component="main"
-          className="MainContent"
-          sx={{
-            px: view === 'tickets' ? 0 : { xs: 2, md: 6 },
-            pt: view === 'tickets' ? 0 : {
-              xs: 'calc(12px + var(--Header-height))',
-              sm: 'calc(12px + var(--Header-height))',
-              md: 3,
-            },
-            pb: view === 'tickets' ? 0 : { xs: 8, sm: 2, md: 3 },
-            flex: 1,
-            minWidth: 0,
-            gap: 1,
-            overflow: 'auto',
-          }}
-        >
-          {view === 'home' && <DashboardHome />}
-          {view === 'orders' && <PageOrderDesktop />}
-          {view === 'products' && <PageProductDesktop />}
-          {view === 'messages' && <Messages />}
-          {view === 'users' && (isMobile ? <PageUsersMobile users={users} /> : <PageUsersDesktop users={users} />)}
-          {view === 'suppliers' && <Suppliers />}
-          {view === 'purchaseorders' && (isMobile ? <PagePurchaseOrderMobile orders={[]} /> : <PagePurchaseOrderDesktop orders={[]} />)}
-          {view === 'tickets' && <TicketList />}
-          {view === 'smscampaigns' && (isMobile ? <PageSmsCampaignsMobile campaigns={campaigns} /> : <PageSmsCampaignsDesktop campaigns={campaigns} />)}
+    <ThemeProvider theme={muiTheme}>
+      <CssVarsProvider disableTransitionOnChange>
+        <CssBaseline />
+        <Box sx={{ display: 'flex', minHeight: '100dvh', width: '100vw', overflow: 'hidden', position: 'fixed', inset: 0 }}>
+          <Sidebar setView={setView} view={view} />
+          {/* Only show Header on desktop or when not in mobile tickets view */}
+          {!(isMobile && view === 'tickets') && <Header />}
+          <Box
+            component="main"
+            className="MainContent"
+            sx={{
+              position: 'relative', // Ensure isolation
+              px: view === 'tickets' ? 0 : { xs: 2, md: 6 },
+              pt: view === 'tickets' ? 0 : {
+                xs: 'calc(12px + var(--Header-height))',
+                sm: 'calc(12px + var(--Header-height))',
+                md: 3,
+              },
+              pb: view === 'tickets' ? 0 : { xs: 8, sm: 2, md: 3 },
+              flex: 1,
+              minWidth: 0,
+              gap: 1,
+              overflow: 'hidden', // Prevent bleed-through
+              backgroundColor: 'background.paper', // Add background for isolation
+              borderRadius: 2, // Optional: Add visual separation
+              boxShadow: 1, // Optional: Add shadow for better isolation
+            }}
+          >
+            {view === 'home' && <PageDashboard />}
+            {view === 'orders' && <PageOrderDesktop />}
+            {view === 'products' && <PageProductDesktop />}
+            {view === 'messages' && <Messages />}
+            {view === 'users' && (isMobile ? <PageUsersMobile users={users} /> : <PageUsersDesktop users={users} />)}
+            {view === 'suppliers' && <Suppliers />}
+            {view === 'purchaseorders' && (isMobile ? <PagePurchaseOrderMobile orders={orders} /> : <PagePurchaseOrderDesktop orders={orders} />)}
+            {view === 'tickets' && <TicketList />}
+            {view === 'smscampaigns' && (isMobile ? <PageSmsCampaignsMobile campaigns={campaigns} /> : <PageSmsCampaignsDesktop campaigns={campaigns} />)}
+          </Box>
+          {isMobile && (
+            <MobileMenu
+              items={mobileMenuItems}
+              value={view}
+              onChange={setView}
+            />
+          )}
         </Box>
-        {isMobile && (
-          <MobileMenu
-            items={mobileMenuItems}
-            value={view}
-            onChange={setView}
-          />
-        )}
-      </Box>
-    </CssVarsProvider>
+      </CssVarsProvider>
+    </ThemeProvider>
   );
 }

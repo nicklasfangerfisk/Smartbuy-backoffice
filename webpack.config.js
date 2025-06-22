@@ -12,6 +12,9 @@ module.exports = {
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
+    alias: {
+      '@emotion/react': require.resolve('@emotion/react'),
+    },
   },
   module: {
     rules: [

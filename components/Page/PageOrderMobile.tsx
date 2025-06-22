@@ -39,6 +39,10 @@ export interface PageOrderMobileItem {
   };
 }
 
+export interface OrderTableMobileItem {
+  // Define the structure for OrderTableMobileItem here if needed
+}
+
 interface OrderTableMobileProps {
   orders: PageOrderMobileItem[];
   onRowClick?: (orderId: string) => void;

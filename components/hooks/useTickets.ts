@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../../utils/supabaseClient';
-import type { Database } from '../general/supabase.types';
+import type { Database } from '../../components/general/supabase.types';
 
 type Ticket = Database['public']['Tables']['tickets']['Row'];
 type TicketActivity = Database['public']['Tables']['ticketactivities']['Row'];

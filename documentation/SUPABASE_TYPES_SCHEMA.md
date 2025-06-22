@@ -5,10 +5,10 @@ This document describes the structure of the Supabase-generated types and the un
 ---
 
 ## Overview
-The file `components/supabase.types.ts` is auto-generated from your Supabase project and provides full TypeScript type safety for all tables, views, functions, and enums in your database. It is updated using:
+The file `main/components/general/supabase.types.ts` is auto-generated from your Supabase project and provides full TypeScript type safety for all tables, views, functions, and enums in your database. It is updated using:
 
 ```bash
-npx supabase gen types typescript --project-id <your-project-id> --schema public > components/supabase.types.ts
+npx supabase gen types typescript --project-id <your-project-id> --schema public > main/components/general/supabase.types.ts
 ```
 
 ---

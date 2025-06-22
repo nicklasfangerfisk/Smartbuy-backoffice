@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Modal, ModalDialog, ModalClose, Typography, Divider, Box, Table } from '@mui/joy';
-import type { Database } from '../general/supabase.types';
+import type { Database } from '../../components/general/supabase.types';
 
 export type OrderTableDetailsProps = {
   open: boolean;
