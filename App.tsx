@@ -12,20 +12,23 @@ import Card from '@mui/joy/Card';
 import Grid from '@mui/joy/Grid';
 import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
 
-import Sidebar from './components/Sidebar';
-import OrderTable from './components/OrderTable';
-import Header from './components/Header';
-import ProductTable from './components/ProductTable';
-import UsersTable from './components/UsersTable';
-import Suppliers from './components/Suppliers';
-import PurchaseOrderTable from './components/PurchaseOrderTable';
-import Login from './components/Login';
+import Sidebar from './components/navigation/Sidebar';
+import PageOrderDesktop from './components/Page/PageOrderDesktop';
+import Header from './components/navigation/Header';
+import PageProductDesktop from './components/Page/PageProductDesktop';
+import PageUsersDesktop from './components/Page/PageUsersDesktop';
+import PageUsersMobile from './components/Page/PageUsersMobile';
+import Suppliers from './components/Page/Suppliers';
+import PagePurchaseOrderDesktop from './components/Page/PagePurchaseOrderDesktop';
+import PagePurchaseOrderMobile from './components/Page/PagePurchaseOrderMobile';
+import Login from './components/auth/Login';
 import { supabase } from './utils/supabaseClient';
 import { useState } from 'react';
-import MobileMenu, { MobileMenuItem } from './components/MobileMenu';
+import MobileMenu, { MobileMenuItem } from './components/navigation/MobileMenu';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import TicketList from './components/TicketList';
-import SmsCampaignsTable from './components/SmsCampaignsTable';
+import TicketList from './components/Page/PageTicketDesktop';
+import PageSmsCampaignsDesktop from './components/Page/PageSmsCampaignsDesktop';
+import PageSmsCampaignsMobile from './components/Page/PageSmsCampaignsMobile';
 
 function Home() {
   return (
@@ -161,6 +164,10 @@ export default function JoyOrderDashboardTemplate() {
   const [view, setView] = React.useState<'home' | 'orders' | 'products' | 'messages' | 'users' | 'suppliers' | 'purchaseorders' | 'tickets' | 'smscampaigns'>('home');
   const [authChecked, setAuthChecked] = React.useState(false);
   const [user, setUser] = React.useState<any>(null);
+  const [campaigns, setCampaigns] = React.useState<PageSmsCampaignsMobileItem[]>([]);
+  const [users, setUsers] = React.useState<User[]>([]);
+  const [loadingUsers, setLoadingUsers] = React.useState(false);
+  const [errorUsers, setErrorUsers] = React.useState<string | null>(null);
   const isMobile = useMediaQuery('(max-width:600px)');
   // Define which menu items to show in the mobile menu
   const mobileMenuItems: MobileMenuItem[] = [
@@ -171,17 +178,53 @@ export default function JoyOrderDashboardTemplate() {
 
   React.useEffect(() => {
     supabase.auth.getUser().then(
-      (res) => console.log('[Supabase Test] getUser result:', res),
-      (err) => console.error('[Supabase Test] getUser error:', err)
+      (res: UserResponse) => console.log('[Supabase Test] getUser result:', res),
+      (err: Error) => console.error('[Supabase Test] getUser error:', err)
     );
-    supabase.auth.getUser().then(({ data }) => {
+
+    supabase.auth.getUser().then(({ data }: UserResponse) => {
       setUser(data.user);
       setAuthChecked(true);
     });
+
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
-    return () => { listener?.subscription.unsubscribe(); };
+
+    return () => {
+      listener?.subscription.unsubscribe();
+    };
+  }, []);
+
+  React.useEffect(() => {
+    async function fetchCampaigns() {
+      try {
+        const { data, error } = await supabase.from('Campaigns').select('*');
+        if (error) throw error;
+        setCampaigns(data || []);
+      } catch (err) {
+        console.error('Failed to fetch campaigns:', err);
+      }
+    }
+
+    fetchCampaigns();
+  }, []);
+
+  React.useEffect(() => {
+    async function fetchUsers() {
+      setLoadingUsers(true);
+      setErrorUsers(null);
+      try {
+        const { data, error } = await supabase.from('users').select('*');
+        if (error) throw error;
+        setUsers(data || []);
+      } catch (err) {
+        setErrorUsers('Failed to fetch users');
+      } finally {
+        setLoadingUsers(false);
+      }
+    }
+    fetchUsers();
   }, []);
 
   if (!authChecked) return null;
@@ -215,14 +258,14 @@ export default function JoyOrderDashboardTemplate() {
           }}
         >
           {view === 'home' && <DashboardHome />}
-          {view === 'orders' && <OrderTable />}
-          {view === 'products' && <ProductTable />}
+          {view === 'orders' && <PageOrderDesktop />}
+          {view === 'products' && <PageProductDesktop />}
           {view === 'messages' && <Messages />}
-          {view === 'users' && <UsersTable />}
+          {view === 'users' && (isMobile ? <PageUsersMobile users={users} /> : <PageUsersDesktop users={users} />)}
           {view === 'suppliers' && <Suppliers />}
-          {view === 'purchaseorders' && <PurchaseOrderTable />}
+          {view === 'purchaseorders' && (isMobile ? <PagePurchaseOrderMobile orders={[]} /> : <PagePurchaseOrderDesktop orders={[]} />)}
           {view === 'tickets' && <TicketList />}
-          {view === 'smscampaigns' && <SmsCampaignsTable />}
+          {view === 'smscampaigns' && (isMobile ? <PageSmsCampaignsMobile campaigns={campaigns} /> : <PageSmsCampaignsDesktop campaigns={campaigns} />)}
         </Box>
         {isMobile && (
           <MobileMenu
