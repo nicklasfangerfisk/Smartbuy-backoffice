@@ -228,7 +228,7 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
             >
               <List sx={{ gap: 0.5 }}>
                 <ListItem>
-                  <ListItemButton selected={isSelected('/')} onClick={() => handleNavigation('/', 'home')}>
+                  <ListItemButton selected={isSelected('/dashboard')} onClick={() => handleNavigation('/dashboard', 'home')}>
                     <HomeRoundedIcon />
                     <ListItemContent>
                       <Typography level="body-sm">Home</Typography>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../../utils/supabaseClient';
+import { useNavigate } from 'react-router-dom';
 import Box from '@mui/joy/Box';
 import Typography from '@mui/joy/Typography';
 import Input from '@mui/joy/Input';
@@ -7,6 +8,7 @@ import Button from '@mui/joy/Button';
 import Card from '@mui/joy/Card';
 
 export default function Login({ onLogin }: { onLogin: () => void }) {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -76,6 +78,7 @@ export default function Login({ onLogin }: { onLogin: () => void }) {
     }
     setLoading(false);
     onLogin();
+    navigate('/dashboard');
   }
 
   async function handleGoogleLogin() {

@@ -2,16 +2,7 @@ import * as React from 'react';
 import { CssVarsProvider } from '@mui/joy/styles';
 import CssBaseline from '@mui/joy/CssBaseline';
 import Box from '@mui/joy/Box';
-import Link from '@mui/joy/Link';
-import Typography from '@mui/joy/Typography';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-
-import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
-import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
-import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
-import Card from '@mui/joy/Card';
-import Grid from '@mui/joy/Grid';
-import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
+import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
 import Sidebar from './components/navigation/Sidebar';
 import PageOrderDesktop from './components/Page/PageOrderDesktop';
@@ -35,44 +26,54 @@ import { PagePurchaseOrderMobileItem } from './components/Page/PagePurchaseOrder
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import PageDashboard from './components/Page/PageDashboard';
 import { Database } from './components/general/supabase.types';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 
-export default function App() {
+function Layout() {
+  const location = useLocation();
   const isMobile = useMediaQuery('(max-width:600px)');
 
+  return (
+    <Box sx={{ display: 'flex' }}>
+      {location.pathname !== '/' && <Sidebar setView={(view) => console.log(view)} view="home" />}
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          bgcolor: 'background.default',
+          p: 3,
+          width: { sm: '100%', md: 'calc(100% - 240px)' },
+        }}
+      >
+        <Header />
+        <Routes>
+          <Route path="/" element={<Login onLogin={() => {}} />} />
+          <Route path="/orders" element={<PageOrderDesktop rows={[]} orderDetailsOpen={false} selectedOrder={null} fetchOrderItems={(orderUuid) => Promise.resolve([])} onCloseOrderDetails={() => {}} />} />
+          <Route path="/products" element={<PageProductDesktop />} />
+          <Route
+            path="/users"
+            element={
+              <ProtectedRoute>
+                {isMobile ? <PageUsersMobile users={[]} /> : <PageUsersDesktop users={[]} />}
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/suppliers" element={<Suppliers />} />
+          <Route path="/purchase-orders" element={<PagePurchaseOrderDesktop orders={[]} />} />
+          <Route path="/login" element={<Login onLogin={() => {}} />} />
+          <Route path="/tickets" element={<TicketList />} />
+          <Route path="/sms-campaigns" element={<PageSmsCampaignsDesktop campaigns={[]} />} />
+        </Routes>
+      </Box>
+    </Box>
+  );
+}
+
+export default function App() {
   return (
     <CssVarsProvider>
       <CssBaseline />
       <Router>
-        <Box sx={{ display: 'flex' }}>
-          <Sidebar setView={(view) => console.log(view)} view="home" />
-          <Box
-            component="main"
-            sx={{
-              flexGrow: 1,
-              bgcolor: 'background.default',
-              p: 3,
-              width: { sm: '100%', md: 'calc(100% - 240px)' },
-            }}
-          >
-            <Header />
-            <Routes>
-              <Route path="/" element={<PageDashboard />} />
-              <Route path="/orders" element={<PageOrderDesktop rows={[]} orderDetailsOpen={false} selectedOrder={null} fetchOrderItems={(orderUuid) => Promise.resolve([])} onCloseOrderDetails={() => {}} />} />
-              <Route path="/products" element={<PageProductDesktop />} />
-              <Route
-                path="/users"
-                element={
-                  isMobile ? <PageUsersMobile users={[]} /> : <PageUsersDesktop users={[]} />
-                }
-              />
-              <Route path="/suppliers" element={<Suppliers />} />
-              <Route path="/purchase-orders" element={<PagePurchaseOrderDesktop orders={[]} />} />
-              <Route path="/login" element={<Login onLogin={() => {}} />} />
-              <Route path="/tickets" element={<TicketList />} />
-              <Route path="/sms-campaigns" element={<PageSmsCampaignsDesktop campaigns={[]} />} />
-            </Routes>
-          </Box>
-        </Box>
+        <Layout />
       </Router>
     </CssVarsProvider>
   );
