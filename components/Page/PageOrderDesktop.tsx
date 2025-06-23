@@ -31,6 +31,7 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import PageOrderMobile, { PageOrderMobileItem } from './PageOrderMobile';
 import Card from '@mui/joy/Card';
 import LinearProgress from '@mui/joy/LinearProgress';
+import { handleOrderClick } from '../../utils';
 
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import SearchIcon from '@mui/icons-material/Search';
@@ -356,11 +357,7 @@ export default function OrderTable() {
       <PageOrderMobile
         orders={orderListItems}
         onRowClick={(orderId: string) => {
-          const found = rows.find(row => (row.order_number_display || row.uuid) === orderId);
-          if (found) {
-            setSelectedOrder(found);
-            setOrderDetailsOpen(true);
-          }
+          handleOrderClick(orderId, rows, setSelectedOrder, setOrderDetailsOpen);
         }}
         orderDetailsOpen={orderDetailsOpen}
         selectedOrder={selectedOrder}

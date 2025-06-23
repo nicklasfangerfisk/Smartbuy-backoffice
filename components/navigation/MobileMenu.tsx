@@ -8,7 +8,7 @@ import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
 import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import MenuIcon from '@mui/icons-material/Menu';
-import { closeSidebar } from '../../utils';
+import { toggleSidebar, closeSidebar } from '../../utils';
 
 export interface MobileMenuItem {
   label: string;
@@ -42,14 +42,17 @@ export default function MobileMenu({ items, value, onChange }: MobileMenuProps) 
         <BottomNavigation
           showLabels
           value={value}
-          onChange={(_e, newValue) => onChange(newValue)}
+          onChange={(_e, newValue) => {
+            onChange(newValue);
+            closeSidebar();
+          }}
         >
           <BottomNavigationAction
             label={''}
             icon={<MenuIcon />}
             onClick={(e) => {
               e.preventDefault();
-              closeSidebar();
+              toggleSidebar();
             }}
           />
           {items.map((item) => (

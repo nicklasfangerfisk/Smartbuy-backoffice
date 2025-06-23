@@ -27,6 +27,7 @@ import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import OrderTableDetails from '../Dialog/OrderTableDetails';
 import { supabase } from '../../utils/supabaseClient';
 import GeneralTableMobile from '../general/GeneralTableMobile';
+import { handleOrderClick } from '../../utils';
 
 export interface PageOrderMobileItem {
   id: string;
@@ -52,26 +53,6 @@ interface OrderTableMobileProps {
   onCloseOrderDetails: () => void;
 }
 
-function RowMenu() {
-  return (
-    <Dropdown>
-      <MenuButton
-        slots={{ root: IconButton }}
-        slotProps={{ root: { variant: 'plain', color: 'neutral', size: 'sm' } }}
-      >
-        <MoreHorizRoundedIcon />
-      </MenuButton>
-      <Menu size="sm" sx={{ minWidth: 140 }}>
-        <MenuItem>Edit</MenuItem>
-        <MenuItem>Rename</MenuItem>
-        <MenuItem>Move</MenuItem>
-        <Divider />
-        <MenuItem color="danger">Delete</MenuItem>
-      </Menu>
-    </Dropdown>
-  );
-}
-
 export default function OrderTableMobile({ orders, onRowClick, orderDetailsOpen, selectedOrder, fetchOrderItems, onCloseOrderDetails }: OrderTableMobileProps) {
   return (
     <Box sx={{ width: '100vw', minHeight: '100dvh', bgcolor: 'background.body', borderRadius: 2, boxShadow: 2, p: { xs: 2, md: 4 }, position: 'fixed', inset: 0, zIndex: 12000 }}>
@@ -79,7 +60,10 @@ export default function OrderTableMobile({ orders, onRowClick, orderDetailsOpen,
       <GeneralTableMobile
         items={orders}
         renderItem={(order) => (
-          <Box>
+          <Box
+            onClick={() => onRowClick?.(order.id)}
+            sx={{ cursor: 'pointer' }}
+          >
             <Typography>{order.date}</Typography>
             <Typography>{order.status}</Typography>
             <Typography>{order.customer.name}</Typography>

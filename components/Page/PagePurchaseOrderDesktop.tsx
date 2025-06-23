@@ -12,6 +12,8 @@ import PurchaseOrderForm from '../Dialog/PurchaseOrderForm';
 import Chip from '@mui/joy/Chip';
 import GeneralTable from '../general/GeneralTable';
 import type { PagePurchaseOrderMobileItem } from './PagePurchaseOrderMobile';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import PagePurchaseOrderMobile from './PagePurchaseOrderMobile';
 
 interface PagePurchaseOrderDesktopProps {
   orders: PagePurchaseOrderMobileItem[];
@@ -26,6 +28,8 @@ export default function PurchaseOrderTable({ orders: initialOrders }: PagePurcha
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+
+  const isMobile = useMediaQuery('(max-width:600px)');
 
   useEffect(() => {
     async function fetchOrders() {
@@ -84,6 +88,20 @@ export default function PurchaseOrderTable({ orders: initialOrders }: PagePurcha
     ...order,
     supplier_name: order.Suppliers?.name || 'N/A',
   }));
+
+  // Convert orders to mobile items
+  const mobileOrders = orders.map((order) => ({
+    id: order.id || order.order_number,
+    order_number: order.order_number,
+    order_date: order.order_date,
+    status: order.status,
+    total: order.total ?? 0,
+    supplier_name: order.Suppliers?.name || order.supplier_name || 'N/A',
+    Suppliers: order.Suppliers,
+  }));
+  if (isMobile) {
+    return <PagePurchaseOrderMobile orders={mobileOrders} />;
+  }
 
   return (
     <Box sx={{ width: '100%', minHeight: '100dvh', bgcolor: 'background.body', borderRadius: 2, boxShadow: 2, p: 4 }}>
