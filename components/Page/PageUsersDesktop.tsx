@@ -32,13 +32,76 @@ import React from 'react';
 
 // Fix GeneralTable import issue
 import UserTable from './UserTable';
+import Card from '@mui/joy/Card';
+import Input from '@mui/joy/Input';
+import Select from '@mui/joy/Select';
+import Option from '@mui/joy/Option';
+import Button from '@mui/joy/Button';
+import Typography from '@mui/joy/Typography';
+import Box from '@mui/joy/Box';
+import { supabase } from '../../utils/supabaseClient';
+import SearchIcon from '@mui/icons-material/Search';
+import { CssVarsProvider } from '@mui/joy/styles';
 
-const PageUsersDesktop: React.FC<{ users: User[] }> = ({ users }) => {
+const PageUsersDesktop: React.FC = () => {
+  const [users, setUsers] = React.useState<User[]>([]);
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [filterRole, setFilterRole] = React.useState('All Roles');
+
+  React.useEffect(() => {
+    const fetchUsers = async () => {
+      const { data, error } = await supabase.from('users').select('*');
+      if (error) {
+        console.error('Error fetching users:', error);
+      } else {
+        setUsers(data || []);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  const filteredUsers = users.filter((user) =>
+    (filterRole === 'All Roles' || user.role === filterRole) &&
+    (user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
   return (
-    <UserTable
-      rows={users}
-      onRowClick={(userId) => console.log(`User clicked: ${userId}`)}
-    />
+    <CssVarsProvider>
+      <Box sx={{ p: 3, backgroundColor: 'background.level1', borderRadius: 'md' }}>
+        <Card variant="outlined" sx={{ p: 3, borderRadius: 'lg' }}>
+          <Typography level="h4" sx={{ mb: 2 }}>
+            Users
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+            <Input
+              placeholder="Search users"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              startDecorator={<SearchIcon />}
+              sx={{ flex: 1 }}
+            />
+            <Select
+              value={filterRole}
+              onChange={(e, newValue) => setFilterRole(newValue || 'All Roles')}
+              sx={{ minWidth: 150 }}
+            >
+              <Option value="All Roles">All Roles</Option>
+              <Option value="Admin">Admin</Option>
+              <Option value="Employee">Employee</Option>
+            </Select>
+            <Button variant="solid" color="primary">
+              Create User
+            </Button>
+          </Box>
+          <UserTable
+            rows={filteredUsers}
+            onRowClick={(userId) => console.log(`User clicked: ${userId}`)}
+          />
+        </Card>
+      </Box>
+    </CssVarsProvider>
   );
 };
 

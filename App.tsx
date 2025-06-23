@@ -37,6 +37,8 @@ import PageDashboard from './components/Page/PageDashboard';
 import { Database } from './components/general/supabase.types';
 
 export default function App() {
+  const isMobile = useMediaQuery('(max-width:600px)');
+
   return (
     <CssVarsProvider>
       <CssBaseline />
@@ -57,7 +59,12 @@ export default function App() {
               <Route path="/" element={<PageDashboard />} />
               <Route path="/orders" element={<PageOrderDesktop rows={[]} orderDetailsOpen={false} selectedOrder={null} fetchOrderItems={(orderUuid) => Promise.resolve([])} onCloseOrderDetails={() => {}} />} />
               <Route path="/products" element={<PageProductDesktop />} />
-              <Route path="/users" element={<PageUsersDesktop users={[]} />} />
+              <Route
+                path="/users"
+                element={
+                  isMobile ? <PageUsersMobile users={[]} /> : <PageUsersDesktop users={[]} />
+                }
+              />
               <Route path="/suppliers" element={<Suppliers />} />
               <Route path="/purchase-orders" element={<PagePurchaseOrderDesktop orders={[]} />} />
               <Route path="/login" element={<Login onLogin={() => {}} />} />

@@ -37,7 +37,7 @@ import DialogContent from '@mui/joy/DialogContent';
 import DialogActions from '@mui/joy/DialogActions';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 import ColorSchemeToggle from './ColorSchemeToggle';
 import UserDialog from '../Dialog/UserDialog';
@@ -53,6 +53,7 @@ import { supabase } from '../../utils/supabaseClient';
  */
 export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'orders' | 'products' | 'messages' | 'users' | 'suppliers' | 'purchaseorders' | 'tickets' | 'smscampaigns') => void, view: string }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [users, setUsers] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null); // Auth user
   const [userProfile, setUserProfile] = useState<any>(null); // Contextual user row
@@ -124,6 +125,8 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
     setView(viewName as any);
     navigate(route);
   };
+
+  const isSelected = (route: string) => location.pathname === route;
 
   return (
     <Sheet
@@ -225,7 +228,7 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
             >
               <List sx={{ gap: 0.5 }}>
                 <ListItem>
-                  <ListItemButton selected={view === 'home'} onClick={() => handleNavigation('/', 'home')}>
+                  <ListItemButton selected={isSelected('/')} onClick={() => handleNavigation('/', 'home')}>
                     <HomeRoundedIcon />
                     <ListItemContent>
                       <Typography level="body-sm">Home</Typography>
@@ -233,7 +236,7 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
                   </ListItemButton>
                 </ListItem>
                 <ListItem>
-                  <ListItemButton selected={view === 'orders'} onClick={() => handleNavigation('/orders', 'orders')}>
+                  <ListItemButton selected={isSelected('/orders')} onClick={() => handleNavigation('/orders', 'orders')}>
                     <ShoppingCartRoundedIcon />
                     <ListItemContent>
                       <Typography level="body-sm">Orders</Typography>
@@ -295,7 +298,7 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
             >
               <List sx={{ gap: 0.5 }}>
                 <ListItem>
-                  <ListItemButton selected={view === 'messages'} onClick={() => setView('messages')}>
+                  <ListItemButton selected={isSelected('/messages')} onClick={() => setView('messages')}>
                     <QuestionAnswerRoundedIcon />
                     <ListItemContent>
                       <Typography level="body-sm">Messages</Typography>
@@ -306,7 +309,7 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
                   </ListItemButton>
                 </ListItem>
                 <ListItem>
-                  <ListItemButton selected={view === 'tickets'} onClick={() => handleNavigation('/tickets', 'tickets')}>
+                  <ListItemButton selected={isSelected('/tickets')} onClick={() => handleNavigation('/tickets', 'tickets')}>
                     <AssignmentRoundedIcon />
                     <ListItemContent>
                       <Typography level="body-sm">Tickets</Typography>
@@ -317,7 +320,7 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
                   </ListItemButton>
                 </ListItem>
                 <ListItem>
-                  <ListItemButton selected={view === 'users'} onClick={() => handleNavigation('/users', 'users')}>
+                  <ListItemButton selected={isSelected('/users')} onClick={() => handleNavigation('/users', 'users')}>
                     <GroupRoundedIcon />
                     <ListItemContent>
                       <Typography level="body-sm">Users</Typography>
@@ -347,7 +350,7 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
             >
               <List sx={{ gap: 0.5 }}>
                 <ListItem>
-                  <ListItemButton selected={view === 'products'} onClick={() => handleNavigation('/products', 'products')}>
+                  <ListItemButton selected={isSelected('/products')} onClick={() => handleNavigation('/products', 'products')}>
                     <AssignmentRoundedIcon />
                     <ListItemContent>
                       <Typography level="body-sm">Products</Typography>
@@ -355,7 +358,7 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
                   </ListItemButton>
                 </ListItem>
                 <ListItem>
-                  <ListItemButton selected={view === 'suppliers'} onClick={() => handleNavigation('/suppliers', 'suppliers')}>
+                  <ListItemButton selected={isSelected('/suppliers')} onClick={() => handleNavigation('/suppliers', 'suppliers')}>
                     <StorefrontIcon sx={{ mr: 0.5 }} />
                     <ListItemContent>
                       <Typography level="body-sm">Suppliers</Typography>
@@ -363,7 +366,7 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
                   </ListItemButton>
                 </ListItem>
                 <ListItem>
-                  <ListItemButton selected={view === 'purchaseorders'} onClick={() => handleNavigation('/purchase-orders', 'purchaseorders')}>
+                  <ListItemButton selected={isSelected('/purchase-orders')} onClick={() => handleNavigation('/purchase-orders', 'purchaseorders')}>
                     <AssignmentTurnedInIcon sx={{ mr: 0.5 }} />
                     <ListItemContent>
                       <Typography level="body-sm">Purchase Orders</Typography>
@@ -393,7 +396,7 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
             >
               <List sx={{ gap: 0.5 }}>
                 <ListItem>
-                  <ListItemButton selected={view === 'smscampaigns'} onClick={() => handleNavigation('/sms-campaigns', 'smscampaigns')}>
+                  <ListItemButton selected={isSelected('/sms-campaigns')} onClick={() => handleNavigation('/sms-campaigns', 'smscampaigns')}>
                     <AssignmentRoundedIcon />
                     <ListItemContent>
                       <Typography level="body-sm">SMS Campaigns</Typography>
