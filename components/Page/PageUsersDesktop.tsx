@@ -39,27 +39,12 @@ import Option from '@mui/joy/Option';
 import Button from '@mui/joy/Button';
 import Typography from '@mui/joy/Typography';
 import Box from '@mui/joy/Box';
-import { supabase } from '../../utils/supabaseClient';
-import SearchIcon from '@mui/icons-material/Search';
 import { CssVarsProvider } from '@mui/joy/styles';
+import SearchIcon from '@mui/icons-material/Search';
 
-const PageUsersDesktop: React.FC = () => {
-  const [users, setUsers] = React.useState<User[]>([]);
+const PageUsersDesktop: React.FC<{ users: User[] }> = ({ users }) => {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [filterRole, setFilterRole] = React.useState('All Roles');
-
-  React.useEffect(() => {
-    const fetchUsers = async () => {
-      const { data, error } = await supabase.from('users').select('*');
-      if (error) {
-        console.error('Error fetching users:', error);
-      } else {
-        setUsers(data || []);
-      }
-    };
-
-    fetchUsers();
-  }, []);
 
   const filteredUsers = users.filter((user) =>
     (filterRole === 'All Roles' || user.role === filterRole) &&
