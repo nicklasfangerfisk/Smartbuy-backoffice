@@ -2,15 +2,50 @@ import * as React from 'react';
 import { Modal, ModalDialog, ModalClose, Typography, Divider, Box, Table } from '@mui/joy';
 import type { Database } from '../../components/general/supabase.types';
 
+/**
+ * Props for the OrderTableDetails component.
+ */
 export type OrderTableDetailsProps = {
+  /**
+   * Controls the visibility of the modal.
+   */
   open: boolean;
+
+  /**
+   * Callback function to close the modal.
+   */
   onClose: () => void;
-  selectedOrder: any;
-  fetchOrderItems: (orderUuid: string) => Promise<(Database['public']['Tables']['OrderItems']['Row'] & { product_name?: string; name?: string })[]>;
+
+  /**
+   * The selected order object containing order details.
+   */
+  selectedOrder: {
+    uuid: string;
+    date: string;
+    status: string;
+    customer: {
+      name: string;
+      email: string;
+    };
+  } | null;
+
+  /**
+   * Function to fetch items for the selected order.
+   * @param orderUuid - The UUID of the order.
+   * @returns A promise resolving to an array of order items.
+   */
+  fetchOrderItems: (orderUuid: string) => Promise<
+    (Database['public']['Tables']['OrderItems']['Row'] & { product_name?: string; name?: string })[]
+  >;
 };
 
+/**
+ * A modal dialog component to display details of a selected order, including customer information and ordered items.
+ */
 export default function OrderTableDetails({ open, onClose, selectedOrder, fetchOrderItems }: OrderTableDetailsProps) {
-  const [orderItems, setOrderItems] = React.useState<(Database['public']['Tables']['OrderItems']['Row'] & { product_name?: string; name?: string })[]>([]);
+  const [orderItems, setOrderItems] = React.useState<
+    (Database['public']['Tables']['OrderItems']['Row'] & { product_name?: string; name?: string })[]
+  >([]);
   const [orderItemsLoading, setOrderItemsLoading] = React.useState(false);
 
   React.useEffect(() => {

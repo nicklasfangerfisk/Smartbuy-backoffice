@@ -86,6 +86,9 @@ export default function Login({ onLogin }: { onLogin: () => void }) {
   }
 
   return (
+    // Inline documentation for layout isolation
+    // The main content is wrapped in a Box with full-height and centered alignment to ensure layout isolation.
+    // A Card component is used to visually separate the login form.
     <Box sx={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.body' }}>
       <Card sx={{ minWidth: 340, p: 4 }}>
         <Typography level="h3" sx={{ mb: 2 }}>Sign in to Smartbuy</Typography>

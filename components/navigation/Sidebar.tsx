@@ -37,6 +37,7 @@ import DialogContent from '@mui/joy/DialogContent';
 import DialogActions from '@mui/joy/DialogActions';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
+import { useNavigate } from 'react-router-dom';
 
 import ColorSchemeToggle from './ColorSchemeToggle';
 import UserDialog from '../Dialog/UserDialog';
@@ -44,41 +45,14 @@ import { closeSidebar } from '../../utils';
 import { useEffect, useState } from 'react';
 import { supabase } from '../../utils/supabaseClient';
 
-function Toggler({
-  defaultExpanded = false,
-  renderToggle,
-  children,
-}: {
-  defaultExpanded?: boolean;
-  children: React.ReactNode;
-  renderToggle: (params: {
-    open: boolean;
-    setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  }) => React.ReactNode;
-}) {
-  const [open, setOpen] = React.useState(defaultExpanded);
-  return (
-    <React.Fragment>
-      {renderToggle({ open, setOpen })}
-      <Box
-        sx={[
-          {
-            display: 'grid',
-            transition: '0.2s ease',
-            '& > *': {
-              overflow: 'hidden',
-            },
-          },
-          open ? { gridTemplateRows: '1fr' } : { gridTemplateRows: '0fr' },
-        ]}
-      >
-        {children}
-      </Box>
-    </React.Fragment>
-  );
-}
-
+/**
+ * Sidebar component for navigation.
+ * @param {Object} props - Component props.
+ * @param {function} props.setView - Function to update the current view.
+ * @param {string} props.view - Current view identifier.
+ */
 export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'orders' | 'products' | 'messages' | 'users' | 'suppliers' | 'purchaseorders' | 'tickets' | 'smscampaigns') => void, view: string }) {
+  const navigate = useNavigate();
   const [users, setUsers] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null); // Auth user
   const [userProfile, setUserProfile] = useState<any>(null); // Contextual user row
@@ -86,6 +60,9 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
   const [editName, setEditName] = useState('');
   const [editAvatar, setEditAvatar] = useState('');
   const [userDialogOpen, setUserDialogOpen] = useState(false);
+  /**
+   * Fetches the list of users from the database.
+   */
   useEffect(() => {
     async function fetchUsers() {
       const { data, error } = await supabase.from('users').select('*');
@@ -93,6 +70,10 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
     }
     fetchUsers();
 
+    /**
+     * Handles the authenticated user and fetches their profile.
+     * @param {Object} authUser - The authenticated user object.
+     */
     async function handleAuthUser(authUser: any) {
       setUser(authUser);
       if (authUser) {
@@ -127,6 +108,9 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
     return () => { listener?.subscription.unsubscribe(); };
   }, []);
 
+  /**
+   * Updates the user profile with the edited name and avatar.
+   */
   const handleEditProfile = async () => {
     if (!user) return;
     await supabase.from('users').update({ name: editName, avatar_url: editAvatar }).eq('id', user.id);
@@ -134,6 +118,11 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
     const { data: userRows } = await supabase.from('users').select('*').eq('id', user.id).single();
     setUserProfile(userRows || null);
     setEditOpen(false);
+  };
+
+  const handleNavigation = (route: string, viewName: string) => {
+    setView(viewName as any);
+    navigate(route);
   };
 
   return (
@@ -188,12 +177,15 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
         }}
         onClick={() => closeSidebar()}
       />
+      {/* Sidebar header with logo and theme toggle */}
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
         <img src="/favicon.svg" alt="Logo" style={{ width: 28, height: 28, borderRadius: 6 }} />
         <Typography level="title-lg">Smartbuy</Typography>
         <ColorSchemeToggle sx={{ ml: 'auto' }} />
       </Box>
+      {/* Search input */}
       <Input size="sm" startDecorator={<SearchRoundedIcon />} placeholder="Search" />
+      {/* Navigation list */}
       <Box
         sx={{
           minHeight: 0,
@@ -233,7 +225,7 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
             >
               <List sx={{ gap: 0.5 }}>
                 <ListItem>
-                  <ListItemButton selected={view === 'home'} onClick={() => setView('home')}>
+                  <ListItemButton selected={view === 'home'} onClick={() => handleNavigation('/', 'home')}>
                     <HomeRoundedIcon />
                     <ListItemContent>
                       <Typography level="body-sm">Home</Typography>
@@ -241,7 +233,7 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
                   </ListItemButton>
                 </ListItem>
                 <ListItem>
-                  <ListItemButton selected={view === 'orders'} onClick={() => setView('orders')}>
+                  <ListItemButton selected={view === 'orders'} onClick={() => handleNavigation('/orders', 'orders')}>
                     <ShoppingCartRoundedIcon />
                     <ListItemContent>
                       <Typography level="body-sm">Orders</Typography>
@@ -314,7 +306,7 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
                   </ListItemButton>
                 </ListItem>
                 <ListItem>
-                  <ListItemButton selected={view === 'tickets'} onClick={() => setView('tickets')}>
+                  <ListItemButton selected={view === 'tickets'} onClick={() => handleNavigation('/tickets', 'tickets')}>
                     <AssignmentRoundedIcon />
                     <ListItemContent>
                       <Typography level="body-sm">Tickets</Typography>
@@ -325,7 +317,7 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
                   </ListItemButton>
                 </ListItem>
                 <ListItem>
-                  <ListItemButton selected={view === 'users'} onClick={() => setView('users')}>
+                  <ListItemButton selected={view === 'users'} onClick={() => handleNavigation('/users', 'users')}>
                     <GroupRoundedIcon />
                     <ListItemContent>
                       <Typography level="body-sm">Users</Typography>
@@ -355,7 +347,7 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
             >
               <List sx={{ gap: 0.5 }}>
                 <ListItem>
-                  <ListItemButton selected={view === 'products'} onClick={() => setView('products')}>
+                  <ListItemButton selected={view === 'products'} onClick={() => handleNavigation('/products', 'products')}>
                     <AssignmentRoundedIcon />
                     <ListItemContent>
                       <Typography level="body-sm">Products</Typography>
@@ -363,15 +355,19 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
                   </ListItemButton>
                 </ListItem>
                 <ListItem>
-                  <ListItemButton selected={view === 'suppliers'} onClick={() => setView('suppliers')}>
+                  <ListItemButton selected={view === 'suppliers'} onClick={() => handleNavigation('/suppliers', 'suppliers')}>
                     <StorefrontIcon sx={{ mr: 0.5 }} />
-                    Suppliers
+                    <ListItemContent>
+                      <Typography level="body-sm">Suppliers</Typography>
+                    </ListItemContent>
                   </ListItemButton>
                 </ListItem>
                 <ListItem>
-                  <ListItemButton selected={view === 'purchaseorders'} onClick={() => setView('purchaseorders')}>
+                  <ListItemButton selected={view === 'purchaseorders'} onClick={() => handleNavigation('/purchase-orders', 'purchaseorders')}>
                     <AssignmentTurnedInIcon sx={{ mr: 0.5 }} />
-                    Purchase Orders
+                    <ListItemContent>
+                      <Typography level="body-sm">Purchase Orders</Typography>
+                    </ListItemContent>
                   </ListItemButton>
                 </ListItem>
               </List>
@@ -397,7 +393,7 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
             >
               <List sx={{ gap: 0.5 }}>
                 <ListItem>
-                  <ListItemButton selected={view === 'smscampaigns'} onClick={() => setView('smscampaigns')}>
+                  <ListItemButton selected={view === 'smscampaigns'} onClick={() => handleNavigation('/sms-campaigns', 'smscampaigns')}>
                     <AssignmentRoundedIcon />
                     <ListItemContent>
                       <Typography level="body-sm">SMS Campaigns</Typography>
@@ -431,6 +427,7 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
         </List>
       </Box>
       <Divider />
+      {/* User profile section */}
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', minHeight: 48 }}>
         <Avatar
           variant="outlined"
@@ -455,5 +452,44 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
         onSave={handleEditProfile}
       />
     </Sheet>
+  );
+}
+
+/**
+ * Toggler component for expandable sections.
+ * @param {Object} props - Component props.
+ * @param {boolean} [props.defaultExpanded=false] - Whether the section is expanded by default.
+ * @param {function} props.renderToggle - Function to render the toggle button.
+ * @param {React.ReactNode} props.children - Content to display inside the section.
+ */
+function Toggler({
+  defaultExpanded = false,
+  renderToggle,
+  children,
+}: {
+  defaultExpanded?: boolean;
+  children: React.ReactNode;
+  renderToggle: (params: {
+    open: boolean;
+    setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  }) => React.ReactNode;
+}) {
+  const [open, setOpen] = React.useState(defaultExpanded);
+  return (
+    <React.Fragment>
+      {renderToggle({ open, setOpen })}
+      <Box
+        sx={{
+          display: 'grid',
+          transition: '0.2s ease',
+          '& > *': {
+            overflow: 'hidden',
+          },
+          gridTemplateRows: open ? '1fr' : '0fr',
+        }}
+      >
+        {children}
+      </Box>
+    </React.Fragment>
   );
 }

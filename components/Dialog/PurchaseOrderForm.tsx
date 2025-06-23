@@ -17,16 +17,49 @@ import Chip from '@mui/joy/Chip';
 import PurchaseOrderItemsEditor, { type PurchaseOrderItem } from './PurchaseOrderItemsEditor';
 import { useEffect } from 'react';
 
+/**
+ * Props for the PurchaseOrderForm component.
+ */
 interface PurchaseOrderFormProps {
+  /**
+   * Controls the visibility of the modal.
+   */
   open: boolean;
+
+  /**
+   * Callback function to close the modal.
+   */
   onClose: () => void;
+
+  /**
+   * Callback function triggered when a purchase order is created.
+   */
   onCreated: () => void;
+
+  /**
+   * Specifies whether the form is in "add" or "edit" mode.
+   */
   mode?: 'add' | 'edit';
-  order?: any; // for edit mode
+
+  /**
+   * The purchase order object for editing.
+   */
+  order?: {
+    id: string;
+    order_number: string;
+    order_date: string;
+    status: string;
+    total: number;
+    notes: string;
+    supplier_id: string;
+  };
 }
 
 const statusOptions = ['Pending', 'Approved', 'Received', 'Cancelled'];
 
+/**
+ * A modal dialog component for adding or editing purchase orders.
+ */
 export default function PurchaseOrderForm({ open, onClose, onCreated, mode = 'add', order }: PurchaseOrderFormProps) {
   const [orderNumber, setOrderNumber] = React.useState(order?.order_number || '');
   const [orderDate, setOrderDate] = React.useState(order?.order_date || new Date().toISOString().slice(0, 10));
@@ -106,10 +139,10 @@ export default function PurchaseOrderForm({ open, onClose, onCreated, mode = 'ad
       if (!result.error && result.data && result.data[0]) {
         purchaseOrderId = result.data[0].id;
       }
-    } else {
+    } else if (order) { // Ensure 'order' is defined before accessing 'order.id'
       result = await supabase.from('PurchaseOrders').update(payload).eq('id', order.id);
     }
-    if (!result.error && mode === 'add' && purchaseOrderId && items.length > 0) {
+    if (result && !result.error && mode === 'add' && purchaseOrderId && items.length > 0) {
       // Insert items
       const itemsPayload = items.map(item => ({
         purchase_order_id: purchaseOrderId,
@@ -126,7 +159,7 @@ export default function PurchaseOrderForm({ open, onClose, onCreated, mode = 'ad
       }
     }
     setSaving(false);
-    if (result.error) {
+    if (result?.error) {
       setError(result.error.message);
       console.log('[PurchaseOrderForm] Save error:', result.error.message);
     } else {
@@ -144,10 +177,10 @@ export default function PurchaseOrderForm({ open, onClose, onCreated, mode = 'ad
   };
 
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={onClose} aria-labelledby="purchase-order-form-title">
       <ModalDialog sx={{ minWidth: 400 }}>
         <ModalClose />
-        <Typography level="title-md" sx={{ mb: 2 }}>{mode === 'edit' ? 'Edit' : 'Add'} Purchase Order</Typography>
+        <Typography id="purchase-order-form-title" level="title-md" sx={{ mb: 2 }}>{mode === 'edit' ? 'Edit' : 'Add'} Purchase Order</Typography>
         <form onSubmit={e => { e.preventDefault(); handleSave(); }}>
           <Input
             type="date"

@@ -6,12 +6,23 @@ import Input from '@mui/joy/Input';
 import Button from '@mui/joy/Button';
 import { supabase } from '../../utils/supabaseClient';
 
+// Props interface
 interface TicketFormProps {
-  open: boolean;
-  onClose: () => void;
-  onCreated?: () => void;
+  open: boolean; // Whether the modal is open
+  onClose: () => void; // Function to close the modal
+  onCreated?: () => void; // Callback function after a ticket is successfully created
 }
 
+/**
+ * TicketForm Component
+ * 
+ * A modal form for creating new tickets.
+ * 
+ * Props:
+ * - open: Whether the modal is open.
+ * - onClose: Function to close the modal.
+ * - onCreated: Optional callback function after a ticket is successfully created.
+ */
 export default function TicketForm({ open, onClose, onCreated }: TicketFormProps) {
   const [newSubject, setNewSubject] = React.useState('');
   const [newRequester, setNewRequester] = React.useState('');
@@ -25,7 +36,6 @@ export default function TicketForm({ open, onClose, onCreated }: TicketFormProps
     const payload = { subject: newSubject, requester_name: newRequester, status: 'Open' };
     console.log('[TicketForm] Creating ticket with payload:', payload);
     const { error, data } = await supabase.from('tickets').insert(payload);
-    console.log('[TicketForm] Supabase insert result:', { error, data });
     if (error) {
       setError(error.message || JSON.stringify(error));
       console.error('[TicketForm] Error creating ticket:', error);
@@ -59,7 +69,12 @@ export default function TicketForm({ open, onClose, onCreated }: TicketFormProps
             required
           />
           {error && <Typography color="danger" sx={{ mb: 1 }}>{error}</Typography>}
-          <Button type="submit" loading={creating} disabled={creating || !newSubject || !newRequester} variant="solid">
+          <Button
+            type="submit"
+            loading={creating}
+            disabled={creating || !newSubject || !newRequester}
+            variant="solid"
+          >
             Create
           </Button>
         </form>

@@ -7,7 +7,7 @@ import Button from '@mui/joy/Button';
 import { supabase } from '../../utils/supabaseClient';
 
 // Get API base URL from environment variable or default to local
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '/api';
+const API_BASE_URL = typeof process !== 'undefined' ? process.env.REACT_APP_API_BASE_URL || '/api' : '/api';
 
 interface Campaign {
   id: number;
@@ -21,11 +21,22 @@ interface PageSmsCampaignsDesktopProps {
   campaigns: Campaign[];
 }
 
+/**
+ * Desktop view for managing SMS campaigns.
+ * Displays a table of campaigns and includes a button to send a test SMS campaign.
+ *
+ * @param {PageSmsCampaignsDesktopProps} props - The props for the component.
+ * @returns {JSX.Element} The rendered component.
+ */
 export default function PageSmsCampaignsDesktop({ campaigns }: PageSmsCampaignsDesktopProps) {
   const [sending, setSending] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [success, setSuccess] = React.useState<string | null>(null);
 
+  /**
+   * Sends a test SMS campaign to the backend API.
+   * Updates the UI with success or error messages based on the response.
+   */
   async function handleSendCampaign() {
     setSending(true);
     setError(null);
@@ -39,8 +50,9 @@ export default function PageSmsCampaignsDesktop({ campaigns }: PageSmsCampaignsD
       const result = await resp.json();
       if (!resp.ok) throw new Error(result.error || 'Failed to send SMS');
       setSuccess(`Sent to ${result.sent} recipients!`);
-    } catch (err: any) {
-      setError(err.message || String(err));
+    } catch (err) {
+      console.error('Error sending SMS campaign:', err);
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
     } finally {
       setSending(false);
     }

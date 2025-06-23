@@ -33,6 +33,38 @@ This document describes the process, rationale, and best practices for achieving
 - Refactor any remaining pages/components to follow this pattern.
 - Review for any remaining layout or prop errors.
 
+## Router-Based Layout and Dynamic URL Paths
+
+The application has been migrated to a router-based layout using React Router. Each page is now accessible via a unique URL path, ensuring stricter isolation and easier navigation.
+
+### Key Changes
+1. **Dynamic Routing**:
+   - Added `react-router-dom` to manage routes dynamically.
+   - Defined routes for all main pages in `App.tsx` using `BrowserRouter` and `Routes`.
+
+2. **Updated Navigation**:
+   - Navigation components (e.g., `Sidebar`, `Header`) now use `Link` or `NavLink` for navigation.
+
+3. **Page URLs**:
+   - `/` - Dashboard
+   - `/orders` - Orders
+   - `/products` - Products
+   - `/users` - Users
+   - `/suppliers` - Suppliers
+   - `/purchase-orders` - Purchase Orders
+   - `/login` - Login
+   - `/tickets` - Tickets
+   - `/sms-campaigns` - SMS Campaigns
+
+### Benefits
+- Stricter layout isolation.
+- Easier navigation and maintainability.
+- Improved user experience with dynamic URL paths.
+
+### Next Steps
+- Test all routes for functionality and responsiveness.
+- Update any remaining static navigation links to use dynamic routing.
+
 ## Responsive Page Layout Strategy
 
 To ensure a consistent and maintainable responsive design across the application, the following strategy is adopted:

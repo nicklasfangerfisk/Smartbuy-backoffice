@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Table, TableBody, TableCell, TableHead, TableRow, Typography, ThemeProvider, createTheme } from '@mui/material';
+import { Table, TableBody, TableCell, TableHead, TableRow, Typography, ThemeProvider, createTheme, Box } from '@mui/material';
 
 interface Column {
   id: string;
@@ -30,35 +30,48 @@ const muiTheme = createTheme({
   },
 });
 
+/**
+ * GeneralTable is a reusable table component built with Material-UI.
+ * It supports dynamic columns, custom formatting, and hover effects.
+ * 
+ * Props:
+ * - columns: Array of column definitions, each with an id, label, and optional properties like minWidth, align, and format.
+ * - rows: Array of data objects to populate the table.
+ * - ariaLabel: Accessibility label for the table.
+ * - minWidth: Minimum width of the table (default: 600).
+ */
+
 const GeneralTable: React.FC<GeneralTableProps> = ({ columns, rows, ariaLabel, minWidth = 600 }) => {
   return (
     <ThemeProvider theme={muiTheme}>
-      <Table aria-label={ariaLabel} sx={{ minWidth }}>
-        <TableHead>
-          <TableRow>
-            {columns.map((column) => (
-              <TableCell
-                key={column.id}
-                align={column.align || 'left'}
-                sx={{ minWidth: column.minWidth }}
-              >
-                <Typography fontWeight="bold">{column.label}</Typography>
-              </TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {rows.map((row, rowIndex) => (
-            <TableRow key={rowIndex}>
+      <Box sx={{ overflowX: 'auto' }}> {/* Add horizontal scrolling for smaller screens */}
+        <Table aria-label={ariaLabel} sx={{ minWidth }}>
+          <TableHead>
+            <TableRow>
               {columns.map((column) => (
-                <TableCell key={column.id} align={column.align || 'left'}>
-                  {column.format ? column.format(row[column.id]) : row[column.id]}
+                <TableCell
+                  key={column.id}
+                  align={column.align || 'left'}
+                  sx={{ minWidth: column.minWidth }}
+                >
+                  <Typography fontWeight="bold">{column.label}</Typography>
                 </TableCell>
               ))}
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHead>
+          <TableBody>
+            {rows.map((row, rowIndex) => (
+              <TableRow key={rowIndex}>
+                {columns.map((column) => (
+                  <TableCell key={column.id} align={column.align || 'left'}>
+                    {column.format ? column.format(row[column.id]) : row[column.id]}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Box>
     </ThemeProvider>
   );
 };

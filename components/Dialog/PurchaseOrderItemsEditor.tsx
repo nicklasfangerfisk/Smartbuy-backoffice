@@ -6,12 +6,17 @@ import Input from '@mui/joy/Input';
 import Autocomplete from '@mui/joy/Autocomplete';
 import Box from '@mui/joy/Box';
 
-// Types for product and item
+/**
+ * Represents a product in the database.
+ */
 interface Product {
   uuid: string;
   ProductName: string;
 }
 
+/**
+ * Represents an item in the purchase order.
+ */
 export interface PurchaseOrderItem {
   product_id: string | null;
   quantity: number;
@@ -19,21 +24,48 @@ export interface PurchaseOrderItem {
   notes?: string | null;
 }
 
+/**
+ * Props for the PurchaseOrderItemsEditor component.
+ */
 interface PurchaseOrderItemsEditorProps {
+  /**
+   * The ID of the purchase order (optional).
+   */
   orderId?: string;
+
+  /**
+   * Specifies whether the table is editable.
+   */
   editable: boolean;
+
+  /**
+   * Callback function triggered when items are changed.
+   */
   onItemsChange?: (items: PurchaseOrderItem[]) => void;
+
+  /**
+   * The initial list of items.
+   */
   initialItems?: PurchaseOrderItem[];
 }
 
+/**
+ * A table component for managing purchase order items.
+ */
 export default function PurchaseOrderItemsEditor({ orderId, editable, onItemsChange, initialItems = [] }: PurchaseOrderItemsEditorProps) {
   const [items, setItems] = React.useState<PurchaseOrderItem[]>(initialItems);
   const [products, setProducts] = React.useState<Product[]>([]);
   const [loading, setLoading] = React.useState(false);
 
   React.useEffect(() => {
-    supabase.from('Products').select('uuid, ProductName').then(({ data }) => {
-      setProducts(data || []);
+    setLoading(true);
+    supabase.from('Products').select('uuid, ProductName').then(({ data, error }) => {
+      if (error) {
+        console.error('Failed to fetch products:', error.message);
+      } else {
+        setProducts(data || []);
+      }
+      setLoading(false);
     });
   }, []);
 

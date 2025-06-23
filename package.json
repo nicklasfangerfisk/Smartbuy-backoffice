@@ -38,6 +38,7 @@
     "@supabase/supabase-js": "^2.49.10",
     "dotenv": "^16.5.0",
     "process": "^0.11.10",
+    "react-router-dom": "^7.6.2",
     "twilio": "^5.7.1"
   },
   "homepage": "https://nicklasfangerfisk.github.io/Smartbuy-backoffice/"

@@ -44,6 +44,13 @@ import ProductTableForm from '../Dialog/ProductTableForm';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import ProductTableMobile from './PageProductMobile';
 
+/**
+ * ProductTable component displays a list of products in a table format.
+ * It supports adding, editing, and searching for products.
+ *
+ * @returns {JSX.Element} The rendered ProductTable component.
+ */
+
 export default function ProductTable() {
   const [products, setProducts] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(false);
@@ -73,9 +80,21 @@ export default function ProductTable() {
     fetchProducts();
   }, []);
 
+  /**
+   * Handles changes to the form inputs for adding or editing a product.
+   *
+   * @param {React.ChangeEvent<HTMLInputElement>} e - The input change event.
+   */
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
+
+  /**
+   * Handles changes to the image input for uploading a product image.
+   *
+   * @param {React.ChangeEvent<HTMLInputElement>} e - The input change event.
+   */
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {

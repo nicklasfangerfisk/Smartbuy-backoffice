@@ -14,26 +14,52 @@ import Avatar from '@mui/joy/Avatar';
 import Divider from '@mui/joy/Divider';
 import { supabase } from '../../utils/supabaseClient';
 
-interface UserDialogProps {
-  open: boolean;
-  onClose: () => void;
-  userProfile: any;
-  editName: string;
-  setEditName: (v: string) => void;
-  editAvatar: string;
-  setEditAvatar: (v: string) => void;
-  onSave: () => void;
+// Define TypeScript interface for userProfile
+interface UserProfile {
+  id: string;
+  name?: string;
+  avatar_url?: string;
+  last_login?: string;
 }
 
+// Props interface
+interface UserDialogProps {
+  open: boolean; // Whether the modal is open
+  onClose: () => void; // Function to close the modal
+  userProfile: UserProfile; // User profile data
+  editName: string; // Current name being edited
+  setEditName: (v: string) => void; // Function to update the name
+  editAvatar: string; // Current avatar URL being edited
+  setEditAvatar: (v: string) => void; // Function to update the avatar URL
+  onSave: () => void; // Function to save changes
+}
+
+/**
+ * UserDialog Component
+ * 
+ * A modal form for editing user profiles, including their name and avatar.
+ * 
+ * Props:
+ * - open: Whether the modal is open.
+ * - onClose: Function to close the modal.
+ * - userProfile: User profile data.
+ * - editName: Current name being edited.
+ * - setEditName: Function to update the name.
+ * - editAvatar: Current avatar URL being edited.
+ * - setEditAvatar: Function to update the avatar URL.
+ * - onSave: Function to save changes.
+ */
 export default function UserDialog({ open, onClose, userProfile, editName, setEditName, editAvatar, setEditAvatar, onSave }: UserDialogProps) {
   // Avatar upload state
   const [uploading, setUploading] = React.useState(false);
+  const [uploadError, setUploadError] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files && e.target.files[0];
     if (!file || !userProfile?.id) return;
     setUploading(true);
+    setUploadError(null);
     try {
       const fileExt = file.name.split('.').pop()?.replace(/\./, '') || 'png';
       const filePath = `avatars/${userProfile.id}_${Date.now()}.${fileExt}`;
@@ -44,7 +70,7 @@ export default function UserDialog({ open, onClose, userProfile, editName, setEd
       const { publicUrl } = supabase.storage.from('avatars').getPublicUrl(filePath).data;
       if (publicUrl) setEditAvatar(publicUrl);
     } catch (err) {
-      // Optionally show error to user
+      setUploadError('Failed to upload avatar. Please try again.');
       console.error('Avatar upload failed', err);
     }
     setUploading(false);
@@ -55,6 +81,7 @@ export default function UserDialog({ open, onClose, userProfile, editName, setEd
       <ModalDialog>
         <DialogTitle>Edit Profile</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'row', gap: 3, alignItems: 'flex-start' }}>
+          {/* Avatar Section */}
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 110 }}>
             <Avatar
               src={editAvatar || userProfile?.avatar_url || ''}
@@ -67,6 +94,7 @@ export default function UserDialog({ open, onClose, userProfile, editName, setEd
             </Typography>
           </Box>
           <Divider orientation="vertical" sx={{ mx: 1, alignSelf: 'stretch' }} />
+          {/* Edit Section */}
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Typography level="body-sm">Name</Typography>
             <Input
@@ -74,6 +102,7 @@ export default function UserDialog({ open, onClose, userProfile, editName, setEd
               value={editName}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditName(e.target.value)}
               sx={{ mb: 1 }}
+              required
             />
             <Typography level="body-sm">Avatar URL</Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -100,6 +129,7 @@ export default function UserDialog({ open, onClose, userProfile, editName, setEd
                 <PhotoCamera />
               </IconButton>
             </Box>
+            {uploadError && <Typography color="danger" sx={{ mt: 1 }}>{uploadError}</Typography>}
           </Box>
         </DialogContent>
         <DialogActions>
@@ -109,7 +139,7 @@ export default function UserDialog({ open, onClose, userProfile, editName, setEd
               onSave();
               onClose();
             }}
-            disabled={uploading}
+            disabled={uploading || !editName}
           >
             Save
           </Button>

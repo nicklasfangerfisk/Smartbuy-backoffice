@@ -1,3 +1,5 @@
+import { OrderStatus } from './components/Page/PageOrderDesktop';
+
 export function openSidebar() {
   if (typeof window !== 'undefined') {
     console.log('Opening sidebar...'); // Debug log
@@ -31,8 +33,8 @@ export function toggleSidebar() {
 
 export function handleOrderClick(
   orderId: string,
-  rows: Array<{ order_number_display?: string; uuid: string; date: string; status: string; customer: any }>,
-  setSelectedOrder: (order: { order_number_display?: string; uuid: string; date: string; status: string; customer: any } | null) => void,
+  rows: Array<{ order_number_display?: string; uuid: string; date: string; status: OrderStatus; customer: any }>,
+  setSelectedOrder: (order: { order_number_display?: string; uuid: string; date: string; status: OrderStatus; customer: any } | null) => void,
   setOrderDetailsOpen: (open: boolean) => void
 ) {
   const found = rows.find(row => (row.order_number_display || row.uuid) === orderId);

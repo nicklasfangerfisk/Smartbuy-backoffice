@@ -7,6 +7,14 @@ import Divider from '@mui/joy/Divider';
 import BeachAccessIcon from '@mui/icons-material/BeachAccess';
 import { ColorPaletteProp } from '@mui/joy/styles';
 
+/**
+ * Represents a single ticket item in the mobile ticket list.
+ * @property {string} id - The unique identifier for the ticket.
+ * @property {string} subject - The subject or title of the ticket.
+ * @property {'Open' | 'Pending' | 'Closed'} status - The current status of the ticket.
+ * @property {string} requester_name - The name of the person who requested the ticket.
+ * @property {string} [updated_at] - The last updated timestamp for the ticket.
+ */
 export interface TicketListMobileItem {
   id: string;
   subject: string;
@@ -15,6 +23,13 @@ export interface TicketListMobileItem {
   updated_at?: string;
 }
 
+/**
+ * Props for the TicketListMobile component.
+ * @property {TicketListMobileItem[]} tickets - The list of tickets to display.
+ * @property {(ticketId: string) => void} [onRowClick] - Callback for when a ticket row is clicked.
+ * @property {string | null} [selectedId] - The ID of the currently selected ticket.
+ * @property {'Open' | 'Pending' | 'Closed' | 'All'} [status] - The filter status for tickets.
+ */
 interface TicketListMobileProps {
   tickets: TicketListMobileItem[];
   onRowClick?: (ticketId: string) => void;
@@ -28,6 +43,13 @@ const statusColors: Record<string, { color: ColorPaletteProp; label: string }> =
   Closed: { color: 'neutral', label: 'Closed' },
 };
 
+/**
+ * TicketListMobile component displays a list of tickets in a mobile-friendly layout.
+ * It supports filtering by status and highlights the selected ticket.
+ *
+ * @param {TicketListMobileProps} props - Props for the component.
+ * @returns {JSX.Element} The rendered TicketListMobile component.
+ */
 export default function TicketListMobile({ tickets, onRowClick, selectedId, status }: TicketListMobileProps) {
   // Only show the beach splash if there are tickets, all are closed, and the filter is not set to 'Closed' or 'All'
   const allClosedSplash = tickets.length > 0 && tickets.every(t => t.status === 'Closed') && (status === 'Open');

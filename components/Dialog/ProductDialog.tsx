@@ -7,13 +7,39 @@ import DialogActions from '@mui/joy/DialogActions';
 import Button from '@mui/joy/Button';
 import Input from '@mui/joy/Input';
 
+/**
+ * Props for the ProductDialog component.
+ */
 interface ProductDialogProps {
+  /**
+   * Controls the visibility of the modal.
+   */
   open: boolean;
+
+  /**
+   * Callback function to close the modal.
+   */
   onClose: () => void;
-  product: any;
+
+  /**
+   * The product object to edit.
+   */
+  product: {
+    ProductName: string;
+    SalesPrice: number;
+    CostPrice: number;
+  } | null;
+
+  /**
+   * Callback function to save the product details.
+   * @param values - The updated product details.
+   */
   onSave: (values: { ProductName: string; SalesPrice: string; CostPrice: string }) => void;
 }
 
+/**
+ * A modal dialog component for editing product details.
+ */
 export default function ProductDialog({ open, onClose, product, onSave }: ProductDialogProps) {
   const [form, setForm] = React.useState({
     ProductName: product?.ProductName || '',
@@ -30,9 +56,9 @@ export default function ProductDialog({ open, onClose, product, onSave }: Produc
   }, [product]);
 
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={onClose} aria-labelledby="product-dialog-title">
       <ModalDialog>
-        <DialogTitle>Edit Product</DialogTitle>
+        <DialogTitle id="product-dialog-title">Edit Product</DialogTitle>
         <DialogContent>
           <Input
             name="ProductName"

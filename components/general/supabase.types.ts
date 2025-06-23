@@ -1,25 +1,33 @@
+/**
+ * Json: Represents a JSON-compatible value, including objects, arrays, strings, numbers, booleans, and null.
+ */
 export type Json =
   | string
   | number
   | boolean
   | null
   | { [key: string]: Json | undefined }
-  | Json[]
+  | Json[];
 
+/**
+ * Database: Represents the schema of the Supabase database.
+ * - public: Contains all public tables and their respective types.
+ * - Tables: Defines the structure of each table, including rows, inserts, updates, and relationships.
+ */
 export type Database = {
   public: {
     Tables: {
       OrderItems: {
         Row: {
-          "Created at": string
-          discount: number | null
-          order_uuid: string | null
-          price: number
-          "Product ID": number | null
-          product_uuid: string | null
-          quantity: number
-          unitprice: number | null
-          uuid: string
+          "Created at": string; // Timestamp when the order item was created
+          discount: number | null; // Discount applied to the order item
+          order_uuid: string | null; // UUID of the associated order
+          price: number; // Total price of the order item
+          "Product ID": number | null; // ID of the associated product
+          product_uuid: string | null; // UUID of the associated product
+          quantity: number; // Quantity of the product in the order
+          unitprice: number | null; // Unit price of the product
+          uuid: string; // Unique identifier for the order item
         }
         Insert: {
           "Created at"?: string

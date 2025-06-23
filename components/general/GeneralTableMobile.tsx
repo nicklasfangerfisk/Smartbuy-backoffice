@@ -13,14 +13,24 @@ interface GeneralTableMobileProps {
   ariaLabel: string;
 }
 
+/**
+ * GeneralTableMobile is a reusable list component optimized for mobile devices.
+ * It renders a list of items with custom rendering logic and optional dividers.
+ *
+ * Props:
+ * - items: Array of data objects to populate the list.
+ * - renderItem: Function to render each item in the list.
+ * - ariaLabel: Accessibility label for the list.
+ */
+
 const GeneralTableMobile: React.FC<GeneralTableMobileProps> = ({ items, renderItem, ariaLabel }) => {
   return (
     <Box>
       <List aria-label={ariaLabel}>
         {items.map((item, index) => (
-          <React.Fragment key={index}>
+          <React.Fragment key={index}> {/* Use index as key for simplicity */}
             <ListItem>{renderItem(item)}</ListItem>
-            {index < items.length - 1 && <ListDivider />}
+            {index < items.length - 1 && <ListDivider />} {/* Add divider between items */}
           </React.Fragment>
         ))}
       </List>

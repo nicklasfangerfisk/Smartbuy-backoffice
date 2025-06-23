@@ -14,6 +14,12 @@ import ImageIcon from '@mui/icons-material/Image';
 import Avatar from '@mui/joy/Avatar';
 import ProductTableForm from '../Dialog/ProductTableForm';
 
+/**
+ * ProductTableMobile component displays a list of products in a mobile-friendly layout.
+ * It supports adding, editing, and deleting products.
+ *
+ * @returns {JSX.Element} The rendered ProductTableMobile component.
+ */
 export default function ProductTableMobile() {
   const [products, setProducts] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(false);
@@ -21,6 +27,10 @@ export default function ProductTableMobile() {
   const [editDialogOpen, setEditDialogOpen] = React.useState(false);
   const [editProduct, setEditProduct] = React.useState<any>(null);
 
+  /**
+   * Fetches the list of products from the Supabase database.
+   * Updates the state with the fetched products.
+   */
   React.useEffect(() => {
     async function fetchProducts() {
       setLoading(true);
@@ -33,6 +43,11 @@ export default function ProductTableMobile() {
     fetchProducts();
   }, []);
 
+  /**
+   * Deletes a product by its UUID and updates the product list.
+   *
+   * @param {string} uuid - The UUID of the product to delete.
+   */
   const handleDelete = async (uuid: string) => {
     setLoading(true);
     await supabase.from('Products').delete().eq('uuid', uuid);
@@ -40,6 +55,11 @@ export default function ProductTableMobile() {
     setLoading(false);
   };
 
+  /**
+   * Handles saving a new product and updates the product list.
+   *
+   * @param {{ ProductName: string; SalesPrice: string; CostPrice: string }} values - The product details to save.
+   */
   const handleAddDialogSave = async (values: { ProductName: string; SalesPrice: string; CostPrice: string }) => {
     setLoading(true);
     await supabase.from('Products').insert([
@@ -56,6 +76,11 @@ export default function ProductTableMobile() {
     setLoading(false);
   };
 
+  /**
+   * Handles saving changes to an existing product and updates the product list.
+   *
+   * @param {{ ProductName: string; SalesPrice: string; CostPrice: string }} values - The updated product details.
+   */
   const handleEditDialogSave = async (values: { ProductName: string; SalesPrice: string; CostPrice: string }) => {
     if (!editProduct) return;
     setLoading(true);

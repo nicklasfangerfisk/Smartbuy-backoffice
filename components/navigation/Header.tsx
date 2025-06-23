@@ -2,10 +2,21 @@ import * as React from 'react';
 import GlobalStyles from '@mui/joy/GlobalStyles';
 import Sheet from '@mui/joy/Sheet';
 
+/**
+ * A responsive header component for smaller screens.
+ *
+ * This component is visible only on screens with `xs` to `md` breakpoints.
+ * It is hidden on larger screens (`md` and above).
+ *
+ * Note: The hamburger menu has been removed and is now part of the `MobileMenu` component.
+ *
+ * @returns {JSX.Element} The rendered header component.
+ */
 export default function Header() {
   return (
     <Sheet
       sx={{
+        // Display the header only on smaller screens.
         display: { xs: 'flex', md: 'none' },
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -24,9 +35,10 @@ export default function Header() {
       <GlobalStyles
         styles={(theme) => ({
           ':root': {
+            // Define a CSS variable for the header height.
             '--Header-height': '52px',
             [theme.breakpoints.up('md')]: {
-              '--Header-height': '0px',
+              '--Header-height': '0px', // Hide the header on larger screens.
             },
           },
         })}

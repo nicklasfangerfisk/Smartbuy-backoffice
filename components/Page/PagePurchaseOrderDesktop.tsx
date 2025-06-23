@@ -31,6 +31,8 @@ export default function PurchaseOrderTable({ orders: initialOrders }: PagePurcha
 
   const isMobile = useMediaQuery('(max-width:600px)');
 
+  // Fetches the list of purchase orders from the Supabase database.
+  // Updates the state with the fetched orders or sets an error message.
   useEffect(() => {
     async function fetchOrders() {
       setLoading(true);
@@ -50,8 +52,8 @@ export default function PurchaseOrderTable({ orders: initialOrders }: PagePurcha
     fetchOrders();
   }, []);
 
+  // Refreshes the list of purchase orders after a new order is created or an existing order is edited.
   const handleCreated = async () => {
-    // Refresh orders after creation
     setLoading(true);
     setError(null);
     const { data, error }: { data: any; error: any } = await supabase
@@ -66,7 +68,8 @@ export default function PurchaseOrderTable({ orders: initialOrders }: PagePurcha
     setLoading(false);
   };
 
-  // Filter orders by order number, supplier name, and status
+  // Filters the list of purchase orders based on the search query and status filter.
+  // @returns {PagePurchaseOrderMobileItem[]} The filtered list of purchase orders.
   const filteredOrders = orders.filter(order => {
     const matchesSearch =
       order.order_number?.toString().toLowerCase().includes(search.toLowerCase()) ||
@@ -137,7 +140,7 @@ export default function PurchaseOrderTable({ orders: initialOrders }: PagePurcha
         onClose={() => setAddDialogOpen(false)}
         onCreated={handleCreated}
         mode="add"
-        order={null}
+        order={undefined}
       />
       <PurchaseOrderForm
         open={editDialogOpen}

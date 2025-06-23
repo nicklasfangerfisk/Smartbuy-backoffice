@@ -7,14 +7,37 @@ import Typography from '@mui/joy/Typography';
 import Input from '@mui/joy/Input';
 import Button from '@mui/joy/Button';
 
+// Define TypeScript interface for supplier
+interface Supplier {
+  id?: number;
+  name: string;
+  contact_name?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+}
+
+// Props interface
 interface SupplierFormProps {
   open: boolean;
   onClose: () => void;
   onSaved: (newSupplierId?: number) => void;
   mode?: 'add' | 'edit';
-  supplier?: any; // for edit mode
+  supplier?: Supplier; // for edit mode
 }
 
+/**
+ * SupplierForm Component
+ * 
+ * A modal form for adding or editing supplier information.
+ * 
+ * Props:
+ * - open: Whether the modal is open.
+ * - onClose: Function to close the modal.
+ * - onSaved: Callback function after saving the supplier.
+ * - mode: 'add' or 'edit' mode for the form.
+ * - supplier: Supplier object for edit mode.
+ */
 export default function SupplierForm({ open, onClose, onSaved, mode = 'add', supplier }: SupplierFormProps) {
   const [name, setName] = React.useState(supplier?.name || '');
   const [contactName, setContactName] = React.useState(supplier?.contact_name || '');
@@ -43,7 +66,7 @@ export default function SupplierForm({ open, onClose, onSaved, mode = 'add', sup
   const handleSave = async () => {
     setSaving(true);
     setError(null);
-    const payload: any = {
+    const payload: Supplier = {
       name,
       contact_name: contactName,
       email,
@@ -62,7 +85,7 @@ export default function SupplierForm({ open, onClose, onSaved, mode = 'add', sup
       }
       return;
     } else {
-      result = await supabase.from('Suppliers').update(payload).eq('id', supplier.id);
+      result = await supabase.from('Suppliers').update(payload).eq('id', supplier?.id);
     }
     setSaving(false);
     if (result.error) {
@@ -98,6 +121,7 @@ export default function SupplierForm({ open, onClose, onSaved, mode = 'add', sup
             onChange={e => setEmail(e.target.value)}
             sx={{ mb: 2 }}
             type="email"
+            required
           />
           <Input
             placeholder="Phone"

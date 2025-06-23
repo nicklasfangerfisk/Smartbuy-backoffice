@@ -12,6 +12,42 @@ import SupplierDisplay from './SupplierDisplay';
 import SupplierForm from '../Dialog/SupplierForm';
 import Input from '@mui/joy/Input';
 
+/**
+ * Interface for supplier objects.
+ */
+interface Supplier {
+  id: string;
+  name: string;
+  email: string;
+  contact_name: string;
+  phone: string;
+  address: string;
+  image_url: string;
+}
+
+/**
+ * Utility function to upload an image to Supabase storage.
+ * @param file The image file to upload.
+ * @returns The public URL of the uploaded image.
+ */
+// Fix missing return value in uploadImage and undefined setError
+async function uploadImage(file: File): Promise<string> {
+  const fileExt = file.name.split('.').pop();
+  const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+  const { data: uploadData, error: uploadError } = await supabase.storage.from('supplierimages').upload(fileName, file);
+  if (uploadError) {
+    throw new Error('Image upload failed: ' + (uploadError as Error).message);
+  }
+  const publicUrl = supabase.storage.from('supplierimages').getPublicUrl(fileName).data.publicUrl;
+  if (!publicUrl) {
+    throw new Error('Failed to retrieve public URL for uploaded image.');
+  }
+  return publicUrl;
+}
+
+/**
+ * Component to display and manage suppliers.
+ */
 export default function Suppliers() {
   const [suppliers, setSuppliers] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(false);
@@ -42,21 +78,20 @@ export default function Suppliers() {
     fetchSuppliers();
   }, []);
 
+  // Fix uploadError type issue in handleCreateSupplier and handleSaveEdit
   async function handleCreateSupplier(e: React.FormEvent) {
     e.preventDefault();
     setCreating(true);
     setError(null);
     let image_url = '';
     if (imageFile) {
-      const fileExt = imageFile.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
-      const { data: uploadData, error: uploadError } = await supabase.storage.from('supplierimages').upload(fileName, imageFile);
-      if (uploadError) {
-        setError('Image upload failed: ' + uploadError.message);
+      try {
+        image_url = await uploadImage(imageFile);
+      } catch (error) {
+        setError((error as Error).message);
         setCreating(false);
         return;
       }
-      image_url = supabase.storage.from('supplierimages').getPublicUrl(fileName).data.publicUrl;
     }
     const { data, error } = await supabase.from('Suppliers').insert([{ ...form, image_url }]).select();
     if (!error && data && data.length > 0) {
@@ -88,15 +123,13 @@ export default function Suppliers() {
     setError(null);
     let image_url = editForm.image_url;
     if (editImageFile) {
-      const fileExt = editImageFile.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
-      const { data: uploadData, error: uploadError } = await supabase.storage.from('supplierimages').upload(fileName, editImageFile);
-      if (uploadError) {
-        setError('Image upload failed: ' + uploadError.message);
+      try {
+        image_url = await uploadImage(editImageFile);
+      } catch (error) {
+        setError((error as Error).message);
         setSavingEdit(false);
         return;
       }
-      image_url = supabase.storage.from('supplierimages').getPublicUrl(fileName).data.publicUrl;
     }
     const { data, error: updateError } = await supabase.from('Suppliers').update({ ...editForm, image_url }).eq('id', editId).select();
     if (!updateError && data && data.length > 0) {

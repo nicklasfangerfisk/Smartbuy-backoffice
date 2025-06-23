@@ -22,6 +22,21 @@ interface MobileMenuProps {
   onChange: (value: "home" | "orders" | "products" | "messages" | "users" | "suppliers" | "purchaseorders" | "tickets" | "smscampaigns") => void;
 }
 
+/**
+ * A mobile-friendly bottom navigation menu.
+ *
+ * This component provides a dynamic navigation bar for mobile devices.
+ * It uses Material-UI components and supports custom menu items.
+ *
+ * @param {MobileMenuProps} props - The props for the MobileMenu component.
+ * @param {MobileMenuItem[]} props.items - Array of menu items to display.
+ * @param {string} props.value - The currently selected menu item value.
+ * @param {function} props.onChange - Callback function triggered when the selected menu item changes.
+ *
+ * Note: The `toggleSidebar` and `closeSidebar` utility functions are used to manage the sidebar state.
+ *
+ * @returns {JSX.Element} The rendered mobile menu component.
+ */
 export default function MobileMenu({ items, value, onChange }: MobileMenuProps) {
   const muiTheme = React.useMemo(() => createTheme({
     components: {

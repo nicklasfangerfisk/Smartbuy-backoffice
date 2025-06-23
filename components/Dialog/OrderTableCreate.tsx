@@ -50,17 +50,18 @@ const OrderTableCreate: React.FC<OrderTableCreateProps> = ({
   onClose,
   onCreate,
 }) => {
-  const [products, setProducts] = React.useState<Product[]>([]);
+  // Add inline documentation for state variables and their purposes
+  const [products, setProducts] = React.useState<Product[]>([]); // List of available products fetched from the database
   const [orderItems, setOrderItems] = React.useState<OrderItemDraft[]>([
     { id: crypto.randomUUID(), product: null, quantity: 1, unitprice: 0, discount: 0 },
-  ]);
-  const [loadingProducts, setLoadingProducts] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-  const [productsError, setProductsError] = React.useState<string | null>(null);
-  const [orderDiscount, setOrderDiscount] = React.useState<number>(0);
-  const [discountDialogOpen, setDiscountDialogOpen] = React.useState(false);
-  const [pendingOrderDiscount, setPendingOrderDiscount] = React.useState<number | null>(null);
-  const [orderDiscountTouched, setOrderDiscountTouched] = React.useState(false);
+  ]); // Draft order items being created
+  const [loadingProducts, setLoadingProducts] = React.useState(false); // Loading state for fetching products
+  const [error, setError] = React.useState<string | null>(null); // Error message for invalid order submission
+  const [productsError, setProductsError] = React.useState<string | null>(null); // Error message for product fetching
+  const [orderDiscount, setOrderDiscount] = React.useState<number>(0); // Discount applied to the entire order
+  const [discountDialogOpen, setDiscountDialogOpen] = React.useState(false); // State for discount dialog visibility
+  const [pendingOrderDiscount, setPendingOrderDiscount] = React.useState<number | null>(null); // Temporary discount value before confirmation
+  const [orderDiscountTouched, setOrderDiscountTouched] = React.useState(false); // Tracks if the discount field has been modified
 
   React.useEffect(() => {
     if (open) {
@@ -74,6 +75,7 @@ const OrderTableCreate: React.FC<OrderTableCreateProps> = ({
     }
   }, [open]);
 
+  // Enhance error handling for product fetching
   React.useEffect(() => {
     if (!open) return;
     setLoadingProducts(true);
@@ -89,7 +91,7 @@ const OrderTableCreate: React.FC<OrderTableCreateProps> = ({
           SalesPrice: p.SalesPrice ?? 0
         })));
       } else {
-        setProductsError('Failed to load products.');
+        setProductsError('Failed to load products. Please try again later.');
       }
       setLoadingProducts(false);
     });
@@ -136,10 +138,13 @@ const OrderTableCreate: React.FC<OrderTableCreateProps> = ({
   };
 
   return (
-    <Modal open={open} onClose={onClose}>
-      <ModalDialog minWidth={400}>
+    <Modal open={open} onClose={onClose} aria-labelledby="create-order-modal">
+      <ModalDialog
+        aria-labelledby="create-order-modal"
+        sx={{ maxWidth: 600, width: '100%', minWidth: { xs: 300, sm: 400 } }} // Adjust width for smaller screens
+      >
         <ModalClose />
-        <Typography level="h4" sx={{ mb: 2 }}>Create Order</Typography>
+        <Typography id="create-order-modal" level="h4" sx={{ mb: 2 }}>Create Order</Typography>
         <form onSubmit={handleSubmit}>
           <FormControl sx={{ mb: 2 }} required>
             <FormLabel>Date</FormLabel>

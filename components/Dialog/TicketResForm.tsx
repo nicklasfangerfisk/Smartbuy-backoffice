@@ -9,10 +9,11 @@ import Option from '@mui/joy/Option';
 import Textarea from '@mui/joy/Textarea';
 import Button from '@mui/joy/Button';
 
+// Props interface
 interface TicketResFormProps {
-  open: boolean;
-  onClose: () => void;
-  onSubmit: (resolution: string, comment: string) => void;
+  open: boolean; // Whether the modal is open
+  onClose: () => void; // Function to close the modal
+  onSubmit: (resolution: string, comment: string) => void; // Callback function to handle form submission
 }
 
 const resolutionOptions = [
@@ -25,9 +26,17 @@ const resolutionOptions = [
   'Other',
 ];
 
+/**
+ * TicketResForm Component
+ *
+ * A modal form for resolving tickets.
+ *
+ * Props:
+ * - open: Whether the modal is open.
+ * - onClose: Function to close the modal.
+ * - onSubmit: Callback function to handle form submission with resolution and comment.
+ */
 const TicketResForm: React.FC<TicketResFormProps> = ({ open, onClose, onSubmit }) => {
-  console.debug('TicketResForm rendered, open:', open);
-
   const [resolution, setResolution] = React.useState('');
   const [resolutionComment, setResolutionComment] = React.useState('');
 
@@ -67,8 +76,12 @@ const TicketResForm: React.FC<TicketResFormProps> = ({ open, onClose, onSubmit }
             color="primary"
             disabled={!resolution}
             onClick={() => {
-              onSubmit(resolution, resolutionComment);
-              onClose();
+              try {
+                onSubmit(resolution, resolutionComment);
+                onClose();
+              } catch (error) {
+                console.error('Error during form submission:', error);
+              }
             }}
           >
             Submit

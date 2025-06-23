@@ -30,12 +30,19 @@ import GeneralTableMobile from '../general/GeneralTableMobile';
 import { handleOrderClick } from '../../utils';
 
 export interface PageOrderMobileItem {
+  /** Represents an order item in the mobile view. */
   id: string;
+  /** Date of the order. */
   date: string;
+  /** Status of the order. */
   status: 'Paid' | 'Refunded' | 'Cancelled';
+  /** Customer details. */
   customer: {
+    /** Initials of the customer's name. */
     initial: string;
+    /** Full name of the customer. */
     name: string;
+    /** Email address of the customer. */
     email: string;
   };
 }
@@ -45,14 +52,27 @@ export interface OrderTableMobileItem {
 }
 
 interface OrderTableMobileProps {
+  /** Props for the OrderTableMobile component. */
   orders: PageOrderMobileItem[];
+  /** Callback for when an order is clicked. */
   onRowClick?: (orderId: string) => void;
+  /** Whether the order details modal is open. */
   orderDetailsOpen: boolean;
+  /** The currently selected order. */
   selectedOrder: any;
+  /** Function to fetch items for a specific order. */
   fetchOrderItems: (orderUuid: string) => Promise<any[]>;
+  /** Callback to close the order details modal. */
   onCloseOrderDetails: () => void;
 }
 
+/**
+ * OrderTableMobile component displays a list of orders in a mobile-friendly layout.
+ * It supports viewing order details in a modal.
+ *
+ * @param {OrderTableMobileProps} props - Props for the component.
+ * @returns {JSX.Element} The rendered OrderTableMobile component.
+ */
 export default function OrderTableMobile({ orders, onRowClick, orderDetailsOpen, selectedOrder, fetchOrderItems, onCloseOrderDetails }: OrderTableMobileProps) {
   return (
     <Box sx={{ width: '100vw', minHeight: '100dvh', bgcolor: 'background.body', borderRadius: 2, boxShadow: 2, p: { xs: 2, md: 4 }, position: 'fixed', inset: 0, zIndex: 12000 }}>

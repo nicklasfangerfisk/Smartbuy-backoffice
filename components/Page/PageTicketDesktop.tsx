@@ -32,15 +32,36 @@ import Select from '@mui/joy/Select';
 import Option from '@mui/joy/Option';
 import { useTicketActivities } from '../hooks/useTickets';
 
-export default function TicketList({ ...props }) {
-  const [search, setSearch] = React.useState('');
-  const [status, setStatus] = React.useState<'Open' | 'Pending' | 'Closed' | 'All'>('Open');
-  const [createOpen, setCreateOpen] = React.useState(false);
-  const { tickets, loading, error, refresh } = useTickets();
+/**
+ * Props for the TicketList component.
+ * @property {string} [search] - The search term for filtering tickets.
+ * @property {'Open' | 'Pending' | 'Closed' | 'All'} [status] - The status filter for tickets.
+ * @property {boolean} [createOpen] - Whether the create ticket modal is open.
+ * @property {Function} [refresh] - Function to refresh the ticket list.
+ */
+interface TicketListProps {
+  search?: string;
+  status?: 'Open' | 'Pending' | 'Closed' | 'All';
+  createOpen?: boolean;
+  refresh?: () => void;
+}
+
+/**
+ * TicketList component displays a list of tickets and their details.
+ * It supports filtering, searching, and managing ticket activities.
+ *
+ * @param {TicketListProps} props - Props for the component.
+ * @returns {JSX.Element} The rendered TicketList component.
+ */
+export default function TicketList({ search = '', status = 'Open', createOpen = false, refresh }: TicketListProps) {
+  const [searchTerm, setSearch] = React.useState(search);
+  const [ticketStatus, setStatus] = React.useState<'Open' | 'Pending' | 'Closed' | 'All'>(status);
+  const [createOpenState, setCreateOpen] = React.useState(createOpen);
+  const { tickets, loading, error, refresh: refreshTickets } = useTickets();
   const filtered = tickets.filter((ticket: any) => {
-    const statusMatch = (status === 'All' || ticket.status === status);
-    const subjectMatch = ticket.subject?.toLowerCase().includes(search.toLowerCase());
-    const requesterMatch = ticket.requester_name?.toLowerCase().includes(search.toLowerCase());
+    const statusMatch = (ticketStatus === 'All' || ticket.status === ticketStatus);
+    const subjectMatch = ticket.subject?.toLowerCase().includes(searchTerm.toLowerCase());
+    const requesterMatch = ticket.requester_name?.toLowerCase().includes(searchTerm.toLowerCase());
     return statusMatch && (subjectMatch || requesterMatch);
   });
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
@@ -67,6 +88,10 @@ export default function TicketList({ ...props }) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [activities]);
 
+  /**
+   * Sends a new activity message for the selected ticket.
+   * Updates the activity list upon success.
+   */
   async function handleSendActivity() {
     if (!activityMessage.trim() || !selectedTicket) return;
     setSending(true);
@@ -89,35 +114,48 @@ export default function TicketList({ ...props }) {
     refreshActivities();
   }
 
+  /**
+   * Resolves the selected ticket by updating its status to 'Closed'.
+   *
+   * @param {string} ticketId - The ID of the ticket to resolve.
+   */
   async function handleResolveTicket(ticketId: string) {
     const { error } = await supabase.from('tickets').update({ status: 'Closed' }).eq('id', ticketId);
     if (!error) {
       setSnackbarMessage('Ticket was resolved successfully');
       setSnackbarOpen(true);
-      refresh();
+      refreshTickets();
     }
     // Optionally handle error
   }
 
+  /**
+   * Reopens a closed ticket by updating its status to 'Open'.
+   *
+   * @param {string} ticketId - The ID of the ticket to reopen.
+   */
   async function handleReopenTicket(ticketId: string) {
     const { error } = await supabase.from('tickets').update({ status: 'Open' }).eq('id', ticketId);
     if (!error) {
-      setSnackbarMessage('The ticket was reopened successfully');
+      setSnackbarMessage('Ticket was reopened successfully');
       setSnackbarOpen(true);
-      setStatus('Open');
-      setSelectedId(ticketId);
-      refresh();
+      refreshTickets();
     }
     // Optionally handle error
   }
 
-  // Formatting helpers for message input
+  /**
+   * Inserts formatting characters at the cursor position in the message input.
+   *
+   * @param {string} before - The text to insert before the selected text.
+   * @param {string} [after] - The text to insert after the selected text.
+   */
   function insertAtCursor(before: string, after: string = before) {
-    const textarea = document.querySelector('textarea[aria-label="Message"]') as HTMLTextAreaElement;
+    const textarea = document.querySelector('textarea[aria-label="Message"]') as HTMLTextAreaElement | null;
     if (!textarea) return;
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
-    const value = activityMessage;
+    const value = textarea.value;
     const selected = value.substring(start, end);
     let newValue = value.substring(0, start) + before + selected + after + value.substring(end);
     setActivityMessage(newValue);
@@ -126,8 +164,9 @@ export default function TicketList({ ...props }) {
       textarea.setSelectionRange(start + before.length, end + before.length + selected.length);
     }, 0);
   }
-  function handleBold() { insertAtCursor('**', '**'); }
-  function handleItalic() { insertAtCursor('_', '_'); }
+
+  const handleBold = () => { insertAtCursor('**', '**'); }
+  const handleItalic = () => { insertAtCursor('*', '*'); }
   function handleStrike() { insertAtCursor('~~', '~~'); }
   function handleBullet() { insertAtCursor('\n- ', ''); }
 
@@ -148,6 +187,10 @@ export default function TicketList({ ...props }) {
   const allClosedSplash = filtered.length > 0 && filtered.every(t => t.status === 'Closed') && (status === 'Open');
 
   if (isMobile) {
+    /**
+     * Render the mobile-specific layout for tickets.
+     * Includes a splash screen if all tickets are closed.
+     */
     if (allClosedSplash) {
       return (
         <Box sx={{
@@ -302,7 +345,7 @@ export default function TicketList({ ...props }) {
                 </Box>
               }
               sx={{
-                '& textarea:first-of-type': {
+                textarea: {
                   minHeight: 72,
                   background: '#f7f8fa',
                 },
@@ -321,6 +364,10 @@ export default function TicketList({ ...props }) {
   }
 
   // Desktop view
+  /**
+   * Render the desktop-specific layout for tickets.
+   * Includes a ticket list and a detailed view for the selected ticket.
+   */
   if (allClosedSplash) {
     return (
       <Box sx={{
@@ -627,7 +674,7 @@ export default function TicketList({ ...props }) {
                       </Stack>
                     }
                     sx={{
-                      '& textarea:first-of-type': {
+                      textarea: {
                         minHeight: 72,
                         background: '#f7f8fa',
                       },

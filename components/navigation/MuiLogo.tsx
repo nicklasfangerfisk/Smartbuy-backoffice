@@ -1,6 +1,14 @@
 import * as React from 'react';
 import AspectRatio, { AspectRatioProps } from '@mui/joy/AspectRatio';
 
+/**
+ * A component that renders the Material-UI logo.
+ *
+ * This component uses an SVG wrapped in an `AspectRatio` component to maintain a consistent aspect ratio.
+ *
+ * @param {AspectRatioProps} props - Props passed to the underlying `AspectRatio` component.
+ * @returns {JSX.Element} The rendered Material-UI logo component.
+ */
 export default function MuiLogo(props: AspectRatioProps) {
   const { sx, ...other } = props;
   return (

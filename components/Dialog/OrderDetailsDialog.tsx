@@ -114,3 +114,10 @@ export default function OrderDetailsDialog({ open, onClose, selectedOrder, fetch
     </Modal>
   );
 }
+
+// Inline documentation for layout isolation
+// The dialog content is wrapped in a Modal and ModalDialog for visual separation.
+// Box components are used for organizing sections with proper spacing and alignment.
+
+// Inline documentation for prop validation
+// The props (open, onClose, selectedOrder, fetchOrderItems) are validated using TypeScript to ensure correct usage.

@@ -43,7 +43,7 @@ import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
 
-type OrderStatus = 'Paid' | 'Refunded' | 'Cancelled';
+export type OrderStatus = 'Paid' | 'Refunded' | 'Cancelled';
 
 type Customer = {
   initial: string;
@@ -109,15 +109,48 @@ function RowMenu() {
   );
 }
 
-export default function OrderTable() {
+// Add prop validation for OrderTable
+/**
+ * Props for the OrderTable component.
+ * @property {OrderRow[]} rows - Array of order rows to display in the table.
+ * @property {(orderId: string) => void} [onRowClick] - Callback for when a row is clicked.
+ * @property {boolean} orderDetailsOpen - Whether the order details modal is open.
+ * @property {OrderRow | null} selectedOrder - The currently selected order.
+ * @property {(orderUuid: string) => Promise<any[]>} fetchOrderItems - Function to fetch items for a specific order.
+ * @property {() => void} onCloseOrderDetails - Callback to close the order details modal.
+ */
+interface OrderTableProps {
+  rows: OrderRow[];
+  onRowClick?: (orderId: string) => void;
+  orderDetailsOpen: boolean;
+  selectedOrder: OrderRow | null;
+  fetchOrderItems: (orderUuid: string) => Promise<any[]>;
+  onCloseOrderDetails: () => void;
+}
+
+// Add inline documentation for the OrderTable component
+/**
+ * OrderTable component displays a list of orders in a table format.
+ * It supports filtering, searching, and viewing order details.
+ *
+ * @param {OrderTableProps} props - Props for the component.
+ * @returns {JSX.Element} The rendered OrderTable component.
+ */
+export default function OrderTable({
+  rows: initialRows,
+  onRowClick,
+  orderDetailsOpen,
+  selectedOrder,
+  onCloseOrderDetails,
+}: OrderTableProps) {
+  const [rows, setRows] = React.useState<OrderRow[]>(initialRows);
   const [order, setOrder] = React.useState<Order>('desc');
   const [selected, setSelected] = React.useState<readonly string[]>([]);
-  const [rows, setRows] = React.useState<OrderRow[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   // Add state for order details modal
-  const [orderDetailsOpen, setOrderDetailsOpen] = React.useState(false);
-  const [selectedOrder, setSelectedOrder] = React.useState<OrderRow | null>(null);
+  const [orderDetailsOpenState, setOrderDetailsOpen] = React.useState(false);
+  const [selectedOrderState, setSelectedOrder] = React.useState<OrderRow | null>(null);
   // Add state for order items loading and data
   const [orderItems, setOrderItems] = React.useState<{ id: string; name?: string; quantity?: number }[]>([]);
   const [orderItemsLoading, setOrderItemsLoading] = React.useState(false);
@@ -144,6 +177,11 @@ export default function OrderTable() {
   const isMobile = useMediaQuery('(max-width:600px)');
 
   // Move fetchOrders outside useEffect so it can be called after order creation
+  // Add inline documentation for the fetchOrders function
+  /**
+   * Fetches the list of orders from the Supabase database.
+   * Maps the fetched data to the OrderRow structure and updates the state.
+   */
   async function fetchOrders() {
     setLoading(true);
     const { data, error } = await supabase
@@ -154,7 +192,7 @@ export default function OrderTable() {
       const mapped = data.map((order: any) => ({
         uuid: order.uuid,
         date: order.date || order.created_at || '',
-        status: order.status || 'Paid',
+        status: (order.status as OrderStatus) || 'Paid',
         customer: order.customer
           ? order.customer
           : {
@@ -198,9 +236,8 @@ export default function OrderTable() {
     console.log('Customer filter updated:', customerFilter);
   }, [customerFilter]);
 
-  // Move fetchOrderItems outside of useEffect so it can be passed as a prop
-  async function fetchOrderItems(orderUuid: string) {
-    // Join OrderItems with Products to get ProductName
+  // Fix duplicate identifier for fetchOrderItems by renaming the local function
+  async function fetchOrderItemsLocal(orderUuid: string) {
     const { data, error } = await supabase
       .from('OrderItems')
       .select('*, Products:product_uuid(ProductName)')
@@ -230,6 +267,12 @@ export default function OrderTable() {
     return matchesSearch && statusMatch;
   });
 
+  // Add inline documentation for the renderFilters function
+  /**
+   * Renders the filter controls for the table, including status, category, and customer filters.
+   *
+   * @returns {JSX.Element} The rendered filter controls.
+   */
   const renderFilters = () => (
     <React.Fragment>
       <FormControl size="sm">
@@ -278,6 +321,13 @@ export default function OrderTable() {
   );
 
   // Update handleCreateOrder to accept orderDiscount
+  // Add inline documentation for the handleCreateOrder function
+  /**
+   * Handles the creation of a new order and its associated items.
+   *
+   * @param {{ product_uuid: string | null; quantity: number; unitprice: number; discount: number }[]} orderItems - List of items to add to the order.
+   * @param {number} orderDiscount - Discount applied to the entire order.
+   */
   async function handleCreateOrder(orderItems: { product_uuid: string | null; quantity: number; unitprice: number; discount: number }[], orderDiscount: number) {
     setCreating(true);
     // 1. Create the order with order-level discount
@@ -333,11 +383,21 @@ export default function OrderTable() {
     setNewOrder({ date: '', status: 'Paid', customer_name: '', customer_email: '' });
   };
 
+  // Add inline documentation for the handleOrderDetailsOpen function
+  /**
+   * Opens the order details modal for a specific order.
+   *
+   * @param {OrderRow} order - The order to view details for.
+   */
   const handleOrderDetailsOpen = (order: OrderRow) => {
     setSelectedOrder(order);
     setOrderDetailsOpen(true);
   };
 
+  // Add inline documentation for the handleOrderDetailsClose function
+  /**
+   * Closes the order details modal and clears the selected order.
+   */
   const handleOrderDetailsClose = () => {
     setOrderDetailsOpen(false);
     setSelectedOrder(null);
@@ -351,21 +411,30 @@ export default function OrderTable() {
     customer: row.customer,
   }));
 
+  // Add inline documentation for the mobile rendering logic
   if (isMobile) {
-    // Move all mobile-specific logic and rendering to OrderTableMobile
+    /**
+     * Render the mobile-specific layout using the PageOrderMobile component.
+     * Passes necessary props for handling order details and interactions.
+     */
     return (
       <PageOrderMobile
         orders={orderListItems}
         onRowClick={(orderId: string) => {
           handleOrderClick(orderId, rows, setSelectedOrder, setOrderDetailsOpen);
         }}
-        orderDetailsOpen={orderDetailsOpen}
-        selectedOrder={selectedOrder}
-        fetchOrderItems={fetchOrderItems}
+        orderDetailsOpen={orderDetailsOpenState}
+        selectedOrder={selectedOrderState}
+        fetchOrderItems={fetchOrderItemsLocal}
         onCloseOrderDetails={() => setOrderDetailsOpen(false)}
       />
     );
   }
+  // Add inline documentation for the desktop rendering logic
+  /**
+   * Render the desktop-specific layout with a table displaying orders.
+   * Includes search, filters, and a button to create new orders.
+   */
   return (
     <Box sx={{ width: '100%', minHeight: '100dvh', bgcolor: 'background.body', borderRadius: 2, boxShadow: 2, p: 4 }}>
       <Typography level="h2" sx={{ mb: 2, textAlign: 'left' }}>Orders</Typography>
@@ -465,7 +534,7 @@ export default function OrderTable() {
         open={orderDetailsOpen}
         onClose={handleOrderDetailsClose}
         selectedOrder={selectedOrder}
-        fetchOrderItems={fetchOrderItems}
+        fetchOrderItems={fetchOrderItemsLocal}
       />
       <Modal
         open={createOpen}

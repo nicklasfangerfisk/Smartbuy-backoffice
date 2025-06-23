@@ -5,6 +5,15 @@ import type { Database } from '../../components/general/supabase.types';
 type Ticket = Database['public']['Tables']['tickets']['Row'];
 type TicketActivity = Database['public']['Tables']['ticketactivities']['Row'];
 
+/**
+ * Custom hook to fetch and manage tickets from the database.
+ *
+ * @returns {Object} An object containing:
+ * - `tickets`: Array of tickets.
+ * - `loading`: Boolean indicating if data is being loaded.
+ * - `error`: Error message, if any.
+ * - `refresh`: Function to refresh the tickets data.
+ */
 export function useTickets() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(false);
@@ -27,6 +36,16 @@ export function useTickets() {
   return { tickets, loading, error, refresh: fetchTickets };
 }
 
+/**
+ * Custom hook to fetch and manage activities for a specific ticket.
+ *
+ * @param {string | null} ticketId - The ID of the ticket to fetch activities for.
+ * @returns {Object} An object containing:
+ * - `activities`: Array of ticket activities.
+ * - `loading`: Boolean indicating if data is being loaded.
+ * - `error`: Error message, if any.
+ * - `refresh`: Function to refresh the activities data.
+ */
 export function useTicketActivities(ticketId: string | null) {
   const [activities, setActivities] = useState<TicketActivity[]>([]);
   const [loading, setLoading] = useState(false);

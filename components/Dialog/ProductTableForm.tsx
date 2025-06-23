@@ -7,13 +7,39 @@ import DialogActions from '@mui/joy/DialogActions';
 import Button from '@mui/joy/Button';
 import Input from '@mui/joy/Input';
 
+/**
+ * Props for the ProductTableForm component.
+ */
 interface ProductTableFormProps {
+  /**
+   * Controls the visibility of the modal.
+   */
   open: boolean;
+
+  /**
+   * Callback function to close the modal.
+   */
   onClose: () => void;
-  product: any;
+
+  /**
+   * The product object to edit or add.
+   */
+  product: {
+    ProductName: string;
+    SalesPrice: number;
+    CostPrice: number;
+  } | null;
+
+  /**
+   * Callback function to save the product details.
+   * @param values - The updated product details.
+   */
   onSave: (values: { ProductName: string; SalesPrice: string; CostPrice: string }) => void;
 }
 
+/**
+ * A modal dialog component for adding or editing product details.
+ */
 export default function ProductTableForm({ open, onClose, product, onSave }: ProductTableFormProps) {
   const [form, setForm] = React.useState({
     ProductName: product?.ProductName || '',
@@ -37,9 +63,9 @@ export default function ProductTableForm({ open, onClose, product, onSave }: Pro
   };
 
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={onClose} aria-labelledby="product-table-form-title">
       <ModalDialog>
-        <DialogTitle>{product ? 'Edit Product' : 'Add Product'}</DialogTitle>
+        <DialogTitle id="product-table-form-title">{product ? 'Edit Product' : 'Add Product'}</DialogTitle>
         <DialogContent>
           <Input
             name="ProductName"
