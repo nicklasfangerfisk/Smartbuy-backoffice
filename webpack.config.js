@@ -8,7 +8,6 @@ const extensions = ['.tsx', '.ts', '.js'];
 module.exports = {
   entry: './index.tsx',
   output: {
-    filename: 'bundle.js',
     path: path.resolve(__dirname, 'dist'),
   },
   resolve: {

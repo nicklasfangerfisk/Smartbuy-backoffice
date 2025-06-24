@@ -2,3 +2,6 @@ node_modules
 .vercel
 .env
 .github/workflows/deploy.yml
+# Ignore bundle.js to prevent tracking
+public/bundle.js
+dist/bundle.js
