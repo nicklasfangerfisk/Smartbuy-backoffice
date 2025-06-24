@@ -31,7 +31,7 @@
     "@mui/styled-engine": "^5.16.14",
     "@mui/system": "^5.17.1",
     "@supabase/auth-js": "^2.70.0",
-    "@supabase/supabase-js": "^2.49.10",
+    "@supabase/supabase-js": "^2.50.1",
     "dotenv": "^16.5.0",
     "process": "^0.11.10",
     "react-router-dom": "^7.6.2",

@@ -6,6 +6,11 @@ import Typography from '@mui/joy/Typography';
 import Divider from '@mui/joy/Divider';
 import BeachAccessIcon from '@mui/icons-material/BeachAccess';
 import { ColorPaletteProp } from '@mui/joy/styles';
+import { useNavigate } from 'react-router-dom';
+import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
+import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
+import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
+import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 
 /**
  * Represents a single ticket item in the mobile ticket list.
@@ -51,6 +56,8 @@ const statusColors: Record<string, { color: ColorPaletteProp; label: string }> =
  * @returns {JSX.Element} The rendered TicketListMobile component.
  */
 export default function TicketListMobile({ tickets, onRowClick, selectedId, status }: TicketListMobileProps) {
+  const navigate = useNavigate();
+
   // Only show the beach splash if there are tickets, all are closed, and the filter is not set to 'Closed' or 'All'
   const allClosedSplash = tickets.length > 0 && tickets.every(t => t.status === 'Closed') && (status === 'Open');
 

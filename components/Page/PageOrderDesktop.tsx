@@ -42,6 +42,11 @@ import AutorenewRoundedIcon from '@mui/icons-material/AutorenewRounded';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
+import fonts from '../../theme/fonts';
+
+// Apply font size to Typography components
+// Update font size to use small instead of medium
+const typographyStyles = { fontSize: fonts.sizes.small };
 
 export type OrderStatus = 'Paid' | 'Refunded' | 'Cancelled';
 
@@ -437,11 +442,11 @@ export default function OrderTable({
    */
   return (
     <Box sx={{ width: '100%', minHeight: '100dvh', bgcolor: 'background.body', borderRadius: 2, boxShadow: 2, p: 4 }}>
-      <Typography level="h2" sx={{ mb: 2, textAlign: 'left' }}>Orders</Typography>
+      <Typography level="h2" sx={{ mb: 2, textAlign: 'left', fontSize: fonts.sizes.xlarge }}>Orders</Typography>
       <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <Input
           placeholder="Search orders..."
-          sx={{ flex: 1 }}
+          sx={{ flex: 1, ...typographyStyles }}
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
@@ -449,16 +454,17 @@ export default function OrderTable({
           placeholder="Filter status"
           value={statusFilter}
           onChange={(_, value) => setStatusFilter(value ?? '')}
-          sx={{ minWidth: 160 }}
+          sx={{ minWidth: 160, ...typographyStyles }}
         >
           <Option value="">All Statuses</Option>
           {statusOptions.map(status => (
-            <Option key={status} value={status}>{status}</Option>
+            <Option key={status} value={status} sx={typographyStyles}>{status}</Option>
           ))}
         </Select>
         <Button
           onClick={handleOpenCreate}
           variant="solid"
+          sx={typographyStyles}
         >
           Create Order
         </Button>
@@ -468,18 +474,18 @@ export default function OrderTable({
         <Table aria-label="Orders" sx={{ minWidth: 800 }}>
           <thead>
             <tr>
-              <th>Order #</th>
-              <th>Date</th>
-              <th>Status</th>
-              <th>Customer</th>
-              <th>Total</th>
+              <th style={typographyStyles}>Order #</th>
+              <th style={typographyStyles}>Date</th>
+              <th style={typographyStyles}>Status</th>
+              <th style={typographyStyles}>Customer</th>
+              <th style={typographyStyles}>Total</th>
               <th style={{ width: 120 }} />
             </tr>
           </thead>
           <tbody>
             {filteredRows.length === 0 && !loading && (
               <tr>
-                <td colSpan={6} style={{ textAlign: 'center', color: '#888' }}>No orders found.</td>
+                <td colSpan={6} style={{ textAlign: 'center', color: '#888', ...typographyStyles }}>No orders found.</td>
               </tr>
             )}
             {filteredRows.map((row) => (
@@ -488,8 +494,8 @@ export default function OrderTable({
                 onClick={() => handleOrderDetailsOpen(row)}
                 style={{ cursor: 'pointer' }}
               >
-                <td>{row.order_number_display || '-'}</td>
-                <td>{new Date(row.date).toLocaleString()}</td>
+                <td style={typographyStyles}>{row.order_number_display || '-'}</td>
+                <td style={typographyStyles}>{new Date(row.date).toLocaleString()}</td>
                 <td>
                   <Chip
                     variant="soft"
@@ -501,7 +507,7 @@ export default function OrderTable({
                         : 'neutral'
                     }
                     size="sm"
-                    sx={{ textTransform: 'capitalize' }}
+                    sx={{ textTransform: 'capitalize', ...typographyStyles }}
                   >
                     {row.status}
                   </Chip>
@@ -510,16 +516,16 @@ export default function OrderTable({
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Avatar size="sm">{row.customer.initial}</Avatar>
                     <div>
-                      <Typography level="body-xs" fontWeight="md">
+                      <Typography level="body-xs" fontWeight="md" sx={typographyStyles}>
                         {row.customer.name}
                       </Typography>
-                      <Typography level="body-xs" sx={{ color: 'text.secondary' }}>
+                      <Typography level="body-xs" sx={{ color: 'text.secondary', ...typographyStyles }}>
                         {row.customer.email}
                       </Typography>
                     </div>
                   </Box>
                 </td>
-                <td>
+                <td style={typographyStyles}>
                   {typeof row.order_total === 'number' ? `$${row.order_total.toFixed(2)}` : '-'}
                 </td>
                 <td>

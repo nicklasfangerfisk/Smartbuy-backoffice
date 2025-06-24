@@ -2,6 +2,10 @@ import * as React from 'react';
 import Box from '@mui/joy/Box';
 import Typography from '@mui/joy/Typography';
 import GeneralTableMobile from '../general/GeneralTableMobile';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../../utils/supabaseClient';
+import LinearProgress from '@mui/joy/LinearProgress';
+import { format } from 'date-fns';
 
 /**
  * Mobile-friendly view for displaying SMS campaigns.
@@ -21,27 +25,60 @@ import GeneralTableMobile from '../general/GeneralTableMobile';
  * @property {string} date - The date the campaign was created or sent.
  */
 export interface PageSmsCampaignsMobileItem {
-  id: number;
+  id: string;
+  CampaignNumber: string;
   name: string;
-  sent: number;
   status: string;
-  date: string;
+  scheduled_at: string | null;
+  sent_at: string | null;
+  recipients: string[];
+  created_at: string;
 }
 
-const PageSmsCampaignsMobile: React.FC<{ campaigns: PageSmsCampaignsMobileItem[] }> = ({ campaigns }) => {
+const PageSmsCampaignsMobile: React.FC = () => {
+  const [campaigns, setCampaigns] = React.useState<PageSmsCampaignsMobileItem[]>([]);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    async function fetchCampaigns() {
+      setLoading(true);
+      setError(null);
+      const { data, error } = await supabase
+        .from('sms_campaigns')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) {
+        setError(error.message);
+        setCampaigns([]);
+      } else if (data) {
+        setCampaigns(data);
+      }
+      setLoading(false);
+    }
+    fetchCampaigns();
+  }, []);
+
   return (
-    <GeneralTableMobile
-      items={campaigns}
-      renderItem={(campaign) => (
-        <Box>
-          <Typography fontWeight="bold">Name: {campaign.name}</Typography>
-          <Typography>Sent: {campaign.sent}</Typography>
-          <Typography>Status: {campaign.status}</Typography>
-          <Typography>Date: {campaign.date}</Typography>
-        </Box>
-      )}
-      ariaLabel="SMS Campaigns Mobile View"
-    />
+    <>
+      {loading && <LinearProgress />}
+      {error && <Typography color="danger">Error: {error}</Typography>}
+      <GeneralTableMobile
+        items={campaigns}
+        renderItem={(campaign) => (
+          <Box>
+            <Typography fontWeight="bold">Campaign #: {campaign.CampaignNumber}</Typography>
+            <Typography>Name: {campaign.name}</Typography>
+            <Typography>Status: {campaign.status}</Typography>
+            <Typography>Scheduled: {campaign.scheduled_at ? format(new Date(campaign.scheduled_at), 'yyyy-MM-dd HH:mm') : '-'}</Typography>
+            <Typography>Sent: {campaign.sent_at ? format(new Date(campaign.sent_at), 'yyyy-MM-dd HH:mm') : '-'}</Typography>
+            <Typography>Recipients: {campaign.recipients?.length ?? 0}</Typography>
+          </Box>
+        )}
+        ariaLabel="SMS Campaigns Mobile View"
+      />
+    </>
   );
 };
 

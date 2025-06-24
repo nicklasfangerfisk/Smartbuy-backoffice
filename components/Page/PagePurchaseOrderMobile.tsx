@@ -2,6 +2,7 @@ import * as React from 'react';
 import Box from '@mui/joy/Box';
 import Typography from '@mui/joy/Typography';
 import GeneralTableMobile from '../general/GeneralTableMobile';
+import { useNavigate } from 'react-router-dom';
 
 /**
  * Represents a purchase order item in the mobile view.
@@ -33,20 +34,24 @@ export interface PagePurchaseOrderMobileItem {
  * @returns {JSX.Element} The rendered PagePurchaseOrderMobile component.
  */
 const PagePurchaseOrderMobile: React.FC<{ orders: PagePurchaseOrderMobileItem[] }> = ({ orders }) => {
+  const navigate = useNavigate();
+
   return (
-    <GeneralTableMobile
-      items={orders}
-      renderItem={(order) => (
-        <Box>
-          <Typography fontWeight="bold">Order Number: {order.order_number}</Typography>
-          <Typography>Order Date: {order.order_date}</Typography>
-          <Typography>Status: {order.status}</Typography>
-          <Typography>Total: ${order.total.toFixed(2)}</Typography>
-          <Typography>Supplier: {order.supplier_name}</Typography>
-        </Box>
-      )}
-      ariaLabel="Purchase Orders Mobile View"
-    />
+    <>
+      <GeneralTableMobile
+        items={orders}
+        renderItem={(order) => (
+          <Box>
+            <Typography fontWeight="bold">Order Number: {order.order_number}</Typography>
+            <Typography>Order Date: {order.order_date}</Typography>
+            <Typography>Status: {order.status}</Typography>
+            <Typography>Total: ${order.total.toFixed(2)}</Typography>
+            <Typography>Supplier: {order.supplier_name}</Typography>
+          </Box>
+        )}
+        ariaLabel="Purchase Orders Mobile View"
+      />
+    </>
   );
 };
 

@@ -17,6 +17,7 @@ import Menu from '@mui/joy/Menu';
 import MenuButton from '@mui/joy/MenuButton';
 import MenuItem from '@mui/joy/MenuItem';
 import Dropdown from '@mui/joy/Dropdown';
+import { useNavigate } from 'react-router-dom';
 
 import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
@@ -24,6 +25,10 @@ import BlockIcon from '@mui/icons-material/Block';
 import AutorenewRoundedIcon from '@mui/icons-material/AutorenewRounded';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
+import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
+import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
+import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
+import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import OrderTableDetails from '../Dialog/OrderTableDetails';
 import { supabase } from '../../utils/supabaseClient';
 import GeneralTableMobile from '../general/GeneralTableMobile';
@@ -74,29 +79,33 @@ interface OrderTableMobileProps {
  * @returns {JSX.Element} The rendered OrderTableMobile component.
  */
 export default function OrderTableMobile({ orders, onRowClick, orderDetailsOpen, selectedOrder, fetchOrderItems, onCloseOrderDetails }: OrderTableMobileProps) {
+  const navigate = useNavigate();
+
   return (
-    <Box sx={{ width: '100vw', minHeight: '100dvh', bgcolor: 'background.body', borderRadius: 2, boxShadow: 2, p: { xs: 2, md: 4 }, position: 'fixed', inset: 0, zIndex: 12000 }}>
-      <Typography level="h2" sx={{ mb: 2, textAlign: 'left' }}>Orders</Typography>
-      <GeneralTableMobile
-        items={orders}
-        renderItem={(order) => (
-          <Box
-            onClick={() => onRowClick?.(order.id)}
-            sx={{ cursor: 'pointer' }}
-          >
-            <Typography>{order.date}</Typography>
-            <Typography>{order.status}</Typography>
-            <Typography>{order.customer.name}</Typography>
-          </Box>
-        )}
-        ariaLabel="Orders Mobile View"
-      />
-      <OrderTableDetails
-        open={orderDetailsOpen}
-        onClose={onCloseOrderDetails}
-        selectedOrder={selectedOrder}
-        fetchOrderItems={fetchOrderItems}
-      />
-    </Box>
+    <>
+      <Box sx={{ width: '100vw', minHeight: '100dvh', bgcolor: 'background.body', borderRadius: 2, boxShadow: 2, p: { xs: 2, md: 4 }, position: 'fixed', inset: 0, zIndex: 12000 }}>
+        <Typography level="h2" sx={{ mb: 2, textAlign: 'left' }}>Orders</Typography>
+        <GeneralTableMobile
+          items={orders}
+          renderItem={(order) => (
+            <Box
+              onClick={() => onRowClick?.(order.id)}
+              sx={{ cursor: 'pointer' }}
+            >
+              <Typography>{order.date}</Typography>
+              <Typography>{order.status}</Typography>
+              <Typography>{order.customer.name}</Typography>
+            </Box>
+          )}
+          ariaLabel="Orders Mobile View"
+        />
+        <OrderTableDetails
+          open={orderDetailsOpen}
+          onClose={onCloseOrderDetails}
+          selectedOrder={selectedOrder}
+          fetchOrderItems={fetchOrderItems}
+        />
+      </Box>
+    </>
   );
 }

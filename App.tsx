@@ -2,7 +2,7 @@ import * as React from 'react';
 import { CssVarsProvider } from '@mui/joy/styles';
 import CssBaseline from '@mui/joy/CssBaseline';
 import Box from '@mui/joy/Box';
-import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useLocation, Navigate, useNavigate } from 'react-router-dom';
 
 import Sidebar from './components/navigation/Sidebar';
 import PageOrderDesktop from './components/Page/PageOrderDesktop';
@@ -27,10 +27,72 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import PageDashboard from './components/Page/PageDashboard';
 import { Database } from './components/general/supabase.types';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
+import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
+import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
+import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
+import './App.css'; // Import custom styles
 
 function Layout() {
   const location = useLocation();
   const isMobile = useMediaQuery('(max-width:600px)');
+  const navigate = useNavigate();
+  const [mobileMenuValue, setMobileMenuValue] = useState<'home' | 'orders' | 'products' | 'messages' | 'users' | 'suppliers' | 'purchaseorders' | 'tickets' | 'smscampaigns'>('home');
+  const [users, setUsers] = useState<{
+    id: string;
+    name: string | null;
+    email: string;
+    role: string | null;
+    created_at: string | null;
+    last_login: string | null;
+    phone: string | null;
+  }[]>([]);
+
+  const mobileMenuItems: MobileMenuItem[] = [
+    { label: 'Home', icon: <HomeRoundedIcon />, value: 'home' },
+    { label: 'Orders', icon: <ShoppingCartRoundedIcon />, value: 'orders' },
+    { label: 'Users', icon: <GroupRoundedIcon />, value: 'users' },
+    { label: 'Suppliers', icon: <SettingsRoundedIcon />, value: 'suppliers' },
+  ];
+
+  React.useEffect(() => {
+    const pathToValueMap: Record<string, typeof mobileMenuValue> = {
+      '/': 'home',
+      '/orders': 'orders',
+      '/products': 'products',
+      '/users': 'users',
+      '/suppliers': 'suppliers',
+      '/purchase-orders': 'purchaseorders',
+      '/tickets': 'tickets',
+      '/sms-campaigns': 'smscampaigns',
+    };
+    setMobileMenuValue(pathToValueMap[location.pathname] || 'home');
+  }, [location.pathname]);
+
+  React.useEffect(() => {
+    async function fetchUsers() {
+      const { data, error } = await supabase.from('users').select('*');
+      if (error) {
+        console.error('Error fetching users:', error);
+      } else {
+        console.log('Fetched users:', data);
+        const mappedUsers = (data || []).map((user) => ({
+          id: user.id,
+          name: user.name || null,
+          email: user.email,
+          role: user.role || null,
+          created_at: user.created_at || null,
+          last_login: user.last_login || null,
+          phone: user.phone || null,
+        }));
+        setUsers(mappedUsers);
+      }
+    }
+
+    fetchUsers();
+  }, []);
+
+  console.log('isMobile:', isMobile);
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -42,9 +104,21 @@ function Layout() {
           bgcolor: 'background.default',
           p: 3,
           width: { sm: '100%', md: 'calc(100% - 240px)' },
+          marginBottom: isMobile ? '56px' : 0, // Adjust for MobileMenu height
         }}
       >
         <Header />
+        {isMobile && (
+          <MobileMenu
+            items={mobileMenuItems}
+            value={mobileMenuValue}
+            onChange={(value) => {
+              setMobileMenuValue(value);
+              navigate(`/${value}`);
+            }}
+            className="mobile-menu"
+          />
+        )}
         <Routes>
           <Route path="/" element={<Login onLogin={() => {}} />} />
           <Route path="/orders" element={<PageOrderDesktop rows={[]} orderDetailsOpen={false} selectedOrder={null} fetchOrderItems={(orderUuid) => Promise.resolve([])} onCloseOrderDetails={() => {}} />} />
@@ -53,7 +127,7 @@ function Layout() {
             path="/users"
             element={
               <ProtectedRoute>
-                {isMobile ? <PageUsersMobile users={[]} /> : <PageUsersDesktop users={[]} />}
+                {isMobile ? <PageUsersMobile users={users} /> : <PageUsersDesktop users={users} />}
               </ProtectedRoute>
             }
           />
@@ -62,6 +136,9 @@ function Layout() {
           <Route path="/login" element={<Login onLogin={() => {}} />} />
           <Route path="/tickets" element={<TicketList />} />
           <Route path="/sms-campaigns" element={<PageSmsCampaignsDesktop campaigns={[]} />} />
+          <Route path="/dashboard" element={<PageDashboard />} />
+          {/* Redirect all unknown routes to / */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Box>
     </Box>

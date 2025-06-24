@@ -8,7 +8,6 @@ import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
 import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import MenuIcon from '@mui/icons-material/Menu';
-import { toggleSidebar, closeSidebar } from '../../utils';
 
 export interface MobileMenuItem {
   label: string;
@@ -33,8 +32,6 @@ interface MobileMenuProps {
  * @param {string} props.value - The currently selected menu item value.
  * @param {function} props.onChange - Callback function triggered when the selected menu item changes.
  *
- * Note: The `toggleSidebar` and `closeSidebar` utility functions are used to manage the sidebar state.
- *
  * @returns {JSX.Element} The rendered mobile menu component.
  */
 export default function MobileMenu({ items, value, onChange }: MobileMenuProps) {
@@ -53,13 +50,12 @@ export default function MobileMenu({ items, value, onChange }: MobileMenuProps) 
   }), []);
   return (
     <ThemeProvider theme={muiTheme}>
-      <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1200 }}>
+      <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999, backgroundColor: 'rgba(0, 0, 255, 0.2)' }}>
         <BottomNavigation
           showLabels
           value={value}
           onChange={(_e, newValue) => {
             onChange(newValue);
-            closeSidebar();
           }}
         >
           <BottomNavigationAction
@@ -67,7 +63,6 @@ export default function MobileMenu({ items, value, onChange }: MobileMenuProps) 
             icon={<MenuIcon />}
             onClick={(e) => {
               e.preventDefault();
-              toggleSidebar();
             }}
           />
           {items.map((item) => (
@@ -76,6 +71,7 @@ export default function MobileMenu({ items, value, onChange }: MobileMenuProps) 
               label={item.label}
               icon={item.icon}
               value={item.value}
+              onClick={() => onChange(item.value)}
             />
           ))}
         </BottomNavigation>

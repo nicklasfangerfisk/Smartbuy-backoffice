@@ -1,10 +1,10 @@
 import * as React from 'react';
 import GeneralTableMobile from '../general/GeneralTableMobile';
+import { useNavigate } from 'react-router-dom';
 
 /**
  * Represents a single user in the system.
  * @property {string} id - The unique identifier for the user.
- * @property {string | null} name - The name of the user.
  * @property {string} email - The email address of the user.
  * @property {string | null} role - The role of the user.
  * @property {string | null} created_at - The timestamp when the user was created.
@@ -26,7 +26,15 @@ interface User {
  * @property {User[]} users - The list of users to display.
  */
 interface PageUsersMobileProps {
-  users: User[];
+  users: {
+    id: string;
+    name: string | null;
+    email: string;
+    role: string | null;
+    created_at: string | null;
+    last_login: string | null;
+    phone: string | null;
+  }[];
 }
 
 /**
@@ -37,6 +45,8 @@ interface PageUsersMobileProps {
  * @returns {JSX.Element} The rendered PageUsersMobile component.
  */
 const PageUsersMobile: React.FC<PageUsersMobileProps> = ({ users }) => {
+  const navigate = useNavigate();
+
   /**
    * Renders a single user item.
    *
@@ -56,11 +66,13 @@ const PageUsersMobile: React.FC<PageUsersMobileProps> = ({ users }) => {
   );
 
   return (
-    <GeneralTableMobile
-      items={users}
-      renderItem={renderUserItem}
-      ariaLabel="Users Mobile View"
-    />
+    <>
+      <GeneralTableMobile
+        items={users}
+        renderItem={renderUserItem}
+        ariaLabel="Users Mobile View"
+      />
+    </>
   );
 };
 

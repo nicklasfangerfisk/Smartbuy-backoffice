@@ -13,6 +13,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import ImageIcon from '@mui/icons-material/Image';
 import Avatar from '@mui/joy/Avatar';
 import ProductTableForm from '../Dialog/ProductTableForm';
+import { useNavigate } from 'react-router-dom';
 
 /**
  * ProductTableMobile component displays a list of products in a mobile-friendly layout.
@@ -26,6 +27,7 @@ export default function ProductTableMobile() {
   const [addDialogOpen, setAddDialogOpen] = React.useState(false);
   const [editDialogOpen, setEditDialogOpen] = React.useState(false);
   const [editProduct, setEditProduct] = React.useState<any>(null);
+  const navigate = useNavigate();
 
   /**
    * Fetches the list of products from the Supabase database.
@@ -97,50 +99,52 @@ export default function ProductTableMobile() {
   };
 
   return (
-    <Box sx={{ p: 2 }}>
-      <Typography level="h2" sx={{ mb: 2 }}>Products</Typography>
-      <Button onClick={() => setAddDialogOpen(true)} sx={{ mb: 2 }} variant="solid">
-        Add Product
-      </Button>
-      <ProductTableForm
-        open={addDialogOpen}
-        onClose={() => setAddDialogOpen(false)}
-        product={null}
-        onSave={handleAddDialogSave}
-      />
-      <ProductTableForm
-        open={editDialogOpen}
-        onClose={() => { setEditDialogOpen(false); setEditProduct(null); }}
-        product={editProduct}
-        onSave={handleEditDialogSave}
-      />
-      <List>
-        {products.map((product) => (
-          <ListItem key={product.uuid} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <ListItemDecorator>
-              {product.ImageUrl ? (
-                <Avatar src={product.ImageUrl} />
-              ) : (
-                <Avatar><ImageIcon /></Avatar>
-              )}
-            </ListItemDecorator>
-            <ListItemContent>
-              <Typography level="title-md">{product.ProductName}</Typography>
-              <Typography level="body-sm">Sales: {product.SalesPrice} | Cost: {product.CostPrice}</Typography>
-              <Typography level="body-xs" color="neutral">{product.CreatedAt}</Typography>
-            </ListItemContent>
-            <IconButton size="sm" color="primary" onClick={() => { setEditProduct(product); setEditDialogOpen(true); }}>
-              <EditIcon />
-            </IconButton>
-            <IconButton size="sm" color="danger" onClick={() => handleDelete(product.uuid)}>
-              <DeleteIcon />
-            </IconButton>
-          </ListItem>
-        ))}
-        {products.length === 0 && !loading && (
-          <Typography level="body-sm" sx={{ textAlign: 'center', color: '#888', width: '100%' }}>No products found.</Typography>
-        )}
-      </List>
-    </Box>
+    <>
+      <Box sx={{ p: 2 }}>
+        <Typography level="h2" sx={{ mb: 2 }}>Products</Typography>
+        <Button onClick={() => setAddDialogOpen(true)} sx={{ mb: 2 }} variant="solid">
+          Add Product
+        </Button>
+        <ProductTableForm
+          open={addDialogOpen}
+          onClose={() => setAddDialogOpen(false)}
+          product={null}
+          onSave={handleAddDialogSave}
+        />
+        <ProductTableForm
+          open={editDialogOpen}
+          onClose={() => { setEditDialogOpen(false); setEditProduct(null); }}
+          product={editProduct}
+          onSave={handleEditDialogSave}
+        />
+        <List>
+          {products.map((product) => (
+            <ListItem key={product.uuid} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <ListItemDecorator>
+                {product.ImageUrl ? (
+                  <Avatar src={product.ImageUrl} />
+                ) : (
+                  <Avatar><ImageIcon /></Avatar>
+                )}
+              </ListItemDecorator>
+              <ListItemContent>
+                <Typography level="title-md">{product.ProductName}</Typography>
+                <Typography level="body-sm">Sales: {product.SalesPrice} | Cost: {product.CostPrice}</Typography>
+                <Typography level="body-xs" color="neutral">{product.CreatedAt}</Typography>
+              </ListItemContent>
+              <IconButton size="sm" color="primary" onClick={() => { setEditProduct(product); setEditDialogOpen(true); }}>
+                <EditIcon />
+              </IconButton>
+              <IconButton size="sm" color="danger" onClick={() => handleDelete(product.uuid)}>
+                <DeleteIcon />
+              </IconButton>
+            </ListItem>
+          ))}
+          {products.length === 0 && !loading && (
+            <Typography level="body-sm" sx={{ textAlign: 'center', color: '#888', width: '100%' }}>No products found.</Typography>
+          )}
+        </List>
+      </Box>
+    </>
   );
 }
