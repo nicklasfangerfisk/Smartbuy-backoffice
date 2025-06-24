@@ -28,7 +28,7 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: './dist/index.html',
+      template: './public/index.html',
     }),
     new webpack.DefinePlugin({
       'process.env.SUPABASE_URL': JSON.stringify(process.env.SUPABASE_URL),
