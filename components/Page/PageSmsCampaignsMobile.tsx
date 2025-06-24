@@ -50,6 +50,7 @@ const PageSmsCampaignsMobile: React.FC = () => {
         .select('*')
         .order('created_at', { ascending: false });
       if (error) {
+        console.error('Error fetching campaigns:', error.message, error.details, error.hint); // Log detailed error information
         setError(error.message);
         setCampaigns([]);
       } else if (data) {

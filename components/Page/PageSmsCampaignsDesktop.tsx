@@ -33,6 +33,7 @@ import Card from '@mui/joy/Card';
 import LinearProgress from '@mui/joy/LinearProgress';
 import { handleOrderClick } from '../../utils';
 import fonts from '../../theme/fonts';
+import { format } from 'date-fns';
 
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import SearchIcon from '@mui/icons-material/Search';
@@ -46,17 +47,22 @@ import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
 
 const API_BASE_URL = typeof process !== 'undefined' ? process.env.REACT_APP_API_BASE_URL || '/api' : '/api';
 
-export type CampaignStatus = 'Active' | 'Paused' | 'Completed';
+export type CampaignStatus = 'draft' | 'scheduled' | 'sent' | 'failed';
 
 type CampaignRow = {
   id: string;
+  CampaignNumber: string;
   name: string;
-  sent: number;
+  message: string;
+  recipients: string[];
   status: CampaignStatus;
-  date: string;
+  scheduled_at: string | null;
+  sent_at: string | null;
+  created_at: string;
 };
 
-const typographyStyles = { fontSize: fonts.sizes.medium };
+const typographyStyles = { fontSize: fonts.sizes.small };
+const headerStyles = { ...typographyStyles, fontWeight: 600, borderBottom: '1.5px solid #e0e0e0', background: 'inherit' };
 
 /**
  * Desktop view for managing SMS campaigns.
@@ -65,71 +71,36 @@ const typographyStyles = { fontSize: fonts.sizes.medium };
  * @param {PageSmsCampaignsDesktopProps} props - The props for the component.
  * @returns {JSX.Element} The rendered component.
  */
-export default function PageSmsCampaignsDesktop({ campaigns }: PageSmsCampaignsDesktopProps) {
+export default function PageSmsCampaignsDesktop() {
   const [rows, setRows] = React.useState<CampaignRow[]>([]);
-  const [sending, setSending] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const [success, setSuccess] = React.useState<string | null>(null);
   const [search, setSearch] = React.useState('');
   const [statusFilter, setStatusFilter] = React.useState<string>('');
-  const [filteredCampaigns, setFilteredCampaigns] = React.useState(campaigns);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const isMobile = useMediaQuery('(max-width: 600px)');
 
   React.useEffect(() => {
     async function fetchCampaigns() {
-      try {
-        const { data, error } = await supabase.from('Campaigns').select('*');
-        if (error) throw error;
-        setRows(data.map((campaign) => ({
-          id: campaign.id,
-          name: campaign.name,
-          sent: campaign.sent,
-          status: campaign.status,
-          date: campaign.date,
-        })));
-      } catch (err) {
-        console.error('Error fetching campaigns:', err);
+      setLoading(true);
+      setError(null);
+      const { data, error } = await supabase
+        .from('sms_campaigns')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) {
+        setError(error.message);
+        setRows([]);
+      } else if (data) {
+        setRows(data);
       }
+      setLoading(false);
     }
     fetchCampaigns();
   }, []);
 
-  React.useEffect(() => {
-    setFilteredCampaigns(
-      campaigns.filter((campaign) =>
-        campaign.name.toLowerCase().includes(search.toLowerCase())
-      )
-    );
-  }, [search, campaigns]);
-
-  /**
-   * Sends a test SMS campaign to the backend API.
-   * Updates the UI with success or error messages based on the response.
-   */
-  async function handleSendCampaign() {
-    setSending(true);
-    setError(null);
-    setSuccess(null);
-    try {
-      const resp = await fetch(`${API_BASE_URL}/send-sms-campaign`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: 'This is a test SMS campaign!' })
-      });
-      const result = await resp.json();
-      if (!resp.ok) throw new Error(result.error || 'Failed to send SMS');
-      setSuccess(`Sent to ${result.sent} recipients!`);
-    } catch (err) {
-      console.error('Error sending SMS campaign:', err);
-      setError(err instanceof Error ? err.message : 'An unknown error occurred');
-    } finally {
-      setSending(false);
-    }
-  }
-
   const filteredRows = rows.filter(row => {
-    const matchesSearch = row.name.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = row.name.toLowerCase().includes(search.toLowerCase()) || (row.CampaignNumber?.toLowerCase().includes(search.toLowerCase()));
     const statusMatch = !statusFilter || row.status === statusFilter;
     return matchesSearch && statusMatch;
   });
@@ -140,7 +111,7 @@ export default function PageSmsCampaignsDesktop({ campaigns }: PageSmsCampaignsD
 
   return (
     <Box sx={{ width: '100%', minHeight: '100dvh', bgcolor: 'background.body', borderRadius: 2, boxShadow: 2, p: 4 }}>
-      <Typography level="h2" sx={{ ...typographyStyles, mb: 2, textAlign: 'left' }}>SMS Campaigns</Typography>
+      <Typography level="h2" sx={{ ...typographyStyles, mb: 2, textAlign: 'left', fontSize: fonts.sizes.xlarge }}>SMS Campaigns</Typography>
       <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <Input
           placeholder="Search campaigns..."
@@ -155,63 +126,67 @@ export default function PageSmsCampaignsDesktop({ campaigns }: PageSmsCampaignsD
           sx={{ ...typographyStyles, minWidth: 160 }}
         >
           <Option value="">All Statuses</Option>
-          <Option value="Active">Active</Option>
-          <Option value="Paused">Paused</Option>
-          <Option value="Completed">Completed</Option>
+          <Option value="draft">Draft</Option>
+          <Option value="scheduled">Scheduled</Option>
+          <Option value="sent">Sent</Option>
+          <Option value="failed">Failed</Option>
         </Select>
         <Button
           onClick={() => setIsModalOpen(true)}
           variant="solid"
+          sx={typographyStyles}
         >
           Create Campaign
         </Button>
       </Box>
       <Card>
-        {sending && <LinearProgress />}
-        <Table aria-label="Campaigns" sx={{ ...typographyStyles, minWidth: 800 }}>
+        {loading && <LinearProgress />}
+        <Table aria-label="Campaigns" sx={{ minWidth: 800 }}>
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Sent</th>
-              <th>Status</th>
-              <th>Date</th>
+              <th style={headerStyles}>Campaign #</th>
+              <th style={headerStyles}>Name</th>
+              <th style={headerStyles}>Status</th>
+              <th style={headerStyles}>Scheduled</th>
+              <th style={headerStyles}>Recipients</th>
             </tr>
           </thead>
           <tbody>
-            {filteredRows.length === 0 && (
+            {filteredRows.length === 0 && !loading && (
               <tr>
-                <td colSpan={4} style={{ textAlign: 'center', color: '#888' }}>No campaigns found.</td>
+                <td colSpan={6} style={{ textAlign: 'center', color: '#888', ...typographyStyles }}>No campaigns found.</td>
               </tr>
             )}
             {filteredRows.map((row) => (
-              <tr key={row.id}>
-                <td>{row.name}</td>
-                <td>{row.sent}</td>
-                <td>
+              <tr key={row.id} style={{ height: 48 }}>
+                <td style={typographyStyles}>{row.CampaignNumber}</td>
+                <td style={typographyStyles}>{row.name}</td>
+                <td style={typographyStyles}>
                   <Chip
                     variant="soft"
                     color={
-                      row.status === 'Active'
+                      row.status === 'sent'
                         ? 'success'
-                        : row.status === 'Paused'
+                        : row.status === 'failed'
+                        ? 'danger'
+                        : row.status === 'scheduled'
                         ? 'warning'
                         : 'neutral'
                     }
                     size="sm"
-                    sx={{ textTransform: 'capitalize' }}
+                    sx={{ textTransform: 'capitalize', ...typographyStyles }}
                   >
                     {row.status}
                   </Chip>
                 </td>
-                <td>{new Date(row.date).toLocaleString()}</td>
+                <td style={typographyStyles}>{row.scheduled_at ? format(new Date(row.scheduled_at), 'yyyy-MM-dd HH:mm') : '-'}</td>
+                <td style={typographyStyles}>{row.recipients?.length ?? 0}</td>
               </tr>
             ))}
           </tbody>
         </Table>
       </Card>
       {error && <Typography color="danger">Error: {error}</Typography>}
-      {success && <Typography color="success">{success}</Typography>}
-
       <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <ModalDialog>
           <Typography level="h4">Create New Campaign</Typography>
