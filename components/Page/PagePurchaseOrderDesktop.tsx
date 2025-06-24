@@ -14,6 +14,8 @@ import GeneralTable from '../general/GeneralTable';
 import type { PagePurchaseOrderMobileItem } from './PagePurchaseOrderMobile';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import PagePurchaseOrderMobile from './PagePurchaseOrderMobile';
+import fonts from '../../theme/fonts';
+import Table from '@mui/joy/Table';
 
 interface PagePurchaseOrderDesktopProps {
   orders: PagePurchaseOrderMobileItem[];
@@ -30,6 +32,9 @@ export default function PurchaseOrderTable({ orders: initialOrders }: PagePurcha
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
 
   const isMobile = useMediaQuery('(max-width:600px)');
+
+  const typographyStyles = { fontSize: fonts.sizes.small };
+  const headerStyles = { ...typographyStyles, fontWeight: 600, borderBottom: '1.5px solid #e0e0e0', background: 'inherit' };
 
   // Fetches the list of purchase orders from the Supabase database.
   // Updates the state with the fetched orders or sets an error message.
@@ -152,7 +157,33 @@ export default function PurchaseOrderTable({ orders: initialOrders }: PagePurcha
       <Card>
         {loading && <LinearProgress />}
         {error && <Typography color="danger">Error: {error}</Typography>}
-        <GeneralTable columns={columns} rows={rows} ariaLabel="Purchase Orders" minWidth={800} />
+        <Table aria-label="Purchase Orders" sx={{ minWidth: 800 }}>
+          <thead>
+            <tr>
+              {columns.map(col => (
+                <th key={col.id} style={headerStyles}>{col.label}</th>
+              ))}
+              <th style={{ width: 120, ...headerStyles }} />
+            </tr>
+          </thead>
+          <tbody>
+            {rows.length === 0 && !loading && (
+              <tr>
+                <td colSpan={columns.length + 1} style={{ textAlign: 'center', color: '#888', ...typographyStyles }}>No purchase orders found.</td>
+              </tr>
+            )}
+            {rows.map((row, idx) => (
+              <tr key={row.id || row.order_number} style={{ cursor: 'pointer', height: 48 }}>
+                {columns.map(col => (
+                  <td key={col.id} style={typographyStyles}>
+                    {col.format ? col.format((row as any)[col.id]) : (row as any)[col.id]}
+                  </td>
+                ))}
+                <td />
+              </tr>
+            ))}
+          </tbody>
+        </Table>
       </Card>
     </Box>
   );
