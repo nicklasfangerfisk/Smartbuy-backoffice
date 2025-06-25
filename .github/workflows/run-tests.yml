@@ -33,10 +33,18 @@ jobs:
     - name: Run Unit Tests and Generate JSON Report
       run: npx jest --json --outputFile=jest-results.json
 
+    - name: Fetch Existing Jest Results
+      run: |
+        if [ -f Testflow/data/jest-results.json ]; then
+          cp Testflow/data/jest-results.json jest-results-existing.json
+        fi
+
     - name: Format Jest JSON Report
       run: |
         node <<EOF
         const fs = require('fs');
+        const path = require('path');
+
         const rawData = JSON.parse(fs.readFileSync('jest-results.json'));
         const formattedData = {
           timestamp: new Date().toISOString(),
@@ -55,7 +63,18 @@ jobs:
             }))
           }))
         };
-        fs.writeFileSync('formatted-jest-results.json', JSON.stringify(formattedData, null, 2));
+
+        const resultsFilePath = path.join('Testflow', 'data', 'jest-results.json');
+        let accumulatedResults = [];
+
+        if (fs.existsSync(resultsFilePath)) {
+          const existingData = JSON.parse(fs.readFileSync(resultsFilePath));
+          accumulatedResults = existingData.concat(formattedData);
+        } else {
+          accumulatedResults.push(formattedData);
+        }
+
+        fs.writeFileSync(resultsFilePath, JSON.stringify(accumulatedResults, null, 2));
         EOF
 
     - name: Clone Testflow Repository

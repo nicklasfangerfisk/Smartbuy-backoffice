@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 
 // Read raw Jest JSON report
 const rawData = JSON.parse(fs.readFileSync('jest-results.json'));
@@ -22,5 +23,15 @@ const formattedData = {
   }))
 };
 
+const resultsFilePath = path.join('Testflow', 'data', 'jest-results.json');
+let accumulatedResults = [];
+
+if (fs.existsSync(resultsFilePath)) {
+  const existingData = JSON.parse(fs.readFileSync(resultsFilePath));
+  accumulatedResults = existingData.concat(formattedData);
+} else {
+  accumulatedResults.push(formattedData);
+}
+
 // Write the formatted data to a new file
-fs.writeFileSync('formatted-jest-results.json', JSON.stringify(formattedData, null, 2));
+fs.writeFileSync(resultsFilePath, JSON.stringify(accumulatedResults, null, 2));
