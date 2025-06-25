@@ -62,7 +62,7 @@ jobs:
       uses: actions/checkout@v3
       with:
         repository: nicklasfangerfisk/Testflow
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.TESTFLOW }}
         path: Testflow
 
     - name: Copy and Commit Jest Results
