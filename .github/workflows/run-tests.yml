@@ -92,6 +92,15 @@ jobs:
     - name: Debug: List Testflow Directory
       run: ls -la Testflow/data
 
+    - name: Debug: Check Jest Results File
+      run: |
+        if [ -f Testflow/data/jest-results.json ]; then
+          echo "File exists: Testflow/data/jest-results.json"
+          cat Testflow/data/jest-results.json
+        else
+          echo "File does not exist: Testflow/data/jest-results.json"
+        fi
+
     - name: Copy and Commit Jest Results
       run: |
         cp formatted-jest-results.json Testflow/data/jest-results.json
