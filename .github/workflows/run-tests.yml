@@ -22,5 +22,43 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    - name: Run Unit Tests
-      run: npm test
+    - name: Run Unit Tests and Generate JSON Report
+      run: jest --json --outputFile=jest-results.json
+
+    - name: Format Jest JSON Report
+      run: |
+        node <<EOF
+        const fs = require('fs');
+        const rawData = JSON.parse(fs.readFileSync('jest-results.json'));
+        const formattedData = {
+          timestamp: new Date().toISOString(),
+          total: rawData.numTotalTests,
+          passed: rawData.numPassedTests,
+          failed: rawData.numFailedTests,
+          skipped: rawData.numPendingTests,
+          suites: rawData.testResults.map(suite => ({
+            name: suite.name,
+            passed: suite.numPassingTests,
+            failed: suite.numFailingTests,
+            tests: suite.assertionResults.map(test => ({
+              name: test.fullName,
+              status: test.status,
+              errorMessage: test.failureMessages.join('\n') || null
+            }))
+          }))
+        };
+        fs.writeFileSync('formatted-jest-results.json', JSON.stringify(formattedData, null, 2));
+        EOF
+
+    - name: Clone Testflow Repository
+      run: |
+        git clone https://github.com/nicklasfangerfisk/Testflow.git /tmp/Testflow
+        cp formatted-jest-results.json /tmp/Testflow/data/jest-results.json
+        cd /tmp/Testflow
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        git add data/jest-results.json
+        if ! git diff --cached --quiet; then
+          git commit -m "Update Jest test results"
+          git push
+        fi
