@@ -1,1 +1,3 @@
-# smartback Backoffice app
+# Smartback
+
+<!-- Triggering CI workflow -->
