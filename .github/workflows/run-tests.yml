@@ -58,12 +58,12 @@ jobs:
       with:
         repository: nicklasfangerfisk/Testflow
         token: ${{ secrets.GITHUB_TOKEN }}
-        path: /tmp/Testflow
+        path: Testflow
 
     - name: Copy and Commit Jest Results
       run: |
-        cp formatted-jest-results.json /tmp/Testflow/data/jest-results.json
-        cd /tmp/Testflow
+        cp formatted-jest-results.json Testflow/data/jest-results.json
+        cd Testflow
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
         git add data/jest-results.json
