@@ -33,5 +33,5 @@ if (fs.existsSync(resultsFilePath)) {
   accumulatedResults.push(formattedData);
 }
 
-// Write the formatted data to a new file
+fs.mkdirSync(path.dirname(resultsFilePath), { recursive: true });
 fs.writeFileSync(resultsFilePath, JSON.stringify(accumulatedResults, null, 2));
