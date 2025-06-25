@@ -77,17 +77,17 @@ jobs:
         fs.writeFileSync(resultsFilePath, JSON.stringify(accumulatedResults, null, 2));
         EOF
 
-    - name: Ensure Jest Results Directory Exists
-      run: |
-        mkdir -p Testflow/data
-        touch Testflow/data/jest-results.json
-
     - name: Clone Testflow Repository
       uses: actions/checkout@v3
       with:
         repository: nicklasfangerfisk/Testflow
         token: ${{ secrets.TESTFLOW }}
         path: Testflow
+
+    - name: Ensure Jest Results Directory Exists
+      run: |
+        mkdir -p Testflow/data
+        touch Testflow/data/jest-results.json
 
     - name: Copy and Commit Jest Results
       run: |
