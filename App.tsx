@@ -38,6 +38,7 @@ function Layout() {
   const location = useLocation();
   const isMobile = useMediaQuery('(max-width:600px)');
   const navigate = useNavigate();
+
   const [mobileMenuValue, setMobileMenuValue] = useState<'home' | 'orders' | 'products' | 'messages' | 'users' | 'suppliers' | 'purchaseorders' | 'tickets' | 'smscampaigns'>('home');
   const [users, setUsers] = useState<{
     id: string;
@@ -97,7 +98,7 @@ function Layout() {
 
   return (
     <Box sx={{ display: 'flex' }}>
-      {location.pathname !== '/' && <Sidebar setView={(view) => console.log(view)} view="home" />}
+      {location.pathname !== '/login' && <Sidebar setView={(view) => console.log(view)} view="home" />}
       <Box
         component="main"
         sx={{
@@ -108,12 +109,12 @@ function Layout() {
           marginBottom: isMobile ? '56px' : 0, // Adjust for MobileMenu height
         }}
       >
-        <Header />
-        {isMobile && (
+        {location.pathname !== '/login' && <Header />}
+        {isMobile && location.pathname !== '/login' && (
           <MobileMenu
             items={mobileMenuItems}
             value={mobileMenuValue}
-            onChange={(value) => {
+            onChange={(value: typeof mobileMenuValue) => {
               setMobileMenuValue(value);
               navigate(`/${value}`);
             }}
@@ -121,7 +122,6 @@ function Layout() {
           />
         )}
         <Routes>
-          <Route path="/" element={<Login onLogin={() => navigate('/dashboard')} />} />
           <Route
             path="/orders"
             element={
@@ -166,7 +166,6 @@ function Layout() {
               </ProtectedRoute>
             }
           />
-          <Route path="/login" element={<Login onLogin={() => navigate('/dashboard')} />} />
           <Route
             path="/tickets"
             element={

@@ -5,7 +5,7 @@ import Login from './Login';
 export default function LoginLayout() {
   return (
     <Routes>
-      <Route path="/login" element={<Login onLogin={() => {}} />} />
+      <Route path="*" element={<Login onLogin={() => {}} />} />
     </Routes>
   );
 }

@@ -71,8 +71,8 @@ const headerStyles = { ...typographyStyles, fontWeight: 600, borderBottom: '1.5p
  * @param {PageSmsCampaignsDesktopProps} props - The props for the component.
  * @returns {JSX.Element} The rendered component.
  */
-export default function PageSmsCampaignsDesktop() {
-  const [rows, setRows] = React.useState<CampaignRow[]>([]);
+export default function PageSmsCampaignsDesktop({ campaigns }: { campaigns: CampaignRow[] }) {
+  const [rows, setRows] = React.useState<CampaignRow[]>(campaigns);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [search, setSearch] = React.useState('');
