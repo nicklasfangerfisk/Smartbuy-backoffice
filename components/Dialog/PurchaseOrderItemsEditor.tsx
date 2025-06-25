@@ -19,7 +19,7 @@ interface Product {
  */
 export interface PurchaseOrderItem {
   product_id: string | null;
-  quantity: number;
+  quantity_ordered: number;
   unit_price: number;
   notes?: string | null;
 }
@@ -79,7 +79,7 @@ export default function PurchaseOrderItemsEditor({ orderId, editable, onItemsCha
 
   const handleAddItem = () => {
     setItems(items => {
-      const newItems = [...items, { product_id: null, quantity: 1, unit_price: 0 }];
+      const newItems = [...items, { product_id: null, quantity_ordered: 1, unit_price: 0 }];
       if (onItemsChange) onItemsChange(newItems);
       return newItems;
     });
@@ -92,11 +92,6 @@ export default function PurchaseOrderItemsEditor({ orderId, editable, onItemsCha
       return newItems;
     });
   };
-
-  React.useEffect(() => {
-    if (onItemsChange) onItemsChange(items);
-    // eslint-disable-next-line
-  }, [items]);
 
   return (
     <Box sx={{ mt: 2 }}>
@@ -128,8 +123,8 @@ export default function PurchaseOrderItemsEditor({ orderId, editable, onItemsCha
               <td>
                 <Input
                   type="number"
-                  value={item.quantity}
-                  onChange={e => handleItemChange(idx, 'quantity', Math.max(1, Number(e.target.value)))}
+                  value={item.quantity_ordered ?? 1}
+                  onChange={e => handleItemChange(idx, 'quantity_ordered', Math.max(1, Number(e.target.value)))}
                   disabled={!editable}
                   sx={{ width: 80 }}
                   required
@@ -138,14 +133,14 @@ export default function PurchaseOrderItemsEditor({ orderId, editable, onItemsCha
               <td>
                 <Input
                   type="number"
-                  value={item.unit_price}
+                  value={item.unit_price ?? 0}
                   onChange={e => handleItemChange(idx, 'unit_price', Math.max(0, Number(e.target.value)))}
                   disabled={!editable}
                   sx={{ width: 100 }}
                   required
                 />
               </td>
-              <td>{(item.quantity * item.unit_price).toFixed(2)}</td>
+              <td>{(item.quantity_ordered * item.unit_price).toFixed(2)}</td>
               {editable && (
                 <td>
                   <Button size="sm" color="danger" onClick={() => handleRemoveItem(idx)}>

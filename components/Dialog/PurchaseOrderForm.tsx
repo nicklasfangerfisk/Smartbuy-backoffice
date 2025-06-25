@@ -72,7 +72,7 @@ export default function PurchaseOrderForm({ open, onClose, onCreated, mode = 'ad
   const [suppliers, setSuppliers] = React.useState<any[]>([]);
   const [supplierInput, setSupplierInput] = React.useState('');
   const [addSupplierOpen, setAddSupplierOpen] = React.useState(false);
-  const [items, setItems] = React.useState<PurchaseOrderItem[]>([{ product_id: null, quantity: 1, unit_price: 0 }]);
+  const [items, setItems] = React.useState<PurchaseOrderItem[]>([{ product_id: null, quantity_ordered: 1, unit_price: 0 }]);
 
   // Add a ref to store the last created supplier id
   const lastCreatedSupplierId = React.useRef<string | null>(null);
@@ -89,7 +89,7 @@ export default function PurchaseOrderForm({ open, onClose, onCreated, mode = 'ad
           setItems(data || []);
         });
       } else if (mode === 'add') {
-        setItems([{ product_id: null, quantity: 1, unit_price: 0 }]);
+        setItems([{ product_id: null, quantity_ordered: 1, unit_price: 0 }]);
       }
     } else {
       console.log('[PurchaseOrderForm] Modal closed');
@@ -144,13 +144,20 @@ export default function PurchaseOrderForm({ open, onClose, onCreated, mode = 'ad
     }
     if (result && !result.error && mode === 'add' && purchaseOrderId && items.length > 0) {
       // Insert items
-      const itemsPayload = items.map(item => ({
-        purchase_order_id: purchaseOrderId,
-        product_id: item.product_id,
-        quantity: item.quantity,
-        unit_price: item.unit_price,
-        notes: item.notes || null,
-      }));
+      const itemsPayload = items
+        .filter(item => item.product_id)
+        .map(item => ({
+          purchase_order_id: purchaseOrderId,
+          product_id: item.product_id,
+          quantity_ordered: item.quantity_ordered,
+          unit_price: item.unit_price,
+          notes: item.notes || null,
+        }));
+      if (itemsPayload.length === 0) {
+        setError('Please select a product for each item before saving.');
+        setSaving(false);
+        return;
+      }
       const itemsResult = await supabase.from('purchaseorderitems').insert(itemsPayload);
       if (itemsResult.error) {
         setError('Failed to save items: ' + itemsResult.error.message);

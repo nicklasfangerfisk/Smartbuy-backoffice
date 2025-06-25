@@ -332,14 +332,14 @@ function Sidebar({ setView, view }: { setView: (view: 'home' | 'orders' | 'produ
             </Toggler>
           </ListItem>
 
-          {/* Purchasing Accordion - expanded by default */}
+          {/* Operations Accordion - expanded by default */}
           <ListItem nested>
             <Toggler defaultExpanded={true}
               renderToggle={({ open, setOpen }) => (
                 <ListItemButton onClick={() => setOpen(!open)}>
                   <AssignmentRoundedIcon />
                   <ListItemContent>
-                    <Typography level="title-sm">Purchasing</Typography>
+                    <Typography level="title-sm">Operations</Typography>
                   </ListItemContent>
                   <KeyboardArrowDownIcon
                     sx={[
@@ -371,6 +371,22 @@ function Sidebar({ setView, view }: { setView: (view: 'home' | 'orders' | 'produ
                     <AssignmentTurnedInIcon sx={{ mr: 0.5 }} />
                     <ListItemContent>
                       <Typography level="body-sm">Purchase Orders</Typography>
+                    </ListItemContent>
+                  </ListItemButton>
+                </ListItem>
+                <ListItem>
+                  <ListItemButton selected={isSelected('/movements')} onClick={() => handleNavigation('/movements', 'movements')}>
+                    <AssignmentRoundedIcon sx={{ mr: 0.5 }} />
+                    <ListItemContent>
+                      <Typography level="body-sm">Movements</Typography>
+                    </ListItemContent>
+                  </ListItemButton>
+                </ListItem>
+                <ListItem>
+                  <ListItemButton selected={isSelected('/inventory')} onClick={() => handleNavigation('/inventory', 'inventory')}>
+                    <AssignmentRoundedIcon sx={{ mr: 0.5 }} />
+                    <ListItemContent>
+                      <Typography level="body-sm">Inventory</Typography>
                     </ListItemContent>
                   </ListItemButton>
                 </ListItem>

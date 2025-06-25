@@ -16,6 +16,8 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import PagePurchaseOrderMobile from './PagePurchaseOrderMobile';
 import fonts from '../../theme/fonts';
 import Table from '@mui/joy/Table';
+import DialogReceivePurchaseOrder from '../Dialog/DialogReceivePurchaseOrder';
+import { Database } from '../../components/general/supabase.types';
 
 interface PagePurchaseOrderDesktopProps {
   orders: PagePurchaseOrderMobileItem[];
@@ -29,7 +31,9 @@ export default function PurchaseOrderTable({ orders: initialOrders }: PagePurcha
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [receiveDialogOpen, setReceiveDialogOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+  const [poItems, setPoItems] = useState<any[]>([]);
 
   const isMobile = useMediaQuery('(max-width:600px)');
 
@@ -61,14 +65,41 @@ export default function PurchaseOrderTable({ orders: initialOrders }: PagePurcha
   const handleCreated = async () => {
     setLoading(true);
     setError(null);
-    const { data, error }: { data: any; error: any } = await supabase
+    const { data: ordersData, error: ordersError } = await supabase
       .from('PurchaseOrders')
       .select('id, order_number, order_date, status, total, notes, Suppliers(name)')
       .order('order_date', { ascending: false });
-    if (!error && data) {
-      setOrders(data);
-    } else if (error) {
-      setError(error.message || 'Failed to fetch purchase orders');
+
+    if (!ordersError && ordersData) {
+      // Fix type mismatch in setOrders
+      const mappedOrders = ordersData.map(order => ({
+        ...order,
+        supplier_name: order.Suppliers?.[0]?.name || 'N/A',
+        Suppliers: undefined, // Remove Suppliers array to match expected type
+      }));
+      setOrders(mappedOrders);
+      if (selectedOrder) {
+        const { data: itemsData, error: itemsError } = await supabase
+          .from('purchaseorderitems')
+          .select(`
+            id,
+            product_id,
+            Products(ProductName),
+            quantity_ordered,
+            quantity_received
+          `)
+          .eq('purchase_order_id', selectedOrder.id);
+
+        if (!itemsError && itemsData) {
+          const mappedItems = itemsData.map(item => ({
+            ...item,
+            ProductName: item.Products[0]?.ProductName, // Access the first element of the Products array
+          }));
+          setPoItems(mappedItems);
+        }
+      }
+    } else if (ordersError) {
+      setError(ordersError.message || 'Failed to fetch purchase orders');
     }
     setLoading(false);
   };
@@ -110,6 +141,46 @@ export default function PurchaseOrderTable({ orders: initialOrders }: PagePurcha
   if (isMobile) {
     return <PagePurchaseOrderMobile orders={mobileOrders} />;
   }
+
+  // Define the structure for the purchaseorderitems table
+  interface PurchaseOrderItem {
+    id: string;
+    product_id: string;
+    ProductName: string;
+    quantity_ordered: number;
+    quantity_received: number;
+  }
+
+  interface PurchaseOrderItemInsert {
+    product_id: string;
+    ProductName: string;
+    quantity_ordered: number;
+    quantity_received: number;
+  }
+
+  // Fetch PO items when opening receive dialog
+  useEffect(() => {
+    if (receiveDialogOpen && selectedOrder) {
+      (async () => {
+        const { data, error } = await supabase
+          .from('purchaseorderitems')
+          .select('id, product_id, Products(ProductName), quantity_ordered, quantity_received')
+          .eq('purchase_order_id', selectedOrder.id);
+        console.log('Query Results:', { data, error }); // Debug log to inspect query results
+        if (!error && data) setPoItems(data);
+      })();
+    }
+  }, [receiveDialogOpen, selectedOrder]);
+
+  // Sort orders by status and then by order_date desc
+  const statusOrder = { Pending: 0, Ordered: 1, Received: 2, Cancelled: 3 };
+  const sortedRows = [...rows].sort((a, b) => {
+    const statusA = statusOrder[a.status as keyof typeof statusOrder] ?? 99;
+    const statusB = statusOrder[b.status as keyof typeof statusOrder] ?? 99;
+    if (statusA !== statusB) return statusA - statusB;
+    // Secondary sort: order_date descending
+    return new Date(b.order_date).getTime() - new Date(a.order_date).getTime();
+  });
 
   return (
     <Box sx={{ width: '100%', minHeight: '100dvh', bgcolor: 'background.body', borderRadius: 2, boxShadow: 2, p: 4 }}>
@@ -154,6 +225,31 @@ export default function PurchaseOrderTable({ orders: initialOrders }: PagePurcha
         mode="edit"
         order={selectedOrder}
       />
+      <DialogReceivePurchaseOrder
+        open={receiveDialogOpen}
+        onClose={() => setReceiveDialogOpen(false)}
+        poId={selectedOrder?.order_number || selectedOrder?.id}
+        items={poItems}
+        onConfirm={async (receivedItems) => {
+          // Update purchaseorderitems with received quantities
+          for (const item of receivedItems) {
+            await supabase
+              .from('purchaseorderitems')
+              .update({ quantity_received: item.quantity_received })
+              .eq('id', item.id);
+          }
+          // Update purchase order status to 'Received'
+          if (selectedOrder?.id) {
+            await supabase
+              .from('PurchaseOrders') // Use correct case
+              .update({ status: 'Received' })
+              .eq('id', selectedOrder.id);
+          }
+          setReceiveDialogOpen(false);
+          // Refresh orders list after receiving
+          await handleCreated();
+        }}
+      />
       <Card>
         {loading && <LinearProgress />}
         {error && <Typography color="danger">Error: {error}</Typography>}
@@ -167,19 +263,55 @@ export default function PurchaseOrderTable({ orders: initialOrders }: PagePurcha
             </tr>
           </thead>
           <tbody>
-            {rows.length === 0 && !loading && (
+            {sortedRows.length === 0 && !loading && (
               <tr>
                 <td colSpan={columns.length + 1} style={{ textAlign: 'center', color: '#888', ...typographyStyles }}>No purchase orders found.</td>
               </tr>
             )}
-            {rows.map((row, idx) => (
+            {sortedRows.map((row, idx) => (
               <tr key={row.id || row.order_number} style={{ cursor: 'pointer', height: 48 }}>
                 {columns.map(col => (
                   <td key={col.id} style={typographyStyles}>
                     {col.format ? col.format((row as any)[col.id]) : (row as any)[col.id]}
                   </td>
                 ))}
-                <td />
+                <td>
+                  {row.status === 'Pending' ? (
+                    <Button
+                      size="sm"
+                      variant="outlined"
+                      onClick={async () => {
+                        // Change status from Pending to Ordered
+                        if (row.id) {
+                          const { error } = await supabase
+                            .from('PurchaseOrders') // Use correct case
+                            .update({ status: 'Ordered' })
+                            .eq('id', row.id);
+                          if (error) {
+                            alert('Failed to update order: ' + error.message);
+                          } else {
+                            await handleCreated(); // Refresh orders
+                          }
+                        }
+                      }}
+                    >
+                      Order
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outlined"
+                      onClick={() => {
+                        console.log('Selected Order:', row); // Debug log to inspect selectedOrder
+                        setSelectedOrder(row);
+                        setReceiveDialogOpen(true);
+                      }}
+                      disabled={row.status !== 'Approved' && row.status !== 'Ordered'}
+                    >
+                      Receive
+                    </Button>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>

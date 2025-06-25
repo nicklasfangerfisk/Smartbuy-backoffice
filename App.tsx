@@ -33,13 +33,15 @@ import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import './App.css'; // Import custom styles
 import LoginLayout from './components/auth/LoginLayout';
+import PageMovementsDesktop from './components/Page/PageMovementsDesktop';
+import PageInventoryDesktop from './components/Page/PageInventoryDesktop';
 
 function Layout() {
   const location = useLocation();
   const isMobile = useMediaQuery('(max-width:600px)');
   const navigate = useNavigate();
 
-  const [mobileMenuValue, setMobileMenuValue] = useState<'home' | 'orders' | 'products' | 'messages' | 'users' | 'suppliers' | 'purchaseorders' | 'tickets' | 'smscampaigns'>('home');
+  const [mobileMenuValue, setMobileMenuValue] = useState<'home' | 'orders' | 'products' | 'messages' | 'users' | 'suppliers' | 'purchaseorders' | 'tickets' | 'smscampaigns' | 'movements'>('home');
   const [users, setUsers] = useState<{
     id: string;
     name: string | null;
@@ -67,6 +69,7 @@ function Layout() {
       '/purchase-orders': 'purchaseorders',
       '/tickets': 'tickets',
       '/sms-campaigns': 'smscampaigns',
+      '/movements': 'movements',
     };
     setMobileMenuValue(pathToValueMap[location.pathname] || 'home');
   }, [location.pathname]);
@@ -187,6 +190,22 @@ function Layout() {
             element={
               <ProtectedRoute>
                 <PageDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/movements"
+            element={
+              <ProtectedRoute>
+                <PageMovementsDesktop />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/inventory"
+            element={
+              <ProtectedRoute>
+                <PageInventoryDesktop />
               </ProtectedRoute>
             }
           />

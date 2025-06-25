@@ -95,7 +95,7 @@ export default function OrderDetailsDialog({ open, onClose, selectedOrder, fetch
                       orderItems.map(function(item) {
                         return (
                           <tr key={item.id || item.uuid}>
-                            <td>{item.product_name || item.name || item.product_uuid}</td>
+                            <td>{item.ProductName || item.name || item.product_uuid}</td>
                             <td style={{ textAlign: 'right' }}>{item.quantity}</td>
                             <td style={{ textAlign: 'right' }}>{typeof item.unitprice === 'number' || typeof item.unitprice === 'string' ? `$${Number(item.unitprice).toFixed(2)}` : '-'}</td>
                             <td style={{ textAlign: 'right' }}>{typeof item.discount === 'number' || typeof item.discount === 'string' ? `${Number(item.discount).toFixed(2)}%` : '-'}</td>

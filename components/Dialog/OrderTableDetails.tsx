@@ -35,7 +35,7 @@ export type OrderTableDetailsProps = {
    * @returns A promise resolving to an array of order items.
    */
   fetchOrderItems: (orderUuid: string) => Promise<
-    (Database['public']['Tables']['OrderItems']['Row'] & { product_name?: string; name?: string })[]
+    (Database['public']['Tables']['OrderItems']['Row'] & { name?: string })[]
   >;
 };
 
@@ -44,7 +44,7 @@ export type OrderTableDetailsProps = {
  */
 export default function OrderTableDetails({ open, onClose, selectedOrder, fetchOrderItems }: OrderTableDetailsProps) {
   const [orderItems, setOrderItems] = React.useState<
-    (Database['public']['Tables']['OrderItems']['Row'] & { product_name?: string; name?: string })[]
+    (Database['public']['Tables']['OrderItems']['Row'] & { name?: string })[]
   >([]);
   const [orderItemsLoading, setOrderItemsLoading] = React.useState(false);
 
@@ -131,7 +131,7 @@ export default function OrderTableDetails({ open, onClose, selectedOrder, fetchO
                       orderItems.map(function(item) {
                         return (
                           <tr key={item.uuid}>
-                            <td>{item.product_name || item.name || item.product_uuid}</td>
+                            <td>{item.name || item.product_uuid}</td>
                             <td style={{ textAlign: 'right' }}>{item.quantity ?? '-'}</td>
                             <td style={{ textAlign: 'right' }}>{item.unitprice != null ? `$${Number(item.unitprice).toFixed(2)}` : '-'}</td>
                             <td style={{ textAlign: 'right' }}>{item.discount != null ? `${Number(item.discount).toFixed(2)}%` : '-'}</td>

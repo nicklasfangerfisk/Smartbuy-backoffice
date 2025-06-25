@@ -14,13 +14,13 @@ import { useLocation } from 'react-router-dom';
 export interface MobileMenuItem {
   label: string;
   icon: React.ReactNode;
-  value: "home" | "orders" | "products" | "messages" | "users" | "suppliers" | "purchaseorders" | "tickets" | "smscampaigns";
+  value: "home" | "orders" | "products" | "messages" | "users" | "suppliers" | "purchaseorders" | "tickets" | "smscampaigns" | "movements";
 }
 
 interface MobileMenuProps {
   items: MobileMenuItem[];
-  value: "home" | "orders" | "products" | "messages" | "users" | "suppliers" | "purchaseorders" | "tickets" | "smscampaigns";
-  onChange: (value: "home" | "orders" | "products" | "messages" | "users" | "suppliers" | "purchaseorders" | "tickets" | "smscampaigns") => void;
+  value: "home" | "orders" | "products" | "messages" | "users" | "suppliers" | "purchaseorders" | "tickets" | "smscampaigns" | "movements";
+  onChange: (value: "home" | "orders" | "products" | "messages" | "users" | "suppliers" | "purchaseorders" | "tickets" | "smscampaigns" | "movements") => void;
   toggleSidebar: () => void; // Added prop to toggle the sidebar
 }
 
@@ -61,7 +61,7 @@ export default function MobileMenu({ items, value, onChange, toggleSidebar }: Mo
 
   const handleNavigation = async (newValue: MobileMenuItem['value']) => {
     const { data: session } = await supabase.auth.getSession();
-    if (!session && ['orders', 'products', 'users', 'suppliers', 'purchaseorders', 'tickets', 'smscampaigns'].includes(newValue)) {
+    if (!session && ['orders', 'products', 'users', 'suppliers', 'purchaseorders', 'tickets', 'smscampaigns', 'movements'].includes(newValue)) {
       alert('You must be logged in to access this page.');
       return;
     }

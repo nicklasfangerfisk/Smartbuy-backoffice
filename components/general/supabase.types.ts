@@ -1,33 +1,25 @@
-/**
- * Json: Represents a JSON-compatible value, including objects, arrays, strings, numbers, booleans, and null.
- */
 export type Json =
   | string
   | number
   | boolean
   | null
   | { [key: string]: Json | undefined }
-  | Json[];
+  | Json[]
 
-/**
- * Database: Represents the schema of the Supabase database.
- * - public: Contains all public tables and their respective types.
- * - Tables: Defines the structure of each table, including rows, inserts, updates, and relationships.
- */
 export type Database = {
   public: {
     Tables: {
       OrderItems: {
         Row: {
-          "Created at": string; // Timestamp when the order item was created
-          discount: number | null; // Discount applied to the order item
-          order_uuid: string | null; // UUID of the associated order
-          price: number; // Total price of the order item
-          "Product ID": number | null; // ID of the associated product
-          product_uuid: string | null; // UUID of the associated product
-          quantity: number; // Quantity of the product in the order
-          unitprice: number | null; // Unit price of the product
-          uuid: string; // Unique identifier for the order item
+          "Created at": string
+          discount: number | null
+          order_uuid: string | null
+          price: number
+          "Product ID": number | null
+          product_uuid: string | null
+          quantity: number
+          unitprice: number | null
+          uuid: string
         }
         Insert: {
           "Created at"?: string
@@ -134,9 +126,12 @@ export type Database = {
           CostPrice: number | null
           CreatedAt: string
           image_url: string | null
+          max_stock: number | null
+          min_stock: number | null
           ProductID: number | null
           ProductName: string | null
           ProductType: Database["public"]["Enums"]["ProductCategory"] | null
+          reorder_amount: number | null
           SalesPrice: number | null
           uuid: string
         }
@@ -144,9 +139,12 @@ export type Database = {
           CostPrice?: number | null
           CreatedAt?: string
           image_url?: string | null
+          max_stock?: number | null
+          min_stock?: number | null
           ProductID?: number | null
           ProductName?: string | null
           ProductType?: Database["public"]["Enums"]["ProductCategory"] | null
+          reorder_amount?: number | null
           SalesPrice?: number | null
           uuid?: string
         }
@@ -154,9 +152,12 @@ export type Database = {
           CostPrice?: number | null
           CreatedAt?: string
           image_url?: string | null
+          max_stock?: number | null
+          min_stock?: number | null
           ProductID?: number | null
           ProductName?: string | null
           ProductType?: Database["public"]["Enums"]["ProductCategory"] | null
+          reorder_amount?: number | null
           SalesPrice?: number | null
           uuid?: string
         }
@@ -169,7 +170,7 @@ export type Database = {
           notes: string | null
           product_id: string
           purchase_order_id: string
-          quantity: number
+          quantity_ordered: number // renamed from quantity
           total: number | null
           unit_price: number
         }
@@ -179,7 +180,7 @@ export type Database = {
           notes?: string | null
           product_id: string
           purchase_order_id: string
-          quantity: number
+          quantity_ordered: number // renamed from quantity
           total?: number | null
           unit_price: number
         }
@@ -189,7 +190,7 @@ export type Database = {
           notes?: string | null
           product_id?: string
           purchase_order_id?: string
-          quantity?: number
+          quantity_ordered?: number // renamed from quantity
           total?: number | null
           unit_price?: number
         }
@@ -248,6 +249,91 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "Suppliers"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      sms_campaigns: {
+        Row: {
+          CampaignNumber: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          message: string
+          name: string
+          recipients: string[] | null
+          scheduled_at: string | null
+          sent_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          CampaignNumber?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          message: string
+          name: string
+          recipients?: string[] | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          CampaignNumber?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          message?: string
+          name?: string
+          recipients?: string[] | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sms_campaigns_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_movements: {
+        Row: {
+          date: string
+          id: string
+          movement_type: string
+          product_id: string
+          quantity: number
+          reason: string | null
+        }
+        Insert: {
+          date?: string
+          id?: string
+          movement_type: string
+          product_id: string
+          quantity: number
+          reason?: string | null
+        }
+        Update: {
+          date?: string
+          id?: string
+          movement_type?: string
+          product_id?: string
+          quantity?: number
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "Products"
+            referencedColumns: ["uuid"]
           },
         ]
       }
@@ -396,7 +482,7 @@ export type Database = {
           created_at?: string | null
           department?: string | null
           email?: string
-          id?: string
+          id: string
           last_login?: string | null
           name?: string | null
           role?: string | null
@@ -411,6 +497,15 @@ export type Database = {
       is_employee: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      track_material_movements: {
+        Args: {
+          movement_type: string
+          product_id: string
+          quantity: number
+          reason?: string
+        }
+        Returns: undefined
       }
       update_order_rollups: {
         Args: { order_uuid: string }
