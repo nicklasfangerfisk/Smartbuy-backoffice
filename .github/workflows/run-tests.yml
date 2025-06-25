@@ -54,10 +54,14 @@ jobs:
         EOF
 
     - name: Clone Testflow Repository
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: actions/checkout@v3
+      with:
+        repository: nicklasfangerfisk/Testflow
+        token: ${{ secrets.GITHUB_TOKEN }}
+        path: /tmp/Testflow
+
+    - name: Copy and Commit Jest Results
       run: |
-        git clone https://${GITHUB_TOKEN}@github.com/nicklasfangerfisk/Testflow.git /tmp/Testflow
         cp formatted-jest-results.json /tmp/Testflow/data/jest-results.json
         cd /tmp/Testflow
         git config user.name "GitHub Actions"
