@@ -89,6 +89,10 @@ jobs:
         mkdir -p Testflow/data
         touch Testflow/data/jest-results.json
 
+    - name: Debug: List Testflow Directory
+      run: |
+        ls -la Testflow/data
+
     - name: Copy and Commit Jest Results
       run: |
         cp formatted-jest-results.json Testflow/data/jest-results.json
