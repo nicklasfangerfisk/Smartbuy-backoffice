@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../../utils/supabaseClient';
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/joy/Box';
@@ -13,6 +13,18 @@ export default function Login({ onLogin }: { onLogin: () => void }) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (window.location.pathname === '/login') {
+      async function checkSession() {
+        const { data } = await supabase.auth.getSession();
+        if (data?.session) {
+          navigate('/dashboard');
+        }
+      }
+      checkSession();
+    }
+  }, [navigate]);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -50,9 +62,13 @@ export default function Login({ onLogin }: { onLogin: () => void }) {
       }
       // Try fetching again, with up to 3 retries and a short delay
       let retries = 3;
+      let retryRow: any;
+      let retryError: any;
       while (retries > 0) {
         await new Promise(res => setTimeout(res, 300));
-        const { data: retryRow, error: retryError } = await supabase.from('users').select('*').eq('id', userId).single();
+        const { data, error } = await supabase.from('users').select('*').eq('id', userId).single();
+        retryRow = data;
+        retryError = error;
         if (retryError) {
           console.error('[Login] Retry user fetch error:', retryError);
         }

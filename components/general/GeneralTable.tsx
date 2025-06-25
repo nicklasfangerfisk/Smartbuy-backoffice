@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableRow, Typography, ThemeProvider, createTheme, Box } from '@mui/material';
+import withAuth from '../auth/withAuth';
 
 interface Column {
   id: string;
@@ -76,4 +77,4 @@ const GeneralTable: React.FC<GeneralTableProps> = ({ columns, rows, ariaLabel, m
   );
 };
 
-export default GeneralTable;
+export default withAuth(GeneralTable);

@@ -40,6 +40,10 @@ interface User {
   phone: string | null;
 }
 
+interface PageUsersDesktopProps {
+  users: User[];
+}
+
 function RowMenu() {
   return (
     <Dropdown>
@@ -56,26 +60,12 @@ function RowMenu() {
   );
 }
 
-export default function PageUsersDesktop() {
-  const [users, setUsers] = React.useState<User[]>([]);
-  const [loading, setLoading] = React.useState(false);
+export default function PageUsersDesktop({ users }: PageUsersDesktopProps) {
   const [search, setSearch] = React.useState('');
   const [roleFilter, setRoleFilter] = React.useState('all');
   const [createOpen, setCreateOpen] = React.useState(false);
 
   const isMobile = useMediaQuery('(max-width:600px)');
-
-  React.useEffect(() => {
-    async function fetchUsers() {
-      setLoading(true);
-      const { data, error } = await supabase.from('users').select('*');
-      if (!error && data) {
-        setUsers(data);
-      }
-      setLoading(false);
-    }
-    fetchUsers();
-  }, []);
 
   // Unique roles for filter
   const roleOptions = Array.from(new Set(users.map(u => u.role).filter(Boolean)));
@@ -118,7 +108,7 @@ export default function PageUsersDesktop() {
         >
           <Option value="all">All Roles</Option>
           {roleOptions.map(role => (
-            <Option key={role} value={role || ''} sx={typographyStyles}>{role}</Option>
+            <Option key={role} value={role}>{role}</Option>
           ))}
         </Select>
         <Button
@@ -130,7 +120,6 @@ export default function PageUsersDesktop() {
         </Button>
       </Box>
       <Card>
-        {loading && <LinearProgress />}
         <Table aria-label="Users" sx={{ minWidth: 800 }}>
           <thead>
             <tr>
@@ -144,7 +133,7 @@ export default function PageUsersDesktop() {
             </tr>
           </thead>
           <tbody>
-            {filteredUsers.length === 0 && !loading && (
+            {filteredUsers.length === 0 && (
               <tr>
                 <td colSpan={7} style={{ textAlign: 'center', color: '#888', ...typographyStyles }}>No users found.</td>
               </tr>

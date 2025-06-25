@@ -44,6 +44,7 @@ import UserDialog from '../Dialog/UserDialog';
 import { closeSidebar } from '../../utils';
 import { useEffect, useState } from 'react';
 import { supabase } from '../../utils/supabaseClient';
+import withAuth from '../auth/withAuth';
 
 /**
  * Sidebar component for navigation.
@@ -51,7 +52,7 @@ import { supabase } from '../../utils/supabaseClient';
  * @param {function} props.setView - Function to update the current view.
  * @param {string} props.view - Current view identifier.
  */
-export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'orders' | 'products' | 'messages' | 'users' | 'suppliers' | 'purchaseorders' | 'tickets' | 'smscampaigns') => void, view: string }) {
+function Sidebar({ setView, view }: { setView: (view: 'home' | 'orders' | 'products' | 'messages' | 'users' | 'suppliers' | 'purchaseorders' | 'tickets' | 'smscampaigns') => void, view: string }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [users, setUsers] = useState<any[]>([]);
@@ -420,7 +421,13 @@ export default function Sidebar({ setView, view }: { setView: (view: 'home' | 'o
             </ListItemButton>
           </ListItem>
           <ListItem sx={{ p: 0, alignItems: 'stretch' }}>
-            <ListItemButton onClick={async () => { await supabase.auth.signOut(); }} sx={{ width: '100%', alignItems: 'center', minHeight: 40 }}>
+            <ListItemButton
+              onClick={async () => {
+                await supabase.auth.signOut();
+                window.location.href = '/login'; // Redirect to login page after logout
+              }}
+              sx={{ width: '100%', alignItems: 'center', minHeight: 40 }}
+            >
               <LogoutRoundedIcon sx={{ mr: 1 }} />
               <ListItemContent sx={{ display: 'flex', alignItems: 'center', p: 0 }}>
                 <Typography level="body-sm">Logout</Typography>
@@ -496,3 +503,5 @@ function Toggler({
     </React.Fragment>
   );
 }
+
+export default withAuth(Sidebar);

@@ -6,6 +6,7 @@ import DialogContent from '@mui/joy/DialogContent';
 import DialogActions from '@mui/joy/DialogActions';
 import Button from '@mui/joy/Button';
 import Input from '@mui/joy/Input';
+import withAuth from '../auth/withAuth';
 
 /**
  * Props for the ProductTableForm component.
@@ -40,7 +41,7 @@ interface ProductTableFormProps {
 /**
  * A modal dialog component for adding or editing product details.
  */
-export default function ProductTableForm({ open, onClose, product, onSave }: ProductTableFormProps) {
+function ProductTableForm({ open, onClose, product, onSave }: ProductTableFormProps) {
   const [form, setForm] = React.useState({
     ProductName: product?.ProductName || '',
     SalesPrice: product?.SalesPrice?.toString() || '',
@@ -98,3 +99,5 @@ export default function ProductTableForm({ open, onClose, product, onSave }: Pro
     </Modal>
   );
 }
+
+export default withAuth(ProductTableForm);

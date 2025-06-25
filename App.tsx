@@ -32,6 +32,7 @@ import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
 import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import './App.css'; // Import custom styles
+import LoginLayout from './components/auth/LoginLayout';
 
 function Layout() {
   const location = useLocation();
@@ -116,27 +117,80 @@ function Layout() {
               setMobileMenuValue(value);
               navigate(`/${value}`);
             }}
-            className="mobile-menu"
+            toggleSidebar={() => console.log('Sidebar toggled')} // Provide toggleSidebar prop
           />
         )}
         <Routes>
-          <Route path="/" element={<Login onLogin={() => {}} />} />
-          <Route path="/orders" element={<PageOrderDesktop rows={[]} orderDetailsOpen={false} selectedOrder={null} fetchOrderItems={(orderUuid) => Promise.resolve([])} onCloseOrderDetails={() => {}} />} />
-          <Route path="/products" element={<PageProductDesktop />} />
+          <Route path="/" element={<Login onLogin={() => navigate('/dashboard')} />} />
+          <Route
+            path="/orders"
+            element={
+              <ProtectedRoute>
+                <PageOrderDesktop rows={[]} orderDetailsOpen={false} selectedOrder={null} fetchOrderItems={(orderUuid) => Promise.resolve([])} onCloseOrderDetails={() => {}} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/products"
+            element={
+              <ProtectedRoute>
+                <PageProductDesktop />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/users"
             element={
               <ProtectedRoute>
-                {isMobile ? <PageUsersMobile users={users} /> : <PageUsersDesktop users={users} />}
+                {isMobile ? (
+                  <PageUsersMobile users={users} />
+                ) : (
+                  <PageUsersDesktop users={users} />
+                )}
               </ProtectedRoute>
             }
           />
-          <Route path="/suppliers" element={<Suppliers />} />
-          <Route path="/purchase-orders" element={<PagePurchaseOrderDesktop orders={[]} />} />
-          <Route path="/login" element={<Login onLogin={() => {}} />} />
-          <Route path="/tickets" element={<TicketList />} />
-          <Route path="/sms-campaigns" element={<PageSmsCampaignsDesktop campaigns={[]} />} />
-          <Route path="/dashboard" element={<PageDashboard />} />
+          <Route
+            path="/suppliers"
+            element={
+              <ProtectedRoute>
+                <Suppliers />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/purchase-orders"
+            element={
+              <ProtectedRoute>
+                <PagePurchaseOrderDesktop orders={[]} />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/login" element={<Login onLogin={() => navigate('/dashboard')} />} />
+          <Route
+            path="/tickets"
+            element={
+              <ProtectedRoute>
+                <TicketList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/sms-campaigns"
+            element={
+              <ProtectedRoute>
+                <PageSmsCampaignsDesktop campaigns={[]} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <PageDashboard />
+              </ProtectedRoute>
+            }
+          />
           {/* Redirect all unknown routes to / */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
@@ -150,7 +204,10 @@ export default function App() {
     <CssVarsProvider>
       <CssBaseline />
       <Router>
-        <Layout />
+        <Routes>
+          <Route path="/login/*" element={<LoginLayout />} />
+          <Route path="/*" element={<Layout />} />
+        </Routes>
       </Router>
     </CssVarsProvider>
   );

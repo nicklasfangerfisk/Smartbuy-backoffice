@@ -8,6 +8,8 @@ import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
 import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import MenuIcon from '@mui/icons-material/Menu';
+import { supabase } from '../../utils/supabaseClient';
+import { useLocation } from 'react-router-dom';
 
 export interface MobileMenuItem {
   label: string;
@@ -19,6 +21,7 @@ interface MobileMenuProps {
   items: MobileMenuItem[];
   value: "home" | "orders" | "products" | "messages" | "users" | "suppliers" | "purchaseorders" | "tickets" | "smscampaigns";
   onChange: (value: "home" | "orders" | "products" | "messages" | "users" | "suppliers" | "purchaseorders" | "tickets" | "smscampaigns") => void;
+  toggleSidebar: () => void; // Added prop to toggle the sidebar
 }
 
 /**
@@ -34,7 +37,14 @@ interface MobileMenuProps {
  *
  * @returns {JSX.Element} The rendered mobile menu component.
  */
-export default function MobileMenu({ items, value, onChange }: MobileMenuProps) {
+export default function MobileMenu({ items, value, onChange, toggleSidebar }: MobileMenuProps) {
+  const location = useLocation();
+
+  // Ensure the menu is hidden on the login page
+  if (location.pathname === '/login') {
+    return null;
+  }
+
   const muiTheme = React.useMemo(() => createTheme({
     components: {
       MuiTableRow: {
@@ -48,6 +58,16 @@ export default function MobileMenu({ items, value, onChange }: MobileMenuProps) 
       },
     },
   }), []);
+
+  const handleNavigation = async (newValue: MobileMenuItem['value']) => {
+    const { data: session } = await supabase.auth.getSession();
+    if (!session && ['orders', 'products', 'users', 'suppliers', 'purchaseorders', 'tickets', 'smscampaigns'].includes(newValue)) {
+      alert('You must be logged in to access this page.');
+      return;
+    }
+    onChange(newValue);
+  };
+
   return (
     <ThemeProvider theme={muiTheme}>
       <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999, backgroundColor: 'rgba(0, 0, 255, 0.2)' }}>
@@ -55,14 +75,15 @@ export default function MobileMenu({ items, value, onChange }: MobileMenuProps) 
           showLabels
           value={value}
           onChange={(_e, newValue) => {
-            onChange(newValue);
+            handleNavigation(newValue);
           }}
         >
           <BottomNavigationAction
             label={''}
             icon={<MenuIcon />}
             onClick={(e) => {
-              e.preventDefault();
+              e.stopPropagation(); // Prevent navigation events
+              toggleSidebar();
             }}
           />
           {items.map((item) => (
@@ -71,7 +92,7 @@ export default function MobileMenu({ items, value, onChange }: MobileMenuProps) 
               label={item.label}
               icon={item.icon}
               value={item.value}
-              onClick={() => onChange(item.value)}
+              onClick={() => handleNavigation(item.value)}
             />
           ))}
         </BottomNavigation>

@@ -8,6 +8,7 @@ import Select from '@mui/joy/Select';
 import Option from '@mui/joy/Option';
 import Textarea from '@mui/joy/Textarea';
 import Button from '@mui/joy/Button';
+import withAuth from '../auth/withAuth';
 
 // Props interface
 interface TicketResFormProps {
@@ -92,4 +93,4 @@ const TicketResForm: React.FC<TicketResFormProps> = ({ open, onClose, onSubmit }
   );
 };
 
-export default TicketResForm;
+export default withAuth(TicketResForm);
