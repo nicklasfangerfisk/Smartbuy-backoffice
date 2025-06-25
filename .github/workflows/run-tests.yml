@@ -26,7 +26,7 @@ jobs:
       run: npm install jest
 
     - name: Run Unit Tests and Generate JSON Report
-      run: jest --json --outputFile=jest-results.json
+      run: npx jest --json --outputFile=jest-results.json
 
     - name: Format Jest JSON Report
       run: |
