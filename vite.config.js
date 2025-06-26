@@ -8,4 +8,9 @@ export default defineConfig({
       '@emotion/react': require.resolve('@emotion/react'),
     },
   },
+  server: {
+    proxy: {
+      '/api': 'http://localhost:3000',
+    },
+  },
 });

@@ -9,6 +9,7 @@ import Typography from '@mui/joy/Typography';
 import Box from '@mui/joy/Box';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
+import { receivePurchaseOrder } from '../api/receivePurchaseOrder';
 
 interface POItem {
   id: string;
@@ -65,9 +66,22 @@ const DialogReceivePurchaseOrder: React.FC<DialogReceivePurchaseOrderProps> = ({
     );
   };
 
-  const handleConfirm = () => {
-    // Persist only id and quantity_received
-    onConfirm(received.map(({ id, quantity_received }) => ({ id, quantity_received })));
+  const handleConfirm = async () => {
+    try {
+      // Persist only id and quantity_received
+      const receivedItems = received.map(({ id, quantity_received }) => ({
+        product_id: parseInt(id, 10),
+        quantity_received,
+      }));
+
+      await receivePurchaseOrder(parseInt(poId.toString(), 10), receivedItems);
+
+      alert('Purchase order received successfully!');
+      onClose();
+    } catch (error) {
+      console.error('Error receiving purchase order:', error);
+      alert('Failed to receive purchase order. Please try again.');
+    }
   };
 
   return (
