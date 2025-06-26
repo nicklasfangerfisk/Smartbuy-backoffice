@@ -32,7 +32,6 @@ jobs:
 
     - name: Run Unit Tests and Insert Results into Supabase
       run: |
+        export SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+        export SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         node scripts/post-jest-results.js
-      env:
-        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-        SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
