@@ -30,42 +30,35 @@ jobs:
     - name: Install Jest
       run: npm install jest
 
-    - name: Run Unit Tests and Generate JSON Report
-      run: npx jest --json --outputFile=jest-results.json
-
-    - name: Fetch Existing Jest Results
-      run: |
-        if [ -f jest-results.json ]; then
-          cp jest-results.json jest-results-existing.json
-        fi
-
-    - name: Remove JSON Report Formatting
-      run: echo "Removed JSON report formatting step as results will be rendered from Supabase."
-
-    - name: Save Jest Results with Timestamp
-      run: |
-        timestamp=$(date +"%Y%m%d%H%M%S")
-        cp formatted-jest-results.json "jest_$timestamp.json"
-        echo "Saved Jest results as jest_$timestamp.json"
-
-    - name: Insert Jest Results into Supabase
+    - name: Run Unit Tests and Insert Results into Supabase
       run: |
         node <<EOF
         require('dotenv').config();
         const fetch = require('node-fetch');
-        const fs = require('fs');
+        const { execSync } = require('child_process');
 
         const supabaseUrl = process.env.SUPABASE_URL;
         const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-        const jestResults = JSON.parse(fs.readFileSync('formatted-jest-results.json'));
+        // Run Jest and capture results
+        const jestOutput = execSync('npx jest --json').toString();
+        const jestResults = JSON.parse(jestOutput);
 
         const payload = {
-          total_tests: jestResults.total,
-          passed_tests: jestResults.passed,
-          failed_tests: jestResults.failed,
-          skipped_tests: jestResults.skipped,
-          results: jestResults.suites
+          total_tests: jestResults.numTotalTests,
+          passed_tests: jestResults.numPassedTests,
+          failed_tests: jestResults.numFailedTests,
+          skipped_tests: jestResults.numPendingTests,
+          results: jestResults.testResults.map(suite => ({
+            name: suite.name,
+            passed: suite.numPassingTests,
+            failed: suite.numFailingTests,
+            tests: suite.assertionResults.map(test => ({
+              name: test.fullName,
+              status: test.status,
+              errorMessage: test.failureMessages.join('\n') || null
+            }))
+          }))
         };
 
         fetch(`${supabaseUrl}/rest/v1/jest_results`, {
