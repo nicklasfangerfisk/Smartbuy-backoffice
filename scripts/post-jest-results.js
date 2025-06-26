@@ -42,11 +42,15 @@ fetch(`${supabaseUrl}/rest/v1/jest_results`, {
   },
   body: JSON.stringify(payload)
 })
-.then(response => {
+.then(async response => {
+  const rawBody = await response.text();
+  console.log('Raw response body:', rawBody);
+
   if (!response.ok) {
     throw new Error(`Failed to insert Jest results: ${response.statusText}`);
   }
-  return response.json();
+
+  return JSON.parse(rawBody);
 })
 .then(data => console.log('Inserted Jest results:', data))
 .catch(error => {
