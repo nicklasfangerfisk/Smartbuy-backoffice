@@ -26,6 +26,10 @@
 - Resolved hook order issues in mobile components.
 - Prevented runtime errors in `GeneralTableMobile` component.
 
+## [1.1.0] - 2025-06-26
+### Fixed
+- Corrected YAML syntax in the `run-tests` GitHub Actions workflow to resolve CI pipeline errors.
+
 ---
 
 This marks the initial release of the purchase order and inventory management system.

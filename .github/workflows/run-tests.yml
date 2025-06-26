@@ -112,3 +112,16 @@ jobs:
           git commit -m "Update Jest test results"
           git push
         fi
+
+    - name: Save Jest Results with Timestamp
+      run: |
+        timestamp=$(date +"%Y%m%d%H%M%S")
+        cp formatted-jest-results.json "Testflow/data/jest_$timestamp.json"
+        cd Testflow
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        git add "data/jest_$timestamp.json"
+        if ! git diff --cached --quiet; then
+          git commit -m "Add Jest test results for $timestamp"
+          git push
+        fi
