@@ -39,43 +39,8 @@ jobs:
           cp jest-results.json jest-results-existing.json
         fi
 
-    - name: Format Jest JSON Report
-      run: |
-        node <<EOF
-        const fs = require('fs');
-        const path = require('path');
-
-        const rawData = JSON.parse(fs.readFileSync('jest-results.json'));
-        const formattedData = {
-          timestamp: new Date().toISOString(),
-          total: rawData.numTotalTests,
-          passed: rawData.numPassedTests,
-          failed: rawData.numFailedTests,
-          skipped: rawData.numPendingTests,
-          suites: rawData.testResults.map(suite => ({
-            name: suite.name,
-            passed: suite.numPassingTests,
-            failed: suite.numFailingTests,
-            tests: suite.assertionResults.map(test => ({
-              name: test.fullName,
-              status: test.status,
-              errorMessage: test.failureMessages.join('\n') || null
-            }))
-          }))
-        };
-
-        const resultsFilePath = path.join('jest-results.json');
-        let accumulatedResults = [];
-
-        if (fs.existsSync(resultsFilePath)) {
-          const existingData = JSON.parse(fs.readFileSync(resultsFilePath));
-          accumulatedResults = existingData.concat(formattedData);
-        } else {
-          accumulatedResults.push(formattedData);
-        }
-
-        fs.writeFileSync(resultsFilePath, JSON.stringify(accumulatedResults, null, 2));
-        EOF
+    - name: Remove JSON Report Formatting
+      run: echo "Removed JSON report formatting step as results will be rendered from Supabase."
 
     - name: Save Jest Results with Timestamp
       run: |
