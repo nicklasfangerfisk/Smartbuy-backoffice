@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      jest_results: {
+        Row: {
+          failed_tests: number
+          id: number
+          passed_tests: number
+          results: Json
+          skipped_tests: number
+          timestamp: string | null
+          total_tests: number
+        }
+        Insert: {
+          failed_tests: number
+          id?: number
+          passed_tests: number
+          results: Json
+          skipped_tests: number
+          timestamp?: string | null
+          total_tests: number
+        }
+        Update: {
+          failed_tests?: number
+          id?: number
+          passed_tests?: number
+          results?: Json
+          skipped_tests?: number
+          timestamp?: string | null
+          total_tests?: number
+        }
+        Relationships: []
+      }
       OrderItems: {
         Row: {
           "Created at": string
@@ -170,7 +200,8 @@ export type Database = {
           notes: string | null
           product_id: string
           purchase_order_id: string
-          quantity_ordered: number // renamed from quantity
+          quantity_ordered: number
+          quantity_received: number | null
           total: number | null
           unit_price: number
         }
@@ -180,7 +211,8 @@ export type Database = {
           notes?: string | null
           product_id: string
           purchase_order_id: string
-          quantity_ordered: number // renamed from quantity
+          quantity_ordered: number
+          quantity_received?: number | null
           total?: number | null
           unit_price: number
         }
@@ -190,7 +222,8 @@ export type Database = {
           notes?: string | null
           product_id?: string
           purchase_order_id?: string
-          quantity_ordered?: number // renamed from quantity
+          quantity_ordered?: number
+          quantity_received?: number | null
           total?: number | null
           unit_price?: number
         }
@@ -482,7 +515,7 @@ export type Database = {
           created_at?: string | null
           department?: string | null
           email?: string
-          id: string
+          id?: string
           last_login?: string | null
           name?: string | null
           role?: string | null

@@ -125,3 +125,45 @@ jobs:
           git commit -m "Add Jest test results for $timestamp"
           git push
         fi
+
+    - name: Insert Jest Results into Supabase
+      run: |
+        node <<EOF
+        require('dotenv').config();
+        const fetch = require('node-fetch');
+        const fs = require('fs');
+
+        const supabaseUrl = process.env.SUPABASE_URL;
+        const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+        const jestResults = JSON.parse(fs.readFileSync('formatted-jest-results.json'));
+
+        const payload = {
+          total_tests: jestResults.total,
+          passed_tests: jestResults.passed,
+          failed_tests: jestResults.failed,
+          skipped_tests: jestResults.skipped,
+          results: jestResults.suites
+        };
+
+        fetch(`${supabaseUrl}/rest/v1/jest_results`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`
+          },
+          body: JSON.stringify(payload)
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`Failed to insert Jest results: ${response.statusText}`);
+          }
+          return response.json();
+        })
+        .then(data => console.log('Inserted Jest results:', data))
+        .catch(error => console.error('Error:', error));
+        EOF
+      env:
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
