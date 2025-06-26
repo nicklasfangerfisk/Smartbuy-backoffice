@@ -42,7 +42,7 @@ jobs:
 
         if (!supabaseUrl || !supabaseKey) {
           console.error('Supabase URL or Service Role Key is not set or empty.');
-          console.error(`SUPABASE_URL: ${supabaseUrl || 'NOT SET'}`);
+          console.error(`SUPABASE_URL: ${supabaseUrl ? supabaseUrl : 'NOT SET'}`);
           console.error(`SUPABASE_SERVICE_ROLE_KEY: ${supabaseKey ? 'SET' : 'NOT SET'}`);
           process.exit(1);
         }
