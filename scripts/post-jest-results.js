@@ -33,6 +33,8 @@ const payload = {
   }))
 };
 
+console.log('Payload being sent to Supabase:', JSON.stringify(payload, null, 2));
+
 fetch(`${supabaseUrl}/rest/v1/jest_results`, {
   method: 'POST',
   headers: {
@@ -43,11 +45,18 @@ fetch(`${supabaseUrl}/rest/v1/jest_results`, {
   body: JSON.stringify(payload)
 })
 .then(async response => {
+  console.log('HTTP Status:', response.status, response.statusText);
   const rawBody = await response.text();
   console.log('Raw response body:', rawBody);
 
   if (!response.ok) {
     throw new Error(`Failed to insert Jest results: ${response.statusText}`);
+  }
+
+  // Handle empty response body gracefully
+  if (!rawBody) {
+    console.log('No response body returned. Assuming success.');
+    return {};
   }
 
   return JSON.parse(rawBody);
