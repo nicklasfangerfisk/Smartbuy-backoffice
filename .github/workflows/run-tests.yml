@@ -35,8 +35,8 @@ jobs:
 
     - name: Fetch Existing Jest Results
       run: |
-        if [ -f Testflow/data/jest-results.json ]; then
-          cp Testflow/data/jest-results.json jest-results-existing.json
+        if [ -f jest-results.json ]; then
+          cp jest-results.json jest-results-existing.json
         fi
 
     - name: Format Jest JSON Report
@@ -64,7 +64,7 @@ jobs:
           }))
         };
 
-        const resultsFilePath = path.join('Testflow', 'data', 'jest-results.json');
+        const resultsFilePath = path.join('jest-results.json');
         let accumulatedResults = [];
 
         if (fs.existsSync(resultsFilePath)) {
@@ -77,24 +77,11 @@ jobs:
         fs.writeFileSync(resultsFilePath, JSON.stringify(accumulatedResults, null, 2));
         EOF
 
-    - name: Remove Testflow Integration
-      run: echo "Testflow integration steps removed."
-      # Removed steps related to Testflow repository
-      # Removed copying and committing Jest results to Testflow/data
-      # Removed Testflow repository clone and related operations
-
     - name: Save Jest Results with Timestamp
       run: |
         timestamp=$(date +"%Y%m%d%H%M%S")
-        cp formatted-jest-results.json "Testflow/data/jest_$timestamp.json"
-        cd Testflow
-        git config user.name "GitHub Actions"
-        git config user.email "actions@github.com"
-        git add "data/jest_$timestamp.json"
-        if ! git diff --cached --quiet; then
-          git commit -m "Add Jest test results for $timestamp"
-          git push
-        fi
+        cp formatted-jest-results.json "jest_$timestamp.json"
+        echo "Saved Jest results as jest_$timestamp.json"
 
     - name: Insert Jest Results into Supabase
       run: |
