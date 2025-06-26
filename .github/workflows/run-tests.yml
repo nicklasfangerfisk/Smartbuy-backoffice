@@ -77,41 +77,11 @@ jobs:
         fs.writeFileSync(resultsFilePath, JSON.stringify(accumulatedResults, null, 2));
         EOF
 
-    - name: Clone Testflow Repository
-      uses: actions/checkout@v3
-      with:
-        repository: nicklasfangerfisk/Testflow
-        token: ${{ secrets.TESTFLOW }}
-        path: Testflow
-
-    - name: Ensure Jest Results Directory Exists
-      run: |
-        mkdir -p Testflow/data
-        touch Testflow/data/jest-results.json
-
-    - name: Debug: List Testflow Directory
-      run: ls -la Testflow/data
-
-    - name: Debug: Check Jest Results File
-      run: |
-        if [ -f Testflow/data/jest-results.json ]; then
-          echo "File exists: Testflow/data/jest-results.json"
-          cat Testflow/data/jest-results.json
-        else
-          echo "File does not exist: Testflow/data/jest-results.json"
-        fi
-
-    - name: Copy and Commit Jest Results
-      run: |
-        cp formatted-jest-results.json Testflow/data/jest-results.json
-        cd Testflow
-        git config user.name "GitHub Actions"
-        git config user.email "actions@github.com"
-        git add data/jest-results.json
-        if ! git diff --cached --quiet; then
-          git commit -m "Update Jest test results"
-          git push
-        fi
+    - name: Remove Testflow Integration
+      run: echo "Testflow integration steps removed."
+      # Removed steps related to Testflow repository
+      # Removed copying and committing Jest results to Testflow/data
+      # Removed Testflow repository clone and related operations
 
     - name: Save Jest Results with Timestamp
       run: |
