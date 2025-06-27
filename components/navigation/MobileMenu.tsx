@@ -61,7 +61,9 @@ export default function MobileMenu({ items, value, onChange, toggleSidebar }: Mo
 
   const handleNavigation = async (newValue: MobileMenuItem['value']) => {
     const { data: session } = await supabase.auth.getSession();
-    if (!session && ['orders', 'products', 'users', 'suppliers', 'purchaseorders', 'tickets', 'smscampaigns', 'movements'].includes(newValue)) {
+    if (!session && [
+      'orders', 'products', 'users', 'suppliers', 'purchaseorders', 'tickets', 'smscampaigns', 'movements'
+    ].includes(newValue)) {
       alert('You must be logged in to access this page.');
       return;
     }

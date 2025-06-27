@@ -167,7 +167,14 @@ export default function PurchaseOrderTable({ orders: initialOrders }: PagePurcha
           .select('id, product_id, Products(ProductName), quantity_ordered, quantity_received')
           .eq('purchase_order_id', selectedOrder.id);
         console.log('Query Results:', { data, error }); // Debug log to inspect query results
-        if (!error && data) setPoItems(data);
+        if (!error && data) {
+          // Map ProductName from Products relation (object)
+          const mapped = data.map(item => ({
+            ...item,
+            ProductName: item.Products?.ProductName || '',
+          }));
+          setPoItems(mapped);
+        }
       })();
     }
   }, [receiveDialogOpen, selectedOrder]);
@@ -226,10 +233,11 @@ export default function PurchaseOrderTable({ orders: initialOrders }: PagePurcha
         order={selectedOrder}
       />
       <DialogReceivePurchaseOrder
-        open={receiveDialogOpen}
+        open={receiveDialogOpen && !!selectedOrder?.id && poItems.every(item => !!item.id && !!item.product_id)}
         onClose={() => setReceiveDialogOpen(false)}
-        poId={selectedOrder?.order_number || selectedOrder?.id}
-        items={poItems}
+        poId={selectedOrder?.id} // DB id for backend
+        orderNumber={selectedOrder?.order_number} // Human-friendly order number for display
+        items={poItems.filter(item => !!item.id && !!item.product_id)}
         onConfirm={async (receivedItems) => {
           // Update purchaseorderitems with received quantities
           for (const item of receivedItems) {

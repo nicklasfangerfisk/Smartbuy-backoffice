@@ -45,7 +45,8 @@
     "marked": "^16.0.0",
     "process": "^0.11.10",
     "react-router-dom": "^7.6.2",
-    "twilio": "^5.7.1"
+    "twilio": "^5.7.1",
+    "vercel": "^44.2.7"
   },
   "homepage": "https://nicklasfangerfisk.github.io/Smartbuy-backoffice/",
   "jest": {

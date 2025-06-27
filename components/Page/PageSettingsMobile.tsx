@@ -3,6 +3,8 @@ import Box from '@mui/joy/Box';
 import Typography from '@mui/joy/Typography';
 import Sheet from '@mui/joy/Sheet';
 import { marked } from 'marked';
+import Button from '@mui/joy/Button';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 function ReleaseLog() {
   const [log, setLog] = React.useState('');
@@ -30,6 +32,18 @@ function AppInfo() {
       <Typography level="body-sm">Version: {import.meta.env.VITE_APP_VERSION || 'N/A'}</Typography>
       <Typography level="body-sm">Build: {import.meta.env.VITE_GIT_COMMIT || 'N/A'}</Typography>
       <Typography level="body-sm">Date: {new Date().toLocaleDateString()}</Typography>
+      <Button
+        component="a"
+        href="https://nicklasfangerfisk.github.io/Testflow/"
+        target="_blank"
+        rel="noopener noreferrer"
+        startDecorator={<OpenInNewIcon />}
+        sx={{ mt: 2 }}
+        variant="outlined"
+        color="primary"
+      >
+        System test
+      </Button>
     </Sheet>
   );
 }

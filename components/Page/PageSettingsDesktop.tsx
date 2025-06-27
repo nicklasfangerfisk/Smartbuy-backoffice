@@ -4,8 +4,9 @@ import Typography from '@mui/joy/Typography';
 import Sheet from '@mui/joy/Sheet';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/joy/styles';
-import { styled } from '@mui/joy/styles';
 import { marked } from 'marked';
+import Button from '@mui/joy/Button';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 // Helper to fetch and render the release log markdown
 function ReleaseLog() {
@@ -35,18 +36,21 @@ function AppInfo() {
       <Typography level="body-sm">Version: {import.meta.env.VITE_APP_VERSION || 'N/A'}</Typography>
       <Typography level="body-sm">Build: {import.meta.env.VITE_GIT_COMMIT || 'N/A'}</Typography>
       <Typography level="body-sm">Date: {new Date().toLocaleDateString()}</Typography>
+      <Button
+        component="a"
+        href="https://nicklasfangerfisk.github.io/Testflow/"
+        target="_blank"
+        rel="noopener noreferrer"
+        startDecorator={<OpenInNewIcon />}
+        sx={{ mt: 2 }}
+        variant="outlined"
+        color="primary"
+      >
+        System test
+      </Button>
     </Sheet>
   );
 }
-
-const ResponsiveGrid = styled(Box)(({ theme }) => ({
-  display: 'grid',
-  gap: theme.spacing(2),
-  gridTemplateColumns: '1fr 1fr',
-  [theme.breakpoints.down('md')]: {
-    gridTemplateColumns: '1fr',
-  },
-}));
 
 export default function PageSettingsDesktop() {
   const theme = useTheme();
@@ -54,14 +58,20 @@ export default function PageSettingsDesktop() {
   return (
     <Box sx={{ p: { xs: 1, md: 3 }, width: '100%', maxWidth: 1200, mx: 'auto' }}>
       <Typography level="h2" sx={{ mb: 2 }}>Settings</Typography>
-      <ResponsiveGrid>
+      <Box
+        sx={{
+          display: 'grid',
+          gap: 2,
+          gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+        }}
+      >
         <Box>{/* Left: App Info (on mobile, on top) */}
           <AppInfo />
         </Box>
         <Box>{/* Right: Release Log (on mobile, below) */}
           <ReleaseLog />
         </Box>
-      </ResponsiveGrid>
+      </Box>
     </Box>
   );
 }
