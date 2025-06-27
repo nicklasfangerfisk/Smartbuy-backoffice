@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Box, Typography, Grid, Card } from '@mui/joy';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import { supabase } from '../../utils/supabaseClient';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 /**
  * Dashboard page component that displays key metrics such as total sales,
@@ -84,6 +85,7 @@ const PageDashboard: React.FC = () => {
   const [customersChange, setCustomersChange] = React.useState<number | null>(null);
   const [initialLoading, setInitialLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
+  const isMobile = useMediaQuery('(max-width:600px)');
 
   React.useEffect(() => {
     let isMounted = true;
@@ -121,7 +123,10 @@ const PageDashboard: React.FC = () => {
   }, []);
 
   return (
-    <Box sx={{ p: 4 }}>
+    <Box sx={{
+      p: { xs: 1, md: 4 },
+      pt: { xs: 0, md: 4 }, // Remove top padding for mobile since header is gone
+    }}>
       <Typography level="h2" sx={{ mb: 2 }}>
         <DashboardRoundedIcon sx={{ mr: 1, verticalAlign: 'middle' }} /> Dashboard
       </Typography>

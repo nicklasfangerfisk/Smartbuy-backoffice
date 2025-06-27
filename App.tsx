@@ -64,6 +64,7 @@ function Layout() {
   React.useEffect(() => {
     const pathToValueMap: Record<string, typeof mobileMenuValue> = {
       '/': 'home',
+      '/dashboard': 'home',
       '/orders': 'orders',
       '/products': 'products',
       '/users': 'users',
@@ -114,7 +115,8 @@ function Layout() {
           marginBottom: isMobile ? '56px' : 0, // Adjust for MobileMenu height
         }}
       >
-        {location.pathname !== '/login' && <Header />}
+        {/* Only render Header on pages where it is wanted, not on dashboard */}
+        {location.pathname !== '/login' && location.pathname !== '/dashboard' && <Header />}
         {isMobile && location.pathname !== '/login' && (
           <MobileMenu
             items={mobileMenuItems}
