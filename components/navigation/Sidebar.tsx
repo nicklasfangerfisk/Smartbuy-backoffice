@@ -429,7 +429,11 @@ function Sidebar({ setView, view }: { setView: (view: 'home' | 'orders' | 'produ
       <Box sx={{ mt: 'auto', mb: 2 }}>
         <List sx={{ p: 0 }}>
           <ListItem sx={{ p: 0, alignItems: 'stretch' }}>
-            <ListItemButton sx={{ width: '100%', alignItems: 'center', minHeight: 40 }}>
+            <ListItemButton
+              selected={isSelected('/settings')}
+              onClick={() => handleNavigation('/settings', 'settings')}
+              sx={{ width: '100%', alignItems: 'center', minHeight: 40 }}
+            >
               <SettingsRoundedIcon sx={{ mr: 1 }} />
               <ListItemContent sx={{ display: 'flex', alignItems: 'center', p: 0 }}>
                 <Typography level="body-sm">Settings</Typography>

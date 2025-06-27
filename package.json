@@ -42,6 +42,7 @@
     "@supabase/supabase-js": "^2.50.1",
     "date-fns": "^4.1.0",
     "dotenv": "^16.5.0",
+    "marked": "^16.0.0",
     "process": "^0.11.10",
     "react-router-dom": "^7.6.2",
     "twilio": "^5.7.1"

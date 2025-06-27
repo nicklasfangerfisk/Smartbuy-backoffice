@@ -12,5 +12,10 @@ export default defineConfig({
     proxy: {
       '/api': 'http://localhost:3000',
     },
+    hmr: {
+      host: 'refactored-space-robot-97qrgx65675r2p46-3000.app.github.dev',
+      port: 443,
+      protocol: 'wss',
+    },
   },
 });

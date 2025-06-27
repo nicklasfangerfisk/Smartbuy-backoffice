@@ -35,6 +35,8 @@ import './App.css'; // Import custom styles
 import LoginLayout from './components/auth/LoginLayout';
 import PageMovementsDesktop from './components/Page/PageMovementsDesktop';
 import PageInventoryDesktop from './components/Page/PageInventoryDesktop';
+import PageSettingsDesktop from './components/Page/PageSettingsDesktop';
+import PageSettingsMobile from './components/Page/PageSettingsMobile';
 
 function Layout() {
   const location = useLocation();
@@ -206,6 +208,14 @@ function Layout() {
             element={
               <ProtectedRoute>
                 <PageInventoryDesktop />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                {isMobile ? <PageSettingsMobile /> : <PageSettingsDesktop />}
               </ProtectedRoute>
             }
           />
