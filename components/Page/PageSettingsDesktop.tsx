@@ -1,7 +1,6 @@
 import React from 'react';
 import Box from '@mui/joy/Box';
 import Typography from '@mui/joy/Typography';
-import Sheet from '@mui/joy/Sheet';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/joy/styles';
 import { marked } from 'marked';
@@ -17,25 +16,56 @@ function ReleaseLog() {
       .then(setLog);
   }, []);
   return (
-    <Sheet variant="outlined" sx={{ p: 2, minHeight: 300, overflow: 'auto', bgcolor: 'background.level1', borderRadius: 'var(--joy-radius-lg)' }}>
-      <Typography level="h4" sx={{ mb: 1 }}>Release Log</Typography>
+    <Box
+      sx={{
+        p: 2,
+        minHeight: 300,
+        overflow: 'auto',
+        bgcolor: 'background.level1',
+        borderRadius: 'var(--joy-radius-lg)',
+        border: '1px solid',
+        borderColor: 'divider',
+      }}
+    >
+      <Typography level="h4" sx={{ mb: 1 }}>
+        Release Log
+      </Typography>
       <Box sx={{ fontSize: 14 }}>
         <div dangerouslySetInnerHTML={{ __html: marked(log) }} />
       </Box>
-    </Sheet>
+    </Box>
   );
 }
 
 function AppInfo() {
   // You can expand this with more dynamic info if needed
   return (
-    <Sheet variant="outlined" sx={{ p: 2, minHeight: 300, bgcolor: 'background.level1', borderRadius: 'var(--joy-radius-lg)' }}>
-      <Typography level="h4" sx={{ mb: 1 }}>Application Info</Typography>
+    <Box
+      sx={{
+        p: 2,
+        minHeight: 300,
+        bgcolor: 'background.level1',
+        borderRadius: 'var(--joy-radius-lg)',
+        border: '1px solid',
+        borderColor: 'divider',
+      }}
+    >
+      <Typography level="h4" sx={{ mb: 1 }}>
+        Application Info
+      </Typography>
       <Typography level="body-md">Smartback Inventory System</Typography>
-      <Typography level="body-sm" sx={{ mt: 1 }}>Environment: {import.meta.env.MODE}</Typography>
-      <Typography level="body-sm">Version: {import.meta.env.VITE_APP_VERSION || 'N/A'}</Typography>
-      <Typography level="body-sm">Build: {import.meta.env.VITE_GIT_COMMIT || 'N/A'}</Typography>
-      <Typography level="body-sm">Date: {new Date().toLocaleDateString()}</Typography>
+      <Typography level="body-sm" sx={{ mt: 1 }}>
+        Environment: {import.meta.env.MODE}
+      </Typography>
+      <Typography level="body-sm">
+        Version: {import.meta.env.VITE_APP_VERSION || 'N/A'}
+      </Typography>
+      <Typography level="body-sm">
+        Build: {import.meta.env.VITE_GIT_COMMIT || 'N/A'}
+      </Typography>
+      <Typography level="body-sm">
+        Date: {new Date().toLocaleDateString()}
+      </Typography>
       <Button
         component="a"
         href="https://nicklasfangerfisk.github.io/Testflow/"
@@ -48,7 +78,7 @@ function AppInfo() {
       >
         System test
       </Button>
-    </Sheet>
+    </Box>
   );
 }
 

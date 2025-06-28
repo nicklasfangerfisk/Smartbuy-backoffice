@@ -1,8 +1,7 @@
 import * as React from 'react';
-import { CssVarsProvider } from '@mui/joy/styles';
-import CssBaseline from '@mui/joy/CssBaseline';
-import Box from '@mui/joy/Box';
 import { BrowserRouter as Router, Route, Routes, useLocation, Navigate, useNavigate } from 'react-router-dom';
+import { CssVarsProvider, CssBaseline } from '@mui/joy';
+import Box from '@mui/joy/Box';
 
 import Sidebar from './components/navigation/Sidebar';
 import PageOrderDesktop from './components/Page/PageOrderDesktop';
@@ -37,6 +36,7 @@ import PageMovementsDesktop from './components/Page/PageMovementsDesktop';
 import PageInventoryDesktop from './components/Page/PageInventoryDesktop';
 import PageSettingsDesktop from './components/Page/PageSettingsDesktop';
 import PageSettingsMobile from './components/Page/PageSettingsMobile';
+import PageMovementsMobile from './components/Page/PageMovementsMobile';
 
 function Layout() {
   const location = useLocation();
@@ -110,7 +110,7 @@ function Layout() {
         sx={{
           flexGrow: 1,
           bgcolor: 'background.default',
-          p: 3,
+          p: location.pathname !== '/dashboard' && location.pathname !== '/login' ? 3 : 0,
           width: { sm: '100%', md: 'calc(100% - 240px)' },
           marginBottom: isMobile ? '56px' : 0, // Adjust for MobileMenu height
         }}
@@ -129,6 +129,7 @@ function Layout() {
           />
         )}
         <Routes>
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route
             path="/orders"
             element={
@@ -201,7 +202,11 @@ function Layout() {
             path="/movements"
             element={
               <ProtectedRoute>
-                <PageMovementsDesktop />
+                {isMobile ? (
+                  <PageMovementsMobile />
+                ) : (
+                  <PageMovementsDesktop />
+                )}
               </ProtectedRoute>
             }
           />

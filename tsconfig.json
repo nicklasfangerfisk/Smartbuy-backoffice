@@ -10,8 +10,9 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": false,
-    "outDir": "./dist"
+    "noEmit": true,
+    "outDir": "./dist",
+    "allowImportingTsExtensions": true
   },
   "include": ["./**/*.ts", "./**/*.tsx"],
   "exclude": [

@@ -16,7 +16,6 @@ import ModalClose from '@mui/joy/ModalClose';
 import Select from '@mui/joy/Select';
 import Option from '@mui/joy/Option';
 import Table from '@mui/joy/Table';
-import Sheet from '@mui/joy/Sheet';
 import Checkbox from '@mui/joy/Checkbox';
 import IconButton, { iconButtonClasses } from '@mui/joy/IconButton';
 import Typography from '@mui/joy/Typography';
@@ -441,14 +440,28 @@ export default function OrderTable({
    * Includes search, filters, and a button to create new orders.
    */
   return (
-    <Box sx={{ width: '100%', minHeight: '100dvh', bgcolor: 'background.body', borderRadius: 2, boxShadow: 2, p: 4 }}>
-      <Typography level="h2" sx={{ mb: 2, textAlign: 'left', fontSize: fonts.sizes.xlarge }}>Orders</Typography>
+    <Box
+      sx={{
+        width: '100%',
+        minHeight: '100dvh',  
+        bgcolor: 'background.body',
+        borderRadius: 2,
+        boxShadow: 2,
+        p: 4,
+      }}
+    >
+      <Typography
+        level="h2"
+        sx={{ mb: 2, textAlign: 'left', fontSize: fonts.sizes.xlarge }}
+      >
+        Orders
+      </Typography>
       <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <Input
           placeholder="Search orders..."
           sx={{ flex: 1, ...typographyStyles }}
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
         />
         <Select
           placeholder="Filter status"
@@ -457,8 +470,10 @@ export default function OrderTable({
           sx={{ minWidth: 160, ...typographyStyles }}
         >
           <Option value="">All Statuses</Option>
-          {statusOptions.map(status => (
-            <Option key={status} value={status} sx={typographyStyles}>{status}</Option>
+          {statusOptions.map((status) => (
+            <Option key={status} value={status} sx={typographyStyles}>
+              {status}
+            </Option>
           ))}
         </Select>
         <Button
@@ -485,7 +500,12 @@ export default function OrderTable({
           <tbody>
             {filteredRows.length === 0 && !loading && (
               <tr>
-                <td colSpan={6} style={{ textAlign: 'center', color: '#888', ...typographyStyles }}>No orders found.</td>
+                <td
+                  colSpan={6}
+                  style={{ textAlign: 'center', color: '#888', ...typographyStyles }}
+                >
+                  No orders found.
+                </td>
               </tr>
             )}
             {filteredRows.map((row) => (
@@ -516,17 +536,24 @@ export default function OrderTable({
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Avatar size="sm">{row.customer.initial}</Avatar>
                     <div>
-                      <Typography level="body-xs" fontWeight="md" sx={typographyStyles}>
+                      <Typography
+                        level="body-xs"
+                        fontWeight="md"
+                        sx={typographyStyles}
+                      >
                         {row.customer.name}
                       </Typography>
-                      <Typography level="body-xs" sx={{ color: 'text.secondary', ...typographyStyles }}>
+                      <Typography
+                        level="body-xs"
+                        sx={{ color: 'text.secondary', ...typographyStyles }}
+                      >
                         {row.customer.email}
                       </Typography>
                     </div>
                   </Box>
                 </td>
                 <td style={typographyStyles}>
-                  {typeof row.order_total === 'number' ? `$${row.order_total.toFixed(2)}` : '-'}
+                  {typeof row.order_total === 'number' && `$${row.order_total.toFixed(2)}`}
                 </td>
                 <td>
                   <RowMenu />
@@ -552,7 +579,12 @@ export default function OrderTable({
           sx={{ maxWidth: 600, width: '100%' }}
         >
           <ModalClose />
-          <Typography id="create-order-modal" level="title-md" fontWeight="lg" sx={{ mb: 2 }}>
+          <Typography
+            id="create-order-modal"
+            level="title-md"
+            fontWeight="lg"
+            sx={{ mb: 2 }}
+          >
             Create Order
           </Typography>
           <OrderTableCreate

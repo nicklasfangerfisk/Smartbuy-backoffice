@@ -29,7 +29,6 @@ Next Steps (Optional):
 import * as React from 'react';
 import { supabase } from '../../utils/supabaseClient';
 import Table from '@mui/joy/Table';
-import Sheet from '@mui/joy/Sheet';
 import Typography from '@mui/joy/Typography';
 import Button from '@mui/joy/Button';
 import Input from '@mui/joy/Input';
@@ -215,7 +214,7 @@ export default function ProductTable() {
     return <ProductTableMobile />;
   }
   return (
-    <Box sx={{ width: '100%', minHeight: '100dvh', bgcolor: 'background.body', borderRadius: 2, boxShadow: 2, p: 4 }}>
+    <Box sx={{ width: '100%', minHeight: '100dvh', bgcolor: 'background.body', borderRadius: 0, boxShadow: 'none', p: 0 }}>
       <Typography level="h2" sx={{ mb: 2 }}>Products</Typography>
       <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <Input

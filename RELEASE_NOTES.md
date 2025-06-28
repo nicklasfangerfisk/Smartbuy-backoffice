@@ -10,6 +10,7 @@
 - The backend API for receiving purchase orders now uses `movement_type: 'incoming'` to comply with the stock_movements table constraint.
 - Success feedback for receiving a purchase order is now shown as a MUI Snackbar toast, auto-hiding after 3 seconds, instead of a blocking alert dialog.
 - The frontend and backend now consistently use UUIDs for purchase order and product references in all stock movement workflows.
+- Added mobile/desktop detection logic to the `/movements` route in `App.tsx` to render `PageMovementsMobile` on mobile devices and `PageMovementsDesktop` on larger screens.
 
 ### Fixed
 - Fixed a bug where the frontend sent integer product IDs instead of UUIDs, causing incorrect stock movement records.

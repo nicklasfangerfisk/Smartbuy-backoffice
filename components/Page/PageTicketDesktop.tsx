@@ -24,7 +24,6 @@ import { supabase } from '../../utils/supabaseClient';
 import TicketForm from '../Dialog/TicketForm';
 import { FormControl, Textarea } from '@mui/joy';
 import { Stack } from '@mui/system';
-import { Sheet } from '@mui/joy';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import PageTicketMobile from './PageTicketMobile';
 import Snackbar from '@mui/joy/Snackbar';
@@ -561,9 +560,7 @@ export default function TicketList({ search = '', status = 'Open', createOpen = 
                       <Avatar size="sm" src={''} sx={{ mb: 'auto' }} />
                     )}
                     <Box sx={{ maxWidth: '60%', minWidth: 'auto', display: 'flex', flexDirection: 'column', alignItems: isOutbound ? 'flex-end' : 'flex-start' }}>
-                      <Sheet
-                        variant={isOutbound ? 'solid' : 'soft'}
-                        color={isOutbound ? 'primary' : 'neutral'}
+                      <Box
                         sx={{
                           p: 1.25,
                           borderRadius: 'lg',
@@ -590,7 +587,7 @@ export default function TicketList({ search = '', status = 'Open', createOpen = 
                         >
                           {act.message}
                         </Typography>
-                      </Sheet>
+                      </Box>
                       <Stack direction="row" spacing={2} sx={{ justifyContent: isOutbound ? 'flex-end' : 'flex-start', mb: 0.25 }}>
                         <Typography level="body-xs">
                           {act.sender_name || (isOutbound ? 'You' : 'User')}

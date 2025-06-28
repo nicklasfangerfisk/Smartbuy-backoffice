@@ -1,6 +1,6 @@
 import * as React from 'react';
 import GlobalStyles from '@mui/joy/GlobalStyles';
-import Sheet from '@mui/joy/Sheet';
+import Box from '@mui/joy/Box';
 
 /**
  * A responsive header component for smaller screens.
@@ -14,13 +14,13 @@ import Sheet from '@mui/joy/Sheet';
  */
 export default function Header() {
   return (
-    <Sheet
+    <Box
       sx={{
-        // Display the header only on smaller screens.
-        display: { xs: 'flex', md: 'none' },
+        // Display the header only on larger screens.
+        display: { xs: 'none', md: 'flex' },
         alignItems: 'center',
         justifyContent: 'space-between',
-        position: 'fixed',
+        position: 'sticky', // changed from 'fixed' to 'sticky'
         top: 0,
         width: '100vw',
         height: 'var(--Header-height)',
@@ -30,6 +30,7 @@ export default function Header() {
         borderBottom: '1px solid',
         borderColor: 'background.level1',
         boxShadow: 'sm',
+        background: 'var(--joy-palette-background-surface, #fff)', // ensure background
       }}
     >
       <GlobalStyles
@@ -38,12 +39,11 @@ export default function Header() {
             // Define a CSS variable for the header height.
             '--Header-height': '52px',
             [theme.breakpoints.up('md')]: {
-              '--Header-height': '0px', // Hide the header on larger screens.
+              '--Header-height': '64px',
             },
           },
         })}
       />
-      {/* Hamburger removed, now in MobileMenu */}
-    </Sheet>
+    </Box>
   );
 }

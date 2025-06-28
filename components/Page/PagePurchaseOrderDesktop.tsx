@@ -141,57 +141,8 @@ export default function PurchaseOrderTable({ orders: initialOrders }: PagePurcha
   if (isMobile) {
     return <PagePurchaseOrderMobile orders={mobileOrders} />;
   }
-
-  // Define the structure for the purchaseorderitems table
-  interface PurchaseOrderItem {
-    id: string;
-    product_id: string;
-    ProductName: string;
-    quantity_ordered: number;
-    quantity_received: number;
-  }
-
-  interface PurchaseOrderItemInsert {
-    product_id: string;
-    ProductName: string;
-    quantity_ordered: number;
-    quantity_received: number;
-  }
-
-  // Fetch PO items when opening receive dialog
-  useEffect(() => {
-    if (receiveDialogOpen && selectedOrder) {
-      (async () => {
-        const { data, error } = await supabase
-          .from('purchaseorderitems')
-          .select('id, product_id, Products(ProductName), quantity_ordered, quantity_received')
-          .eq('purchase_order_id', selectedOrder.id);
-        console.log('Query Results:', { data, error }); // Debug log to inspect query results
-        if (!error && data) {
-          // Map ProductName from Products relation (object)
-          const mapped = data.map(item => ({
-            ...item,
-            ProductName: item.Products?.ProductName || '',
-          }));
-          setPoItems(mapped);
-        }
-      })();
-    }
-  }, [receiveDialogOpen, selectedOrder]);
-
-  // Sort orders by status and then by order_date desc
-  const statusOrder = { Pending: 0, Ordered: 1, Received: 2, Cancelled: 3 };
-  const sortedRows = [...rows].sort((a, b) => {
-    const statusA = statusOrder[a.status as keyof typeof statusOrder] ?? 99;
-    const statusB = statusOrder[b.status as keyof typeof statusOrder] ?? 99;
-    if (statusA !== statusB) return statusA - statusB;
-    // Secondary sort: order_date descending
-    return new Date(b.order_date).getTime() - new Date(a.order_date).getTime();
-  });
-
   return (
-    <Box sx={{ width: '100%', minHeight: '100dvh', bgcolor: 'background.body', borderRadius: 2, boxShadow: 2, p: 4 }}>
-      <Typography level="h2" sx={{ mb: 2 }}>Purchase Orders</Typography>
+    <Box sx={{ width: '100%', minHeight: '100dvh', bgcolor: 'background.body', borderRadius: 0, boxShadow: 'none', p: 0 }}>
       <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <Input
           placeholder="Search purchase orders..."
@@ -271,12 +222,12 @@ export default function PurchaseOrderTable({ orders: initialOrders }: PagePurcha
             </tr>
           </thead>
           <tbody>
-            {sortedRows.length === 0 && !loading && (
+            {rows.length === 0 && !loading && (
               <tr>
                 <td colSpan={columns.length + 1} style={{ textAlign: 'center', color: '#888', ...typographyStyles }}>No purchase orders found.</td>
               </tr>
             )}
-            {sortedRows.map((row, idx) => (
+            {rows.map((row, idx) => (
               <tr key={row.id || row.order_number} style={{ cursor: 'pointer', height: 48 }}>
                 {columns.map(col => (
                   <td key={col.id} style={typographyStyles}>

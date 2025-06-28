@@ -14,7 +14,6 @@ import ListItem from '@mui/joy/ListItem';
 import ListItemButton, { listItemButtonClasses } from '@mui/joy/ListItemButton';
 import ListItemContent from '@mui/joy/ListItemContent';
 import Typography from '@mui/joy/Typography';
-import Sheet from '@mui/joy/Sheet';
 import Stack from '@mui/joy/Stack';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
@@ -45,6 +44,7 @@ import { closeSidebar } from '../../utils';
 import { useEffect, useState } from 'react';
 import { supabase } from '../../utils/supabaseClient';
 import withAuth from '../auth/withAuth';
+import { menuByArea, MenuArea, MenuItem } from '../../navigation/menuConfig.tsx';
 
 /**
  * Sidebar component for navigation.
@@ -52,7 +52,7 @@ import withAuth from '../auth/withAuth';
  * @param {function} props.setView - Function to update the current view.
  * @param {string} props.view - Current view identifier.
  */
-function Sidebar({ setView, view }: { setView: (view: 'home' | 'orders' | 'products' | 'messages' | 'users' | 'suppliers' | 'purchaseorders' | 'tickets' | 'smscampaigns') => void, view: string }) {
+function Sidebar({ setView, view }: { setView: (view: MenuItem['value']) => void, view: string }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [users, setUsers] = useState<any[]>([]);
@@ -130,9 +130,10 @@ function Sidebar({ setView, view }: { setView: (view: 'home' | 'orders' | 'produ
   const isSelected = (route: string) => location.pathname === route;
 
   return (
-    <Sheet
+    <Box
       className="Sidebar"
       sx={{
+        display: { xs: 'none', md: 'flex' }, // hide sidebar on mobile
         position: { xs: 'fixed', md: 'sticky' },
         transform: {
           xs: 'translateX(calc(100% * (var(--SideNavigation-slideIn, 0) - 1)))',
@@ -140,16 +141,16 @@ function Sidebar({ setView, view }: { setView: (view: 'home' | 'orders' | 'produ
         },
         transition: 'transform 0.4s, width 0.4s',
         zIndex: 10000,
-        minHeight: '100dvh',
+        height: '100dvh', // changed from minHeight to height for strict viewport fit
         width: 'var(--Sidebar-width)',
         top: 0,
         p: 2,
         flexShrink: 0,
-        display: 'flex',
         flexDirection: 'column',
         gap: 2,
         borderRight: '1px solid',
         borderColor: 'divider',
+        background: 'var(--joy-palette-background-surface, #fff)',
       }}
     >
       <GlobalStyles
@@ -210,219 +211,38 @@ function Sidebar({ setView, view }: { setView: (view: 'home' | 'orders' | 'produ
             '--ListItem-radius': (theme) => theme.vars.radius.sm,
           }}
         >
-          {/* Sales Accordion - expanded by default */}
-          <ListItem nested>
-            <Toggler defaultExpanded={true}
-              renderToggle={({ open, setOpen }) => (
-                <ListItemButton onClick={() => setOpen(!open)}>
-                  <DashboardRoundedIcon />
-                  <ListItemContent>
-                    <Typography level="title-sm">Sales</Typography>
-                  </ListItemContent>
-                  <KeyboardArrowDownIcon
-                    sx={[
-                      open ? { transform: 'rotate(180deg)' } : { transform: 'none' },
-                    ]}
-                  />
-                </ListItemButton>
-              )}
-            >
-              <List sx={{ gap: 0.5 }}>
-                <ListItem>
-                  <ListItemButton selected={isSelected('/dashboard')} onClick={() => handleNavigation('/dashboard', 'home')}>
-                    <HomeRoundedIcon />
+          {(['Sales', 'Support', 'Operations', 'Marketing'] as MenuArea[]).map((area) => (
+            <ListItem nested key={area}>
+              <Toggler defaultExpanded={true}
+                renderToggle={({ open, setOpen }) => (
+                  <ListItemButton onClick={() => setOpen(!open)}>
+                    {menuByArea[area][0]?.icon}
                     <ListItemContent>
-                      <Typography level="body-sm">Home</Typography>
+                      <Typography level="title-sm">{area}</Typography>
                     </ListItemContent>
+                    <KeyboardArrowDownIcon
+                      sx={[
+                        open ? { transform: 'rotate(180deg)' } : { transform: 'none' },
+                      ]}
+                    />
                   </ListItemButton>
-                </ListItem>
-                <ListItem>
-                  <ListItemButton selected={isSelected('/orders')} onClick={() => handleNavigation('/orders', 'orders')}>
-                    <ShoppingCartRoundedIcon />
-                    <ListItemContent>
-                      <Typography level="body-sm">Orders</Typography>
-                    </ListItemContent>
-                  </ListItemButton>
-                </ListItem>
-                <ListItem nested>
-                  <Toggler
-                    renderToggle={({ open, setOpen }) => (
-                      <ListItemButton onClick={() => setOpen(!open)}>
-                        <AssignmentRoundedIcon />
+                )}
+              >
+                <List sx={{ gap: 0.5 }}>
+                  {menuByArea[area].map((item: MenuItem) => (
+                    <ListItem key={item.value}>
+                      <ListItemButton selected={isSelected(item.route)} onClick={() => handleNavigation(item.route, item.value)}>
+                        {item.icon}
                         <ListItemContent>
-                          <Typography level="body-sm">Deliveries</Typography>
+                          <Typography level="body-sm">{item.label}</Typography>
                         </ListItemContent>
-                        <KeyboardArrowDownIcon
-                          sx={[
-                            open ? { transform: 'rotate(180deg)' } : { transform: 'none' },
-                          ]}
-                        />
                       </ListItemButton>
-                    )}
-                  >
-                    <List sx={{ gap: 0.5 }}>
-                      <ListItem sx={{ mt: 0.5 }}>
-                        <ListItemButton>New order</ListItemButton>
-                      </ListItem>
-                      <ListItem>
-                        <ListItemButton>Backlog</ListItemButton>
-                      </ListItem>
-                      <ListItem>
-                        <ListItemButton>In progress</ListItemButton>
-                      </ListItem>
-                      <ListItem>
-                        <ListItemButton>Shipped</ListItemButton>
-                      </ListItem>
-                    </List>
-                  </Toggler>
-                </ListItem>
-              </List>
-            </Toggler>
-          </ListItem>
-
-          {/* Support Accordion - expanded by default */}
-          <ListItem nested>
-            <Toggler defaultExpanded={true}
-              renderToggle={({ open, setOpen }) => (
-                <ListItemButton onClick={() => setOpen(!open)}>
-                  <SupportRoundedIcon />
-                  <ListItemContent>
-                    <Typography level="title-sm">Support</Typography>
-                  </ListItemContent>
-                  <KeyboardArrowDownIcon
-                    sx={[
-                      open ? { transform: 'rotate(180deg)' } : { transform: 'none' },
-                    ]}
-                  />
-                </ListItemButton>
-              )}
-            >
-              <List sx={{ gap: 0.5 }}>
-                <ListItem>
-                  <ListItemButton selected={isSelected('/messages')} onClick={() => setView('messages')}>
-                    <QuestionAnswerRoundedIcon />
-                    <ListItemContent>
-                      <Typography level="body-sm">Messages</Typography>
-                    </ListItemContent>
-                    <Chip size="sm" color="primary" variant="solid">
-                      4
-                    </Chip>
-                  </ListItemButton>
-                </ListItem>
-                <ListItem>
-                  <ListItemButton selected={isSelected('/tickets')} onClick={() => handleNavigation('/tickets', 'tickets')}>
-                    <AssignmentRoundedIcon />
-                    <ListItemContent>
-                      <Typography level="body-sm">Tickets</Typography>
-                    </ListItemContent>
-                    <Chip size="sm" color="primary" variant="solid">
-                      2
-                    </Chip>
-                  </ListItemButton>
-                </ListItem>
-                <ListItem>
-                  <ListItemButton selected={isSelected('/users')} onClick={() => handleNavigation('/users', 'users')}>
-                    <GroupRoundedIcon />
-                    <ListItemContent>
-                      <Typography level="body-sm">Users</Typography>
-                    </ListItemContent>
-                  </ListItemButton>
-                </ListItem>
-              </List>
-            </Toggler>
-          </ListItem>
-
-          {/* Operations Accordion - expanded by default */}
-          <ListItem nested>
-            <Toggler defaultExpanded={true}
-              renderToggle={({ open, setOpen }) => (
-                <ListItemButton onClick={() => setOpen(!open)}>
-                  <AssignmentRoundedIcon />
-                  <ListItemContent>
-                    <Typography level="title-sm">Operations</Typography>
-                  </ListItemContent>
-                  <KeyboardArrowDownIcon
-                    sx={[
-                      open ? { transform: 'rotate(180deg)' } : { transform: 'none' },
-                    ]}
-                  />
-                </ListItemButton>
-              )}
-            >
-              <List sx={{ gap: 0.5 }}>
-                <ListItem>
-                  <ListItemButton selected={isSelected('/products')} onClick={() => handleNavigation('/products', 'products')}>
-                    <AssignmentRoundedIcon />
-                    <ListItemContent>
-                      <Typography level="body-sm">Products</Typography>
-                    </ListItemContent>
-                  </ListItemButton>
-                </ListItem>
-                <ListItem>
-                  <ListItemButton selected={isSelected('/suppliers')} onClick={() => handleNavigation('/suppliers', 'suppliers')}>
-                    <StorefrontIcon sx={{ mr: 0.5 }} />
-                    <ListItemContent>
-                      <Typography level="body-sm">Suppliers</Typography>
-                    </ListItemContent>
-                  </ListItemButton>
-                </ListItem>
-                <ListItem>
-                  <ListItemButton selected={isSelected('/purchase-orders')} onClick={() => handleNavigation('/purchase-orders', 'purchaseorders')}>
-                    <AssignmentTurnedInIcon sx={{ mr: 0.5 }} />
-                    <ListItemContent>
-                      <Typography level="body-sm">Purchase Orders</Typography>
-                    </ListItemContent>
-                  </ListItemButton>
-                </ListItem>
-                <ListItem>
-                  <ListItemButton selected={isSelected('/movements')} onClick={() => handleNavigation('/movements', 'movements')}>
-                    <AssignmentRoundedIcon sx={{ mr: 0.5 }} />
-                    <ListItemContent>
-                      <Typography level="body-sm">Movements</Typography>
-                    </ListItemContent>
-                  </ListItemButton>
-                </ListItem>
-                <ListItem>
-                  <ListItemButton selected={isSelected('/inventory')} onClick={() => handleNavigation('/inventory', 'inventory')}>
-                    <AssignmentRoundedIcon sx={{ mr: 0.5 }} />
-                    <ListItemContent>
-                      <Typography level="body-sm">Inventory</Typography>
-                    </ListItemContent>
-                  </ListItemButton>
-                </ListItem>
-              </List>
-            </Toggler>
-          </ListItem>
-
-          {/* Marketing Accordion - expanded by default */}
-          <ListItem nested>
-            <Toggler defaultExpanded={true}
-              renderToggle={({ open, setOpen }) => (
-                <ListItemButton onClick={() => setOpen(!open)}>
-                  <AssignmentRoundedIcon />
-                  <ListItemContent>
-                    <Typography level="title-sm">Marketing</Typography>
-                  </ListItemContent>
-                  <KeyboardArrowDownIcon
-                    sx={[
-                      open ? { transform: 'rotate(180deg)' } : { transform: 'none' },
-                    ]}
-                  />
-                </ListItemButton>
-              )}
-            >
-              <List sx={{ gap: 0.5 }}>
-                <ListItem>
-                  <ListItemButton selected={isSelected('/sms-campaigns')} onClick={() => handleNavigation('/sms-campaigns', 'smscampaigns')}>
-                    <AssignmentRoundedIcon />
-                    <ListItemContent>
-                      <Typography level="body-sm">SMS Campaigns</Typography>
-                    </ListItemContent>
-                  </ListItemButton>
-                </ListItem>
-              </List>
-            </Toggler>
-          </ListItem>
+                    </ListItem>
+                  ))}
+                </List>
+              </Toggler>
+            </ListItem>
+          ))}
         </List>
         {/* Settings Button (stick to bottom) */}
       </Box>
@@ -481,7 +301,7 @@ function Sidebar({ setView, view }: { setView: (view: 'home' | 'orders' | 'produ
         setEditAvatar={setEditAvatar}
         onSave={handleEditProfile}
       />
-    </Sheet>
+    </Box>
   );
 }
 

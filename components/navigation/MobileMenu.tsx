@@ -3,13 +3,15 @@ import BottomNavigation from '@mui/material/BottomNavigation';
 import BottomNavigationAction from '@mui/material/BottomNavigationAction';
 import Paper from '@mui/material/Paper';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
-import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
-import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
-import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import MenuIcon from '@mui/icons-material/Menu';
 import { supabase } from '../../utils/supabaseClient';
 import { useLocation } from 'react-router-dom';
+import { menuItems, menuByArea, MenuArea } from '../../navigation/menuConfig';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
 
 export interface MobileMenuItem {
   label: string;
@@ -37,8 +39,10 @@ interface MobileMenuProps {
  *
  * @returns {JSX.Element} The rendered mobile menu component.
  */
-export default function MobileMenu({ items, value, onChange, toggleSidebar }: MobileMenuProps) {
+export default function MobileMenu({ value, onChange, toggleSidebar }: MobileMenuProps) {
   const location = useLocation();
+  const [areaDialogOpen, setAreaDialogOpen] = React.useState(false);
+  const [selectedArea, setSelectedArea] = React.useState<MenuArea | null>('Sales');
 
   // Ensure the menu is hidden on the login page
   if (location.pathname === '/login') {
@@ -59,7 +63,12 @@ export default function MobileMenu({ items, value, onChange, toggleSidebar }: Mo
     },
   }), []);
 
-  const handleNavigation = async (newValue: MobileMenuItem['value']) => {
+  // Use only items marked for mobile
+  const mobileMenuItems = menuItems.filter((item) => item.showInMobile);
+  // Only show submenus for the selected area
+  const areaMenuItems = selectedArea ? menuByArea[selectedArea].filter((item: typeof menuItems[number]) => item.showInMobile) : [];
+
+  const handleNavigation = async (newValue: typeof mobileMenuItems[number]['value']) => {
     const { data: session } = await supabase.auth.getSession();
     if (!session && [
       'orders', 'products', 'users', 'suppliers', 'purchaseorders', 'tickets', 'smscampaigns', 'movements'
@@ -67,37 +76,62 @@ export default function MobileMenu({ items, value, onChange, toggleSidebar }: Mo
       alert('You must be logged in to access this page.');
       return;
     }
-    onChange(newValue);
+    onChange(newValue as MobileMenuProps['value']);
   };
 
   return (
     <ThemeProvider theme={muiTheme}>
-      <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999, backgroundColor: 'rgba(0, 0, 255, 0.2)' }}>
-        <BottomNavigation
-          showLabels
-          value={value}
-          onChange={(_e, newValue) => {
-            handleNavigation(newValue);
-          }}
-        >
-          <BottomNavigationAction
-            label={''}
-            icon={<MenuIcon />}
-            onClick={(e) => {
-              e.stopPropagation(); // Prevent navigation events
-              toggleSidebar();
-            }}
-          />
-          {items.map((item) => (
-            <BottomNavigationAction
-              key={item.value}
-              label={item.label}
-              icon={item.icon}
-              value={item.value}
-              onClick={() => handleNavigation(item.value)}
-            />
+      <Dialog open={areaDialogOpen} onClose={() => setAreaDialogOpen(false)}>
+        <DialogTitle>Select Area</DialogTitle>
+        <DialogContent>
+          {(['Sales', 'Support', 'Marketing', 'Operations'] as MenuArea[]).map((area) => (
+            <Button
+              key={area}
+              fullWidth
+              variant={selectedArea === area ? 'contained' : 'outlined'}
+              onClick={() => {
+                setSelectedArea(area);
+                setAreaDialogOpen(false);
+              }}
+              sx={{ my: 1 }}
+            >
+              {area}
+            </Button>
           ))}
-        </BottomNavigation>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAreaDialogOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+      <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999, backgroundColor: 'rgba(0, 0, 255, 0.2)', overflowX: 'auto' }}>
+        <div style={{ display: 'flex', flexDirection: 'row', overflowX: 'auto' }}>
+          <BottomNavigation
+            showLabels
+            value={value}
+            onChange={(_e, newValue) => {
+              handleNavigation(newValue);
+            }}
+            sx={{ minWidth: 'max-content', flex: 1 }}
+          >
+            {areaMenuItems.map((item) => (
+              <BottomNavigationAction
+                key={item.value}
+                label={item.label}
+                icon={item.icon}
+                value={item.value}
+                onClick={() => handleNavigation(item.value)}
+              />
+            ))}
+            <BottomNavigationAction
+              label={selectedArea || ''}
+              icon={<MenuIcon />}
+              onClick={(e) => {
+                e.stopPropagation();
+                setAreaDialogOpen(true);
+              }}
+            />
+          </BottomNavigation>
+        </div>
       </Paper>
     </ThemeProvider>
   );
