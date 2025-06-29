@@ -96,9 +96,9 @@ const PageMovementsDesktop = () => {
                 width: '100%',
                 minHeight: '100dvh',
                 bgcolor: 'background.body',
-                borderRadius: 2,
-                boxShadow: 2,
-                p: 4,
+                borderRadius: 0,
+                boxShadow: 'none',
+                p: 0,
             }}
         >
             <Typography level="h2" sx={{ mb: 2, textAlign: 'left', fontSize: fonts.sizes.xlarge }}>

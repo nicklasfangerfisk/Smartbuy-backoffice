@@ -1,11 +1,10 @@
 import * as React from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation, Navigate, useNavigate } from 'react-router-dom';
-import { CssVarsProvider, CssBaseline } from '@mui/joy';
 import Box from '@mui/joy/Box';
+import { CssVarsProvider } from '@mui/joy/styles';
 
 import Sidebar from './components/navigation/Sidebar';
 import PageOrderDesktop from './components/Page/PageOrderDesktop';
-import Header from './components/navigation/Header';
 import PageProductDesktop from './components/Page/PageProductDesktop';
 import PageUsersDesktop from './components/Page/PageUsersDesktop';
 import PageUsersMobile from './components/Page/PageUsersMobile';
@@ -37,13 +36,15 @@ import PageInventoryDesktop from './components/Page/PageInventoryDesktop';
 import PageSettingsDesktop from './components/Page/PageSettingsDesktop';
 import PageSettingsMobile from './components/Page/PageSettingsMobile';
 import PageMovementsMobile from './components/Page/PageMovementsMobile';
+import HelloWorldPage from './components/Page/HelloWorldPage';
+import { MenuValue } from './navigation/menuConfig';
 
 function Layout() {
   const location = useLocation();
   const isMobile = useMediaQuery('(max-width:600px)');
   const navigate = useNavigate();
 
-  const [mobileMenuValue, setMobileMenuValue] = useState<'home' | 'orders' | 'products' | 'messages' | 'users' | 'suppliers' | 'purchaseorders' | 'tickets' | 'smscampaigns' | 'movements'>('home');
+  const [mobileMenuValue, setMobileMenuValue] = useState<MenuValue>('home');
   const [users, setUsers] = useState<{
     id: string;
     name: string | null;
@@ -115,8 +116,6 @@ function Layout() {
           marginBottom: isMobile ? '56px' : 0, // Adjust for MobileMenu height
         }}
       >
-        {/* Only render Header on pages where it is wanted, not on dashboard */}
-        {location.pathname !== '/login' && location.pathname !== '/dashboard' && <Header />}
         {isMobile && location.pathname !== '/login' && (
           <MobileMenu
             items={mobileMenuItems}
@@ -237,7 +236,6 @@ function Layout() {
 export default function App() {
   return (
     <CssVarsProvider>
-      <CssBaseline />
       <Router>
         <Routes>
           <Route path="/login/*" element={<LoginLayout />} />

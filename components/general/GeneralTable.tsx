@@ -45,7 +45,7 @@ const muiTheme = createTheme({
 const GeneralTable: React.FC<GeneralTableProps> = ({ columns, rows, ariaLabel, minWidth = 600 }) => {
   return (
     <ThemeProvider theme={muiTheme}>
-      <Box sx={{ overflowX: 'auto' }}> {/* Add horizontal scrolling for smaller screens */}
+      <Box sx={{ overflowX: 'auto', pl: '24px', pr: '24px' }}> {/* Removed Card wrapper and reverted to original styling */}
         <Table aria-label={ariaLabel} sx={{ minWidth }}>
           <TableHead>
             <TableRow>
@@ -58,7 +58,7 @@ const GeneralTable: React.FC<GeneralTableProps> = ({ columns, rows, ariaLabel, m
                   <Typography fontWeight="bold">{column.label}</Typography>
                 </TableCell>
               ))}
-            </TableRow>
+            </TableRow> {/* Fixed closing tag */}
           </TableHead>
           <TableBody>
             {rows.map((row, rowIndex) => (

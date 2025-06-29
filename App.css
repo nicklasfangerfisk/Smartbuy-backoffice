@@ -9,3 +9,8 @@
   background-color: white;
   border-top: 1px solid #ccc;
 }
+
+/* Suppress the JoySheetRoot artifact */
+.JoySheetRoot {
+  display: none !important;
+}

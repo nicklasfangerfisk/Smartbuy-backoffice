@@ -64,9 +64,9 @@ const PageInventoryDesktop = () => {
     };
 
     return (
-        <Box sx={{ width: '100%', minHeight: '100dvh', bgcolor: 'background.body', borderRadius: 2, boxShadow: 2, p: 4 }}>
+        <Box sx={{ width: '100%', minHeight: '100dvh', bgcolor: 'background.body', borderRadius: 0, boxShadow: 'none', p: 0 }}>
             <Typography level="h2" sx={{ mb: 2, textAlign: 'left', fontSize: fonts.sizes.xlarge }}>
-                Inventory Levels
+                Inventory
             </Typography>
             <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
                 <Input
@@ -97,12 +97,13 @@ const PageInventoryDesktop = () => {
                             </tr>
                         )}
                         {filteredProducts.map((product) => {
-                            const isLow = typeof product.current_stock === 'number' && typeof product.min_stock === 'number' && product.current_stock < product.min_stock;
+                            const isLow = typeof product.min_stock === 'number' && product.min_stock > 0;
+
                             return (
                                 <tr key={product.uuid} style={{ cursor: 'pointer' }} onClick={() => handleRowClick(product)}>
                                     <td style={typographyStyles}>{product.ProductName}</td>
                                     <td style={typographyStyles}>{product.ProductID}</td>
-                                    <td style={typographyStyles}>{product.current_stock ?? 'N/A'}</td>
+                                    <td style={typographyStyles}>N/A</td>
                                     <td style={typographyStyles}>{product.min_stock ?? 'N/A'}</td>
                                     <td style={typographyStyles}>{product.max_stock ?? 'N/A'}</td>
                                     <td style={typographyStyles}>{product.reorder_amount ?? 'N/A'}</td>

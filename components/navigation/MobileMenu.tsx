@@ -6,7 +6,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import MenuIcon from '@mui/icons-material/Menu';
 import { supabase } from '../../utils/supabaseClient';
 import { useLocation } from 'react-router-dom';
-import { menuItems, menuByArea, MenuArea } from '../../navigation/menuConfig';
+import { menuItems, menuByArea, MenuArea, MenuValue } from '../../navigation/menuConfig.tsx';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -16,13 +16,13 @@ import Button from '@mui/material/Button';
 export interface MobileMenuItem {
   label: string;
   icon: React.ReactNode;
-  value: "home" | "orders" | "products" | "messages" | "users" | "suppliers" | "purchaseorders" | "tickets" | "smscampaigns" | "movements";
+  value: MenuValue;
 }
 
 interface MobileMenuProps {
   items: MobileMenuItem[];
-  value: "home" | "orders" | "products" | "messages" | "users" | "suppliers" | "purchaseorders" | "tickets" | "smscampaigns" | "movements";
-  onChange: (value: "home" | "orders" | "products" | "messages" | "users" | "suppliers" | "purchaseorders" | "tickets" | "smscampaigns" | "movements") => void;
+  value: MenuValue;
+  onChange: (value: MenuValue) => void;
   toggleSidebar: () => void; // Added prop to toggle the sidebar
 }
 

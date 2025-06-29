@@ -143,6 +143,9 @@ export default function PurchaseOrderTable({ orders: initialOrders }: PagePurcha
   }
   return (
     <Box sx={{ width: '100%', minHeight: '100dvh', bgcolor: 'background.body', borderRadius: 0, boxShadow: 'none', p: 0 }}>
+      <Box sx={{ width: '100%', minHeight: '100dvh', bgcolor: 'background.body', borderRadius: 0, boxShadow: 'none', p: 0 }}>
+        <Typography level="h2" sx={{ mb: 2 }}>Purchase Orders</Typography>
+      </Box>
       <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <Input
           placeholder="Search purchase orders..."

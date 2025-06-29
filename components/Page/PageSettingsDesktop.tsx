@@ -87,7 +87,9 @@ export default function PageSettingsDesktop() {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   return (
     <Box sx={{ p: { xs: 1, md: 3 }, width: '100%', maxWidth: 1200, mx: 'auto' }}>
-      <Typography level="h2" sx={{ mb: 2 }}>Settings</Typography>
+      <Box sx={{ width: '100%', minHeight: '100dvh', bgcolor: 'background.body', borderRadius: 0, boxShadow: 'none', p: 0 }}>
+        <Typography level="h2" sx={{ mb: 2 }}>Settings</Typography>
+      </Box>
       <Box
         sx={{
           display: 'grid',

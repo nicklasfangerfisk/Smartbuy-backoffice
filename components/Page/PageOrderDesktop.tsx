@@ -31,6 +31,7 @@ import PageOrderMobile, { PageOrderMobileItem } from './PageOrderMobile';
 import Card from '@mui/joy/Card';
 import LinearProgress from '@mui/joy/LinearProgress';
 import { handleOrderClick } from '../../utils';
+import GeneralTable from '../general/GeneralTable';
 
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import SearchIcon from '@mui/icons-material/Search';
@@ -443,20 +444,17 @@ export default function OrderTable({
     <Box
       sx={{
         width: '100%',
-        minHeight: '100dvh',  
+        minHeight: '100dvh',
         bgcolor: 'background.body',
-        borderRadius: 2,
-        boxShadow: 2,
-        p: 4,
+        borderRadius: 0,
+        boxShadow: 'none',
+        p: 0,
       }}
     >
-      <Typography
-        level="h2"
-        sx={{ mb: 2, textAlign: 'left', fontSize: fonts.sizes.xlarge }}
-      >
+      <Typography level="h2" sx={{ mb: 2, fontSize: 'xlarge', pl: '24px', pr: '24px' }}>
         Orders
       </Typography>
-      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+      <Box sx={{ display: 'flex', gap: 2, mb: 2, pl: '24px', pr: '24px' }}>
         <Input
           placeholder="Search orders..."
           sx={{ flex: 1, ...typographyStyles }}
@@ -484,84 +482,27 @@ export default function OrderTable({
           Create Order
         </Button>
       </Box>
-      <Card>
+      <Card sx={{ pb: '24px' }}>
         {loading && <LinearProgress />}
-        <Table aria-label="Orders" sx={{ minWidth: 800 }}>
-          <thead>
-            <tr>
-              <th style={typographyStyles}>Order #</th>
-              <th style={typographyStyles}>Date</th>
-              <th style={typographyStyles}>Status</th>
-              <th style={typographyStyles}>Customer</th>
-              <th style={typographyStyles}>Total</th>
-              <th style={{ width: 120 }} />
-            </tr>
-          </thead>
-          <tbody>
-            {filteredRows.length === 0 && !loading && (
-              <tr>
-                <td
-                  colSpan={6}
-                  style={{ textAlign: 'center', color: '#888', ...typographyStyles }}
-                >
-                  No orders found.
-                </td>
-              </tr>
-            )}
-            {filteredRows.map((row) => (
-              <tr
-                key={row.uuid}
-                onClick={() => handleOrderDetailsOpen(row)}
-                style={{ cursor: 'pointer' }}
-              >
-                <td style={typographyStyles}>{row.order_number_display || '-'}</td>
-                <td style={typographyStyles}>{new Date(row.date).toLocaleString()}</td>
-                <td>
-                  <Chip
-                    variant="soft"
-                    color={
-                      row.status === 'Paid'
-                        ? 'success'
-                        : row.status === 'Refunded'
-                        ? 'danger'
-                        : 'neutral'
-                    }
-                    size="sm"
-                    sx={{ textTransform: 'capitalize', ...typographyStyles }}
-                  >
-                    {row.status}
-                  </Chip>
-                </td>
-                <td>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Avatar size="sm">{row.customer.initial}</Avatar>
-                    <div>
-                      <Typography
-                        level="body-xs"
-                        fontWeight="md"
-                        sx={typographyStyles}
-                      >
-                        {row.customer.name}
-                      </Typography>
-                      <Typography
-                        level="body-xs"
-                        sx={{ color: 'text.secondary', ...typographyStyles }}
-                      >
-                        {row.customer.email}
-                      </Typography>
-                    </div>
-                  </Box>
-                </td>
-                <td style={typographyStyles}>
-                  {typeof row.order_total === 'number' && `$${row.order_total.toFixed(2)}`}
-                </td>
-                <td>
-                  <RowMenu />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
+        <Box sx={{ pl: '24px', pr: '24px' }}>
+          <GeneralTable
+            columns={[
+              { id: 'order_number_display', label: 'Order #', minWidth: 100 },
+              { id: 'date', label: 'Date', minWidth: 150 },
+              { id: 'status', label: 'Status', minWidth: 100 },
+              { id: 'customer_name', label: 'Customer', minWidth: 150 },
+              { id: 'order_total', label: 'Total', minWidth: 100, format: (value) => `$${value.toFixed(2)}` },
+            ]}
+            rows={filteredRows.map((row) => ({
+              order_number_display: row.order_number_display || '-',
+              date: new Date(row.date).toLocaleString(),
+              status: row.status,
+              customer_name: row.customer.name,
+              order_total: row.order_total || 0,
+            }))}
+            ariaLabel="Orders Table"
+          />
+        </Box>
       </Card>
       <OrderTableDetails
         open={orderDetailsOpen}
