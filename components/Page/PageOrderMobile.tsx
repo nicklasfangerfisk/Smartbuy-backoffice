@@ -1,7 +1,6 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import * as React from 'react';
 import { ColorPaletteProp } from '@mui/joy/styles';
-import Box from '@mui/joy/Box';
 import Avatar from '@mui/joy/Avatar';
 import Chip from '@mui/joy/Chip';
 import Link from '@mui/joy/Link';
@@ -33,6 +32,7 @@ import OrderTableDetails from '../Dialog/OrderTableDetails';
 import { supabase } from '../../utils/supabaseClient';
 import GeneralTableMobile from '../general/GeneralTableMobile';
 import { handleOrderClick } from '../../utils';
+import MobilePageLayout from '../general/MobilePageLayout';
 
 export interface PageOrderMobileItem {
   /** Represents an order item in the mobile view. */
@@ -82,30 +82,37 @@ export default function OrderTableMobile({ orders, onRowClick, orderDetailsOpen,
   const navigate = useNavigate();
 
   return (
-    <>
-      <Box sx={{ width: '100vw', minHeight: '100dvh', bgcolor: 'background.body', borderRadius: 2, boxShadow: 2, p: { xs: 2, md: 4 }, position: 'fixed', inset: 0, zIndex: 12000 }}>
-        <Typography level="h2" sx={{ mb: 2, textAlign: 'left' }}>Orders</Typography>
-        <GeneralTableMobile
-          items={orders}
-          renderItem={(order) => (
-            <Box
-              onClick={() => onRowClick?.(order.id)}
-              sx={{ cursor: 'pointer' }}
-            >
+    <MobilePageLayout>
+      <Typography level="h2" sx={{ mb: 2, textAlign: 'left' }}>Orders</Typography>
+      <GeneralTableMobile
+        items={orders}
+        renderItem={(order) => (
+          <div
+            onClick={() => onRowClick?.(order.id)}
+            style={{ cursor: 'pointer', position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+          >
+            <div>
               <Typography>{order.date}</Typography>
-              <Typography>{order.status}</Typography>
               <Typography>{order.customer.name}</Typography>
-            </Box>
-          )}
-          ariaLabel="Orders Mobile View"
-        />
-        <OrderTableDetails
-          open={orderDetailsOpen}
-          onClose={onCloseOrderDetails}
-          selectedOrder={selectedOrder}
-          fetchOrderItems={fetchOrderItems}
-        />
-      </Box>
-    </>
+            </div>
+            <Chip
+              size="sm"
+              variant="soft"
+              color={order.status === 'Paid' ? 'success' : order.status === 'Refunded' ? 'warning' : 'danger'}
+              style={{ marginLeft: 'auto', alignSelf: 'flex-start' }}
+            >
+              {order.status}
+            </Chip>
+          </div>
+        )}
+        ariaLabel="Orders Mobile View"
+      />
+      <OrderTableDetails
+        open={orderDetailsOpen}
+        onClose={onCloseOrderDetails}
+        selectedOrder={selectedOrder}
+        fetchOrderItems={fetchOrderItems}
+      />
+    </MobilePageLayout>
   );
 }

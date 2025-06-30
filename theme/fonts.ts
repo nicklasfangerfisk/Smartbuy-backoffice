@@ -2,7 +2,7 @@ const fonts = {
   sizes: {
     small: '0.875rem',
     medium: '1rem',
-    large: '1.25rem',
+    large: '1.4rem',
     xlarge: '1.5rem',
   },
   weights: {

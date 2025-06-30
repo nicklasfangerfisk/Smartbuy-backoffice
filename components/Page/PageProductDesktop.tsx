@@ -42,6 +42,7 @@ import LinearProgress from '@mui/joy/LinearProgress';
 import ProductTableForm from '../Dialog/ProductTableForm';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import ProductTableMobile from './PageProductMobile';
+import PageLayout from '../layouts/PageLayout';
 
 /**
  * ProductTable component displays a list of products in a table format.
@@ -214,112 +215,129 @@ export default function ProductTable() {
     return <ProductTableMobile />;
   }
   return (
-    <Box sx={{ width: '100%', minHeight: '100dvh', bgcolor: 'background.body', borderRadius: 0, boxShadow: 'none', p: 0 }}>
-      <Typography level="h2" sx={{ mb: 2 }}>Products</Typography>
-      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-        <Input
-          placeholder="Search products..."
-          sx={{ flex: 1 }}
-          value={search}
-          onChange={e => setSearch(e.target.value)}
+    <PageLayout>
+      <Box
+        sx={{
+          width: '100%',
+          minHeight: '100dvh',
+          bgcolor: 'background.body',
+          borderRadius: 0,
+          boxShadow: 'none',
+          pl: 0,
+          pr: 0,
+        }}
+      >
+        <Typography level="h2" sx={{ mb: 2, fontSize: 'xlarge' }}>
+          Products
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+          <Input
+            placeholder="Search products..."
+            sx={{ flex: 1 }}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <Button
+            onClick={() => setAddDialogOpen(true)}
+            loading={submitting || imageUploading}
+            disabled={submitting || imageUploading}
+            variant="solid"
+          >
+            Add Product
+          </Button>
+        </Box>
+        <ProductTableForm
+          open={addDialogOpen}
+          onClose={() => setAddDialogOpen(false)}
+          product={null}
+          onSave={handleAddDialogSave}
         />
-        <Button
-          onClick={() => setAddDialogOpen(true)}
-          loading={submitting || imageUploading}
-          disabled={submitting || imageUploading}
-          variant="solid"
-        >
-          Add Product
-        </Button>
-      </Box>
-      <ProductTableForm
-        open={addDialogOpen}
-        onClose={() => setAddDialogOpen(false)}
-        product={null}
-        onSave={handleAddDialogSave}
-      />
-      <ProductTableForm
-        open={editDialogOpen}
-        onClose={() => { setEditDialogOpen(false); setEditProduct(null); }}
-        product={editProduct}
-        onSave={handleEditDialogSave}
-      />
-      <Card>
-        {loading && <LinearProgress />}
-        <Table aria-label="Products" sx={{ minWidth: 700 }}>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Image</th>
-              <th>Product</th>
-              <th>Sales price</th>
-              <th>Cost price</th>
-              <th>Created</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredProducts.map((product) => (
-              <tr key={product.uuid}>
-                <td>{product.uuid}</td>
-                <td>
-                  {product.ImageUrl ? (
-                    <img
-                      src={product.ImageUrl}
-                      alt={product.ProductName}
-                      style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 4 }}
-                    />
-                  ) : (
-                    <span style={{ color: '#aaa' }}>No image</span>
-                  )}
-                </td>
-                <td>{product.ProductName}</td>
-                <td>{product.SalesPrice}</td>
-                <td>{product.CostPrice}</td>
-                <td>{product.CreatedAt}</td>
-                <td>
-                  <IconButton size="sm" color="primary" onClick={() => startEdit(product)} disabled={submitting}>
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton size="sm" color="danger" onClick={() => handleDelete(product.uuid)} disabled={submitting}>
-                    <DeleteIcon />
-                  </IconButton>
-                  <IconButton
-                    component="label"
-                    size="sm"
-                    color="neutral"
-                    disabled={submitting || imageUploading}
-                    sx={{ minWidth: 0, px: 1 }}
-                  >
-                    <input
-                      type="file"
-                      accept="image/*"
-                      hidden
-                      onChange={async (e) => {
-                        if (e.target.files && e.target.files[0]) {
-                          setImageUploading(true);
-                          const file = e.target.files[0];
-                          await uploadImageToStorage(file, product.id);
-                          // Refresh products after upload
-                          const { data } = await supabase.from('Products').select('*');
-                          if (data) setProducts(data);
-                          setImageUploading(false);
-                        }
-                      }}
-                    />
-                    <ImageIcon />
-                  </IconButton>
-                </td>
-              </tr>
-            ))}
-            {filteredProducts.length === 0 && !loading && (
+        <ProductTableForm
+          open={editDialogOpen}
+          onClose={() => {
+            setEditDialogOpen(false);
+            setEditProduct(null);
+          }}
+          product={editProduct}
+          onSave={handleEditDialogSave}
+        />
+        <Card>
+          {loading && <LinearProgress />}
+          <Table aria-label="Products" sx={{ minWidth: 700 }}>
+            <thead>
               <tr>
-                <td colSpan={7} style={{ textAlign: 'center', color: '#888' }}>No products found.</td>
+                <th>ID</th>
+                <th>Image</th>
+                <th>Product</th>
+                <th>Sales price</th>
+                <th>Cost price</th>
+                <th>Created</th>
+                <th>Actions</th>
               </tr>
-            )}
-          </tbody>
-        </Table>
-      </Card>
-    </Box>
+            </thead>
+            <tbody>
+              {filteredProducts.map((product) => (
+                <tr key={product.uuid}>
+                  <td>{product.uuid}</td>
+                  <td>
+                    {product.ImageUrl ? (
+                      <img
+                        src={product.ImageUrl}
+                        alt={product.ProductName}
+                        style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 4 }}
+                      />
+                    ) : (
+                      <span style={{ color: '#aaa' }}>No image</span>
+                    )}
+                  </td>
+                  <td>{product.ProductName}</td>
+                  <td>{product.SalesPrice}</td>
+                  <td>{product.CostPrice}</td>
+                  <td>{product.CreatedAt}</td>
+                  <td>
+                    <IconButton size="sm" color="primary" onClick={() => startEdit(product)} disabled={submitting}>
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton size="sm" color="danger" onClick={() => handleDelete(product.uuid)} disabled={submitting}>
+                      <DeleteIcon />
+                    </IconButton>
+                    <IconButton
+                      component="label"
+                      size="sm"
+                      color="neutral"
+                      disabled={submitting || imageUploading}
+                      sx={{ minWidth: 0, px: 1 }}
+                    >
+                      <input
+                        type="file"
+                        accept="image/*"
+                        hidden
+                        onChange={async (e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            setImageUploading(true);
+                            const file = e.target.files[0];
+                            await uploadImageToStorage(file, product.id);
+                            // Refresh products after upload
+                            const { data } = await supabase.from('Products').select('*');
+                            if (data) setProducts(data);
+                            setImageUploading(false);
+                          }
+                        }}
+                      />
+                      <ImageIcon />
+                    </IconButton>
+                  </td>
+                </tr>
+              ))}
+              {filteredProducts.length === 0 && !loading && (
+                <tr>
+                  <td colSpan={7} style={{ textAlign: 'center', color: '#888' }}>No products found.</td>
+                </tr>
+              )}
+            </tbody>
+          </Table>
+        </Card>
+      </Box>
+    </PageLayout>
   );
 }

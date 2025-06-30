@@ -44,6 +44,7 @@ import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
 import fonts from '../../theme/fonts';
 import type { Database } from '../general/supabase.types';
+import PageLayout from '../layouts/PageLayout';
 
 // Define the type for stock movements
 type StockMovement = Database['public']['Tables']['stock_movements']['Row'];
@@ -91,60 +92,65 @@ const PageMovementsDesktop = () => {
     }
 
     return (
-        <Box
-            sx={{
-                width: '100%',
-                minHeight: '100dvh',
-                bgcolor: 'background.body',
-                borderRadius: 0,
-                boxShadow: 'none',
-                p: 0,
-            }}
-        >
-            <Typography level="h2" sx={{ mb: 2, textAlign: 'left', fontSize: fonts.sizes.xlarge }}>
-                Stock Movements
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                <Input
-                    placeholder="Search movements..."
-                    sx={{ flex: 1, ...typographyStyles }}
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    startDecorator={<SearchIcon />}
-                />
-            </Box>
-            <Card>
-                <Table aria-label="Stock Movements" sx={{ minWidth: 800 }}>
-                    <thead>
-                        <tr>
-                            <th style={typographyStyles}>ID</th>
-                            <th style={typographyStyles}>Product ID</th>
-                            <th style={typographyStyles}>Movement Type</th>
-                            <th style={typographyStyles}>Quantity</th>
-                            <th style={typographyStyles}>Reason</th>
-                            <th style={typographyStyles}>Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredData.length === 0 && (
+        <PageLayout>
+            <Box
+                sx={{
+                    width: '100%',
+                    minHeight: '100dvh',
+                    bgcolor: 'background.body',
+                    borderRadius: 0,
+                    boxShadow: 'none',
+                    pl: 0,
+                    pr: 0,
+                    pt: 3, // 24px top padding (theme spacing unit 3 = 24px)
+                    pb: 0,
+                }}
+            >
+                <Typography level="h2" sx={{ mb: 2, fontSize: fonts.sizes.xlarge, textAlign: 'left' }}>
+                    Stock Movements
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                    <Input
+                        placeholder="Search movements..."
+                        sx={{ flex: 1, ...typographyStyles }}
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        startDecorator={<SearchIcon />}
+                    />
+                </Box>
+                <Card>
+                    <Table aria-label="Stock Movements" sx={{ minWidth: 800 }}>
+                        <thead>
                             <tr>
-                                <td colSpan={6} style={{ textAlign: 'center', color: '#888', ...typographyStyles }}>No stock movements found.</td>
+                                <th style={typographyStyles}>ID</th>
+                                <th style={typographyStyles}>Product ID</th>
+                                <th style={typographyStyles}>Movement Type</th>
+                                <th style={typographyStyles}>Quantity</th>
+                                <th style={typographyStyles}>Reason</th>
+                                <th style={typographyStyles}>Date</th>
                             </tr>
-                        )}
-                        {filteredData.map((row) => (
-                            <tr key={row.id} style={{ cursor: 'pointer' }}>
-                                <td style={typographyStyles}>{row.id}</td>
-                                <td style={typographyStyles}>{row.product_id}</td>
-                                <td style={typographyStyles}>{row.movement_type}</td>
-                                <td style={typographyStyles}>{row.quantity}</td>
-                                <td style={typographyStyles}>{row.reason || 'N/A'}</td>
-                                <td style={typographyStyles}>{new Date(row.date).toLocaleString()}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </Table>
-            </Card>
-        </Box>
+                        </thead>
+                        <tbody>
+                            {filteredData.length === 0 && (
+                                <tr>
+                                    <td colSpan={6} style={{ textAlign: 'center', color: '#888', ...typographyStyles }}>No stock movements found.</td>
+                                </tr>
+                            )}
+                            {filteredData.map((row) => (
+                                <tr key={row.id} style={{ cursor: 'pointer' }}>
+                                    <td style={typographyStyles}>{row.id}</td>
+                                    <td style={typographyStyles}>{row.product_id}</td>
+                                    <td style={typographyStyles}>{row.movement_type}</td>
+                                    <td style={typographyStyles}>{row.quantity}</td>
+                                    <td style={typographyStyles}>{row.reason || 'N/A'}</td>
+                                    <td style={typographyStyles}>{new Date(row.date).toLocaleString()}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </Table>
+                </Card>
+            </Box>
+        </PageLayout>
     );
 };
 

@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { Box, Typography, Grid, Card } from '@mui/joy';
-import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import { supabase } from '../../utils/supabaseClient';
 import useMediaQuery from '@mui/material/useMediaQuery';
 
@@ -128,7 +127,7 @@ const PageDashboard: React.FC = () => {
       pt: { xs: 0, md: 4 }, // Remove top padding for mobile since header is gone
     }}>
       <Typography level="h2" sx={{ mb: 2 }}>
-        <DashboardRoundedIcon sx={{ mr: 1, verticalAlign: 'middle' }} /> Dashboard
+        Dashboard
       </Typography>
       <Grid container spacing={2}>
         <Grid xs={12} md={4}>

@@ -6,6 +6,7 @@ import { useTheme } from '@mui/joy/styles';
 import { marked } from 'marked';
 import Button from '@mui/joy/Button';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import PageLayout from '../layouts/PageLayout';
 
 // Helper to fetch and render the release log markdown
 function ReleaseLog() {
@@ -30,7 +31,8 @@ function ReleaseLog() {
       <Typography level="h4" sx={{ mb: 1 }}>
         Release Log
       </Typography>
-      <Box sx={{ fontSize: 14 }}>
+      {/* Replace fontSize with Joy typography style for consistency */}
+      <Box sx={{ typography: 'body-md' }}>
         <div dangerouslySetInnerHTML={{ __html: marked(log) }} />
       </Box>
     </Box>
@@ -86,24 +88,24 @@ export default function PageSettingsDesktop() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   return (
-    <Box sx={{ p: { xs: 1, md: 3 }, width: '100%', maxWidth: 1200, mx: 'auto' }}>
-      <Box sx={{ width: '100%', minHeight: '100dvh', bgcolor: 'background.body', borderRadius: 0, boxShadow: 'none', p: 0 }}>
-        <Typography level="h2" sx={{ mb: 2 }}>Settings</Typography>
-      </Box>
-      <Box
-        sx={{
-          display: 'grid',
-          gap: 2,
-          gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-        }}
-      >
-        <Box>{/* Left: App Info (on mobile, on top) */}
-          <AppInfo />
+    <PageLayout>
+      <Box sx={{ width: '100%', minHeight: '100dvh', bgcolor: 'background.body', borderRadius: 0, boxShadow: 'none', pl: 0, pr: 0, pt: 3, pb: 0 }}>
+        <Typography level="h2" sx={{ mb: 2, fontSize: 'xlarge' }}>Settings</Typography>
+        <Box
+          sx={{
+            display: 'grid',
+            gap: 2,
+            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+          }}
+        >
+          <Box>{/* Left: App Info (on mobile, on top) */}
+            <AppInfo />
+          </Box>
+          <Box>{/* Right: Release Log (on mobile, below) */}
+            <ReleaseLog />
+          </Box>
         </Box>
-        <Box>{/* Right: Release Log (on mobile, below) */}
-          <ReleaseLog />
-        </Box>
       </Box>
-    </Box>
+    </PageLayout>
   );
 }

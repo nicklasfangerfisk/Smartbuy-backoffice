@@ -32,6 +32,7 @@ import Card from '@mui/joy/Card';
 import LinearProgress from '@mui/joy/LinearProgress';
 import { handleOrderClick } from '../../utils';
 import GeneralTable from '../general/GeneralTable';
+import PageLayout from '../layouts/PageLayout';
 
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import SearchIcon from '@mui/icons-material/Search';
@@ -441,20 +442,11 @@ export default function OrderTable({
    * Includes search, filters, and a button to create new orders.
    */
   return (
-    <Box
-      sx={{
-        width: '100%',
-        minHeight: '100dvh',
-        bgcolor: 'background.body',
-        borderRadius: 0,
-        boxShadow: 'none',
-        p: 0,
-      }}
-    >
-      <Typography level="h2" sx={{ mb: 2, fontSize: 'xlarge', pl: '24px', pr: '24px' }}>
+    <PageLayout>
+      <Typography level="h2" sx={{ mb: 2, fontSize: 'xlarge' }}>
         Orders
       </Typography>
-      <Box sx={{ display: 'flex', gap: 2, mb: 2, pl: '24px', pr: '24px' }}>
+      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <Input
           placeholder="Search orders..."
           sx={{ flex: 1, ...typographyStyles }}
@@ -482,27 +474,25 @@ export default function OrderTable({
           Create Order
         </Button>
       </Box>
-      <Card sx={{ pb: '24px' }}>
+      <Card sx={{ pl: 0, pr: 0 }}>
         {loading && <LinearProgress />}
-        <Box sx={{ pl: '24px', pr: '24px' }}>
-          <GeneralTable
-            columns={[
-              { id: 'order_number_display', label: 'Order #', minWidth: 100 },
-              { id: 'date', label: 'Date', minWidth: 150 },
-              { id: 'status', label: 'Status', minWidth: 100 },
-              { id: 'customer_name', label: 'Customer', minWidth: 150 },
-              { id: 'order_total', label: 'Total', minWidth: 100, format: (value) => `$${value.toFixed(2)}` },
-            ]}
-            rows={filteredRows.map((row) => ({
-              order_number_display: row.order_number_display || '-',
-              date: new Date(row.date).toLocaleString(),
-              status: row.status,
-              customer_name: row.customer.name,
-              order_total: row.order_total || 0,
-            }))}
-            ariaLabel="Orders Table"
-          />
-        </Box>
+        <GeneralTable
+          columns={[
+            { id: 'order_number_display', label: 'Order #', minWidth: 100 },
+            { id: 'date', label: 'Date', minWidth: 150 },
+            { id: 'status', label: 'Status', minWidth: 100, align: 'right' },
+            { id: 'customer_name', label: 'Customer', minWidth: 150 },
+            { id: 'order_total', label: 'Total', minWidth: 100, format: (value) => `$${value.toFixed(2)}` },
+          ]}
+          rows={filteredRows.map((row) => ({
+            order_number_display: row.order_number_display || '-',
+            date: new Date(row.date).toLocaleString(),
+            status: row.status,
+            customer_name: row.customer.name,
+            order_total: row.order_total || 0,
+          }))}
+          ariaLabel="Orders Table"
+        />
       </Card>
       <OrderTableDetails
         open={orderDetailsOpen}
@@ -538,6 +528,6 @@ export default function OrderTable({
           />
         </ModalDialog>
       </Modal>
-    </Box>
+    </PageLayout>
   );
 }

@@ -18,13 +18,10 @@ import fonts from '../../theme/fonts';
 import Table from '@mui/joy/Table';
 import DialogReceivePurchaseOrder from '../Dialog/DialogReceivePurchaseOrder';
 import { Database } from '../../components/general/supabase.types';
+import PageLayout from '../layouts/PageLayout';
 
-interface PagePurchaseOrderDesktopProps {
-  orders: PagePurchaseOrderMobileItem[];
-}
-
-export default function PurchaseOrderTable({ orders: initialOrders }: PagePurchaseOrderDesktopProps) {
-  const [orders, setOrders] = useState<PagePurchaseOrderMobileItem[]>(initialOrders);
+export default function PurchaseOrderTable() {
+  const [orders, setOrders] = useState<PagePurchaseOrderMobileItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -142,143 +139,138 @@ export default function PurchaseOrderTable({ orders: initialOrders }: PagePurcha
     return <PagePurchaseOrderMobile orders={mobileOrders} />;
   }
   return (
-    <Box sx={{ width: '100%', minHeight: '100dvh', bgcolor: 'background.body', borderRadius: 0, boxShadow: 'none', p: 0 }}>
-      <Box sx={{ width: '100%', minHeight: '100dvh', bgcolor: 'background.body', borderRadius: 0, boxShadow: 'none', p: 0 }}>
-        <Typography level="h2" sx={{ mb: 2 }}>Purchase Orders</Typography>
-      </Box>
-      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-        <Input
-          placeholder="Search purchase orders..."
-          sx={{ flex: 1 }}
-          value={search}
-          onChange={e => setSearch(e.target.value)}
+    <PageLayout>
+      <Box sx={{ width: '100%', minHeight: '100dvh', bgcolor: 'background.body', borderRadius: 0, boxShadow: 'none', pl: 0, pr: 0, pt: 3, pb: 0 }}>
+        <Typography level="h2" sx={{ mb: 2, fontSize: fonts.sizes.xlarge }}>Purchase Orders</Typography>
+        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+          <Input
+            placeholder="Search purchase orders..."
+            sx={{ flex: 1 }}
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          <Select
+            placeholder="Filter status"
+            value={statusFilter}
+            onChange={(_, value) => setStatusFilter(value ?? '')}
+            sx={{ minWidth: 160 }}
+          >
+            <Option value="">All Statuses</Option>
+            <Option value="Pending">Pending</Option>
+            <Option value="Approved">Approved</Option>
+            <Option value="Received">Received</Option>
+            <Option value="Cancelled">Cancelled</Option>
+          </Select>
+          <Button
+            onClick={() => setAddDialogOpen(true)}
+            variant="solid"
+          >
+            Add Purchase Order
+          </Button>
+        </Box>
+        <PurchaseOrderForm
+          open={addDialogOpen}
+          onClose={() => setAddDialogOpen(false)}
+          onCreated={handleCreated}
+          mode="add"
+          order={undefined}
         />
-        <Select
-          placeholder="Filter status"
-          value={statusFilter}
-          onChange={(_, value) => setStatusFilter(value ?? '')}
-          sx={{ minWidth: 160 }}
-        >
-          <Option value="">All Statuses</Option>
-          <Option value="Pending">Pending</Option>
-          <Option value="Approved">Approved</Option>
-          <Option value="Received">Received</Option>
-          <Option value="Cancelled">Cancelled</Option>
-        </Select>
-        <Button
-          onClick={() => setAddDialogOpen(true)}
-          variant="solid"
-        >
-          Add Purchase Order
-        </Button>
-      </Box>
-      <PurchaseOrderForm
-        open={addDialogOpen}
-        onClose={() => setAddDialogOpen(false)}
-        onCreated={handleCreated}
-        mode="add"
-        order={undefined}
-      />
-      <PurchaseOrderForm
-        open={editDialogOpen}
-        onClose={() => { setEditDialogOpen(false); setSelectedOrder(null); }}
-        onCreated={handleCreated}
-        mode="edit"
-        order={selectedOrder}
-      />
-      <DialogReceivePurchaseOrder
-        open={receiveDialogOpen && !!selectedOrder?.id && poItems.every(item => !!item.id && !!item.product_id)}
-        onClose={() => setReceiveDialogOpen(false)}
-        poId={selectedOrder?.id} // DB id for backend
-        orderNumber={selectedOrder?.order_number} // Human-friendly order number for display
-        items={poItems.filter(item => !!item.id && !!item.product_id)}
-        onConfirm={async (receivedItems) => {
-          // Update purchaseorderitems with received quantities
-          for (const item of receivedItems) {
-            await supabase
-              .from('purchaseorderitems')
-              .update({ quantity_received: item.quantity_received })
-              .eq('id', item.id);
-          }
-          // Update purchase order status to 'Received'
-          if (selectedOrder?.id) {
-            await supabase
-              .from('PurchaseOrders') // Use correct case
-              .update({ status: 'Received' })
-              .eq('id', selectedOrder.id);
-          }
-          setReceiveDialogOpen(false);
-          // Refresh orders list after receiving
-          await handleCreated();
-        }}
-      />
-      <Card>
-        {loading && <LinearProgress />}
-        {error && <Typography color="danger">Error: {error}</Typography>}
-        <Table aria-label="Purchase Orders" sx={{ minWidth: 800 }}>
-          <thead>
-            <tr>
-              {columns.map(col => (
-                <th key={col.id} style={headerStyles}>{col.label}</th>
-              ))}
-              <th style={{ width: 120, ...headerStyles }} />
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 && !loading && (
+        <PurchaseOrderForm
+          open={editDialogOpen}
+          onClose={() => { setEditDialogOpen(false); setSelectedOrder(null); }}
+          onCreated={handleCreated}
+          mode="edit"
+          order={selectedOrder}
+        />
+        <DialogReceivePurchaseOrder
+          open={receiveDialogOpen && !!selectedOrder?.id && poItems.every(item => !!item.id && !!item.product_id)}
+          onClose={() => setReceiveDialogOpen(false)}
+          poId={selectedOrder?.id}
+          orderNumber={selectedOrder?.order_number}
+          items={poItems.filter(item => !!item.id && !!item.product_id)}
+          onConfirm={async (receivedItems) => {
+            for (const item of receivedItems) {
+              await supabase
+                .from('purchaseorderitems')
+                .update({ quantity_received: item.quantity_received })
+                .eq('id', item.id);
+            }
+            if (selectedOrder?.id) {
+              await supabase
+                .from('PurchaseOrders')
+                .update({ status: 'Received' })
+                .eq('id', selectedOrder.id);
+            }
+            setReceiveDialogOpen(false);
+            await handleCreated();
+          }}
+        />
+        <Card>
+          {loading && <LinearProgress />}
+          {error && <Typography color="danger">Error: {error}</Typography>}
+          <Table aria-label="Purchase Orders" sx={{ minWidth: 800 }}>
+            <thead>
               <tr>
-                <td colSpan={columns.length + 1} style={{ textAlign: 'center', color: '#888', ...typographyStyles }}>No purchase orders found.</td>
-              </tr>
-            )}
-            {rows.map((row, idx) => (
-              <tr key={row.id || row.order_number} style={{ cursor: 'pointer', height: 48 }}>
                 {columns.map(col => (
-                  <td key={col.id} style={typographyStyles}>
-                    {col.format ? col.format((row as any)[col.id]) : (row as any)[col.id]}
-                  </td>
+                  <th key={col.id} style={headerStyles}>{col.label}</th>
                 ))}
-                <td>
-                  {row.status === 'Pending' ? (
-                    <Button
-                      size="sm"
-                      variant="outlined"
-                      onClick={async () => {
-                        // Change status from Pending to Ordered
-                        if (row.id) {
-                          const { error } = await supabase
-                            .from('PurchaseOrders') // Use correct case
-                            .update({ status: 'Ordered' })
-                            .eq('id', row.id);
-                          if (error) {
-                            alert('Failed to update order: ' + error.message);
-                          } else {
-                            await handleCreated(); // Refresh orders
-                          }
-                        }
-                      }}
-                    >
-                      Order
-                    </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      variant="outlined"
-                      onClick={() => {
-                        console.log('Selected Order:', row); // Debug log to inspect selectedOrder
-                        setSelectedOrder(row);
-                        setReceiveDialogOpen(true);
-                      }}
-                      disabled={row.status !== 'Approved' && row.status !== 'Ordered'}
-                    >
-                      Receive
-                    </Button>
-                  )}
-                </td>
+                <th style={{ width: 120, ...headerStyles }} />
               </tr>
-            ))}
-          </tbody>
-        </Table>
-      </Card>
-    </Box>
+            </thead>
+            <tbody>
+              {rows.length === 0 && !loading && (
+                <tr>
+                  <td colSpan={columns.length + 1} style={{ textAlign: 'center', color: '#888', ...typographyStyles }}>No purchase orders found.</td>
+                </tr>
+              )}
+              {rows.map((row, idx) => (
+                <tr key={row.id || row.order_number} style={{ cursor: 'pointer', height: 48 }}>
+                  {columns.map(col => (
+                    <td key={col.id} style={typographyStyles}>
+                      {col.format ? col.format((row as any)[col.id]) : (row as any)[col.id]}
+                    </td>
+                  ))}
+                  <td>
+                    {row.status === 'Pending' ? (
+                      <Button
+                        size="sm"
+                        variant="outlined"
+                        onClick={async () => {
+                          if (row.id) {
+                            const { error } = await supabase
+                              .from('PurchaseOrders')
+                              .update({ status: 'Ordered' })
+                              .eq('id', row.id);
+                            if (error) {
+                              alert('Failed to update order: ' + error.message);
+                            } else {
+                              await handleCreated();
+                            }
+                          }
+                        }}
+                      >
+                        Order
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outlined"
+                        onClick={() => {
+                          setSelectedOrder(row);
+                          setReceiveDialogOpen(true);
+                        }}
+                        disabled={row.status !== 'Approved' && row.status !== 'Ordered'}
+                      >
+                        Receive
+                      </Button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </Card>
+      </Box>
+    </PageLayout>
   );
 }

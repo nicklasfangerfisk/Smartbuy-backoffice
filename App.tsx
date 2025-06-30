@@ -8,7 +8,7 @@ import PageOrderDesktop from './components/Page/PageOrderDesktop';
 import PageProductDesktop from './components/Page/PageProductDesktop';
 import PageUsersDesktop from './components/Page/PageUsersDesktop';
 import PageUsersMobile from './components/Page/PageUsersMobile';
-import Suppliers from './components/Page/Suppliers';
+import PageSuppliersDesktop from './components/Page/PageSuppliersDesktop';
 import PagePurchaseOrderDesktop from './components/Page/PagePurchaseOrderDesktop';
 import PagePurchaseOrderMobile from './components/Page/PagePurchaseOrderMobile';
 import Login from './components/auth/Login';
@@ -161,7 +161,7 @@ function Layout() {
             path="/suppliers"
             element={
               <ProtectedRoute>
-                <Suppliers />
+                <PageSuppliersDesktop />
               </ProtectedRoute>
             }
           />
@@ -169,7 +169,7 @@ function Layout() {
             path="/purchase-orders"
             element={
               <ProtectedRoute>
-                <PagePurchaseOrderDesktop orders={[]} />
+                <PagePurchaseOrderDesktop />
               </ProtectedRoute>
             }
           />

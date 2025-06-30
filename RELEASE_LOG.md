@@ -9,14 +9,19 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
-# Release Log
+## [1.2.2] - 2025-06-30
+**Mobile and Desktop Order List/Table UI Improvements**
+### Fixed
+- Corrected mobile menu positioning to always stay fixed at the bottom and prevent scrolling.
+- Ensured mobile table content goes edge-to-edge with minimal padding.
+- Added an order status chip to the top-right of each order card in the mobile view, aligned to the right without extra box styling.
+- Verified that the desktop table view remains unchanged, with no unintended styling or chip additions.
 
 ## [1.2.1] - 2025-06-29
 **Release Notes Consolidation & Layout Improvements**
 ### Changed
 - Removed the `Header` component to eliminate the unwanted `joysheetroot` artifact.
 - Began implementing a consistent page layout for desktop pages.
-
 
 ## [1.2.0] - 2025-06-29
 **Purchase Order & Stock Movement Enhancements**

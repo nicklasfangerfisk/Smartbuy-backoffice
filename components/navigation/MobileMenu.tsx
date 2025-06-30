@@ -103,7 +103,17 @@ export default function MobileMenu({ value, onChange, toggleSidebar }: MobileMen
           <Button onClick={() => setAreaDialogOpen(false)}>Close</Button>
         </DialogActions>
       </Dialog>
-      <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999, backgroundColor: 'rgba(0, 0, 255, 0.2)', overflowX: 'auto' }}>
+      <Paper
+        sx={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 9999,
+          backgroundColor: 'rgba(0, 0, 255, 0.2)',
+          overflow: 'hidden', // Prevent scrolling
+        }}
+      >
         <div style={{ display: 'flex', flexDirection: 'row', overflowX: 'auto' }}>
           <BottomNavigation
             showLabels

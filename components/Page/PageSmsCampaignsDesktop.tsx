@@ -44,6 +44,7 @@ import AutorenewRoundedIcon from '@mui/icons-material/AutorenewRounded';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
+import PageLayout from '../layouts/PageLayout';
 
 const API_BASE_URL = typeof process !== 'undefined' ? process.env.REACT_APP_API_BASE_URL || '/api' : '/api';
 
@@ -110,90 +111,92 @@ export default function PageSmsCampaignsDesktop({ campaigns }: { campaigns: Camp
   }
 
   return (
-    <Box sx={{ width: '100%', minHeight: '100dvh', bgcolor: 'background.body', borderRadius: 2, boxShadow: 2, p: 4 }}>
-      <Typography level="h2" sx={{ ...typographyStyles, mb: 2, textAlign: 'left', fontSize: fonts.sizes.xlarge }}>SMS Campaigns</Typography>
-      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-        <Input
-          placeholder="Search campaigns..."
-          sx={{ ...typographyStyles, flex: 1 }}
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
-        <Select
-          placeholder="Filter status"
-          value={statusFilter}
-          onChange={(_, value) => setStatusFilter(value ?? '')}
-          sx={{ ...typographyStyles, minWidth: 160 }}
-        >
-          <Option value="">All Statuses</Option>
-          <Option value="draft">Draft</Option>
-          <Option value="scheduled">Scheduled</Option>
-          <Option value="sent">Sent</Option>
-          <Option value="failed">Failed</Option>
-        </Select>
-        <Button
-          onClick={() => setIsModalOpen(true)}
-          variant="solid"
-          sx={typographyStyles}
-        >
-          Create Campaign
-        </Button>
-      </Box>
-      <Card>
-        {loading && <LinearProgress />}
-        <Table aria-label="Campaigns" sx={{ minWidth: 800 }}>
-          <thead>
-            <tr>
-              <th style={headerStyles}>Campaign #</th>
-              <th style={headerStyles}>Name</th>
-              <th style={headerStyles}>Status</th>
-              <th style={headerStyles}>Scheduled</th>
-              <th style={headerStyles}>Recipients</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredRows.length === 0 && !loading && (
+    <PageLayout>
+      <Box sx={{ width: '100%', minHeight: '100dvh', bgcolor: 'background.body', borderRadius: 0, boxShadow: 'none', pl: 0, pr: 0, pt: 3, pb: 0 }}>
+        <Typography level="h2" sx={{ ...typographyStyles, mb: 2, textAlign: 'left', fontSize: fonts.sizes.xlarge }}>SMS Campaigns</Typography>
+        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+          <Input
+            placeholder="Search campaigns..."
+            sx={{ ...typographyStyles, flex: 1 }}
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          <Select
+            placeholder="Filter status"
+            value={statusFilter}
+            onChange={(_, value) => setStatusFilter(value ?? '')}
+            sx={{ ...typographyStyles, minWidth: 160 }}
+          >
+            <Option value="">All Statuses</Option>
+            <Option value="draft">Draft</Option>
+            <Option value="scheduled">Scheduled</Option>
+            <Option value="sent">Sent</Option>
+            <Option value="failed">Failed</Option>
+          </Select>
+          <Button
+            onClick={() => setIsModalOpen(true)}
+            variant="solid"
+            sx={typographyStyles}
+          >
+            Create Campaign
+          </Button>
+        </Box>
+        <Card>
+          {loading && <LinearProgress />}
+          <Table aria-label="Campaigns" sx={{ minWidth: 800 }}>
+            <thead>
               <tr>
-                <td colSpan={6} style={{ textAlign: 'center', color: '#888', ...typographyStyles }}>No campaigns found.</td>
+                <th style={headerStyles}>Campaign #</th>
+                <th style={headerStyles}>Name</th>
+                <th style={headerStyles}>Status</th>
+                <th style={headerStyles}>Scheduled</th>
+                <th style={headerStyles}>Recipients</th>
               </tr>
-            )}
-            {filteredRows.map((row) => (
-              <tr key={row.id} style={{ height: 48 }}>
-                <td style={typographyStyles}>{row.CampaignNumber}</td>
-                <td style={typographyStyles}>{row.name}</td>
-                <td style={typographyStyles}>
-                  <Chip
-                    variant="soft"
-                    color={
-                      row.status === 'sent'
-                        ? 'success'
-                        : row.status === 'failed'
-                        ? 'danger'
-                        : row.status === 'scheduled'
-                        ? 'warning'
-                        : 'neutral'
-                    }
-                    size="sm"
-                    sx={{ textTransform: 'capitalize', ...typographyStyles }}
-                  >
-                    {row.status}
-                  </Chip>
-                </td>
-                <td style={typographyStyles}>{row.scheduled_at ? format(new Date(row.scheduled_at), 'yyyy-MM-dd HH:mm') : '-'}</td>
-                <td style={typographyStyles}>{row.recipients?.length ?? 0}</td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      </Card>
-      {error && <Typography color="danger">Error: {error}</Typography>}
-      <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <ModalDialog>
-          <Typography level="h4">Create New Campaign</Typography>
-          <Button onClick={() => setIsModalOpen(false)}>Close</Button>
-        </ModalDialog>
-      </Modal>
-    </Box>
+            </thead>
+            <tbody>
+              {filteredRows.length === 0 && !loading && (
+                <tr>
+                  <td colSpan={6} style={{ textAlign: 'center', color: '#888', ...typographyStyles }}>No campaigns found.</td>
+                </tr>
+              )}
+              {filteredRows.map((row) => (
+                <tr key={row.id} style={{ height: 48 }}>
+                  <td style={typographyStyles}>{row.CampaignNumber}</td>
+                  <td style={typographyStyles}>{row.name}</td>
+                  <td style={typographyStyles}>
+                    <Chip
+                      variant="soft"
+                      color={
+                        row.status === 'sent'
+                          ? 'success'
+                          : row.status === 'failed'
+                          ? 'danger'
+                          : row.status === 'scheduled'
+                          ? 'warning'
+                          : 'neutral'
+                      }
+                      size="sm"
+                      sx={{ textTransform: 'capitalize', ...typographyStyles }}
+                    >
+                      {row.status}
+                    </Chip>
+                  </td>
+                  <td style={typographyStyles}>{row.scheduled_at ? format(new Date(row.scheduled_at), 'yyyy-MM-dd HH:mm') : '-'}</td>
+                  <td style={typographyStyles}>{row.recipients?.length ?? 0}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </Card>
+        {error && <Typography color="danger">Error: {error}</Typography>}
+        <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
+          <ModalDialog>
+            <Typography level="h4">Create New Campaign</Typography>
+            <Button onClick={() => setIsModalOpen(false)}>Close</Button>
+          </ModalDialog>
+        </Modal>
+      </Box>
+    </PageLayout>
   );
 }
 

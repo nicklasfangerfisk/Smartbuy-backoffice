@@ -22,12 +22,14 @@ const MobilePageLayout: React.FC<React.PropsWithChildren<{}>> = ({ children }) =
     <Box
       sx={{
         pt: 0, // No header offset
-        pb: `${MENU_HEIGHT}px`,
-        minHeight: `calc(100dvh - ${MENU_HEIGHT}px)` ,
+        pb: 0, // Remove menu padding
+        height: '100vh', // Ensure full viewport height
         width: '100%',
         boxSizing: 'border-box',
         overflowY: 'auto',
         background: theme.vars.palette.background.body,
+        padding: 0, // Remove all padding
+        margin: 0, // Remove any margin
       }}
     >
       {children}
