@@ -9,7 +9,6 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
-## [1.2.2] - 2025-06-30
 ## [1.2.3] - 2025-07-01
 **Project Structure & Import Path Fixes**
 ### Changed

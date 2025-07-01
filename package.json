@@ -55,6 +55,13 @@
     "setupFilesAfterEnv": [
       "<rootDir>/jest.setup.js"
     ],
+    "transform": {
+      "^.+\\.[tj]sx?$": "babel-jest"
+    },
+    "moduleNameMapper": {
+      "^\\.\\./src/utils/supabaseClient$": "<rootDir>/utils/supabaseClient.js",
+      "^\\.\\./utils/supabaseClient$": "<rootDir>/utils/supabaseClient.js"
+    },
     "reporters": [
       "default"
     ]
