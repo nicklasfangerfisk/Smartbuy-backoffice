@@ -36,7 +36,6 @@ import PageInventoryDesktop from './components/Page/PageInventoryDesktop';
 import PageSettingsDesktop from './components/Page/PageSettingsDesktop';
 import PageSettingsMobile from './components/Page/PageSettingsMobile';
 import PageMovementsMobile from './components/Page/PageMovementsMobile';
-import HelloWorldPage from './components/Page/HelloWorldPage';
 import { MenuValue } from './navigation/menuConfig';
 
 function Layout() {
@@ -111,7 +110,7 @@ function Layout() {
         sx={{
           flexGrow: 1,
           bgcolor: 'background.default',
-          p: location.pathname !== '/dashboard' && location.pathname !== '/login' ? 3 : 0,
+          p: location.pathname !== '/dashboard' && location.pathname !== '/login' && location.pathname !== '/tickets' ? 3 : 0,
           width: { sm: '100%', md: 'calc(100% - 240px)' },
           marginBottom: isMobile ? '56px' : 0, // Adjust for MobileMenu height
         }}
