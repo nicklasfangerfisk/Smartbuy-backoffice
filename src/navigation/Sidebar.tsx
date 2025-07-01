@@ -195,11 +195,12 @@ function Sidebar({ setView, view }: { setView: (view: MenuItem['value']) => void
       <Box
         sx={{
           minHeight: 0,
-          overflow: 'hidden auto',
-          flexGrow: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          [`& .${listItemButtonClasses.root}`]: {
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          flex: '0 0 auto',
+           display: 'flex',
+           flexDirection: 'column',
+           [`& .${listItemButtonClasses.root}`]: {
             gap: 1.5,
           },
         }}

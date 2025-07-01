@@ -31,7 +31,7 @@ export default defineConfig({
       'prop-types',
       'react-is',
       // Pre-bundle all material icon modules
-      /^@mui\/icons-material\/.*$/
+      '@mui/icons-material'
     ]
   },
   server: {

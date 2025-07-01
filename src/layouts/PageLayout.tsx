@@ -11,11 +11,16 @@ const PageLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
   return (
     <Box
       sx={{
+        display: 'flex',         // enable flex layout for content
+        flexDirection: 'column',
         pl: '16px',
         pr: '6px',
         pt: '6px',
         width: '100%',
-        minHeight: '100dvh',
+        flex: 1,
+        minHeight: 0,
+        height: '100%',          // ensure full height
+        overflow: 'hidden',      // hide overflow from pages
         bgcolor: 'background.body',
       }}
     >

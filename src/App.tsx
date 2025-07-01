@@ -103,12 +103,17 @@ function Layout() {
   console.log('isMobile:', isMobile);
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
       {location.pathname !== '/login' && <Sidebar setView={(view) => console.log(view)} view="home" />}
       <Box
         component="main"
         sx={{
           flexGrow: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          minHeight: 0,
+          overflowY: 'auto',
           bgcolor: 'background.default',
           p: location.pathname !== '/dashboard' && location.pathname !== '/login' && location.pathname !== '/tickets' ? 3 : 0,
           width: { sm: '100%', md: 'calc(100% - 240px)' },
