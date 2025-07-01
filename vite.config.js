@@ -10,6 +10,7 @@ export default defineConfig({
   },
   optimizeDeps: {
     exclude: [
+      // Leave out Joy UI style overrides if needed, but include icons and core packages
       '@mui/joy',
       '@mui/joy/styles',
       '@mui/joy/CssBaseline',
@@ -24,63 +25,20 @@ export default defineConfig({
       '@mui/joy/Chip',
       '@mui/joy/ListDivider',
       '@mui/joy/Typography',
-      '@mui/icons-material',
-      'chunk-HYAN3SWL.js',
-      'chunk-C5A6K6Z5.js',
-      'chunk-2DXGFHJ5.js',
-      'chunk-33EWZSQX.js',
-      'chunk-RHYDBGYB.js',
-      'chunk-SEVB6TOW.js',
-      'chunk-H7BUZ26F.js',
-      'chunk-ZTKQPEN7.js',
-      'chunk-LKFTM7PT.js',
-      'chunk-ADXRNG57.js',
-      'chunk-GXNKABA3.js',
-      'chunk-DYCOINE2.js',
-      'chunk-ZITAL433.js',
-      'chunk-NR3GMP46.js',
-      'chunk-AAIAY2XZ.js',
-      'chunk-WERA4PAH.js',
-      'chunk-ZL7BEOIW.js',
-      'chunk-UUDXQWQP.js',
-      'chunk-7ZMQJBJR.js',
-      'chunk-6HYZI5YJ.js',
-      'chunk-YKZVSFYN.js',
-      'chunk-7GYUVWAU.js',
-      'chunk-6PXCFRNU.js',
-      'chunk-CDWOCJU7.js',
-      'chunk-3FE2FBPO.js',
-      'chunk-ZNVTW3KB.js',
-      'chunk-DU3WFBKJ.js',
-      'chunk-2222VBFC.js',
-      'chunk-LRQMNIKQ.js'
+      // '@mui/icons-material' // Removed to ensure icon components are pre-bundled
     ],
     include: [
       'prop-types',
       'react-is',
-      '@mui/icons-material/DarkModeRounded',
-      '@mui/icons-material/LightMode',
-      '@mui/icons-material/PhotoCamera',
-      '@mui/icons-material/AssignmentRounded',
-      '@mui/icons-material/HomeRounded',
-      '@mui/icons-material/ShoppingCartRounded',
-      '@mui/icons-material/QuestionAnswerRounded',
-      '@mui/icons-material/GroupRounded',
-      '@mui/icons-material/SupportRounded',
-      '@mui/icons-material/SettingsRounded',
-      '@mui/icons-material/Storefront',
-      '@mui/icons-material/AssignmentTurnedIn',
-      '@mui/icons-material/KeyboardArrowDown'
+      // Pre-bundle all material icon modules
+      /^@mui\/icons-material\/.*$/
     ]
   },
   server: {
+    port: 3000,
     proxy: {
       '/api': 'http://localhost:3000',
     },
-    hmr: {
-      host: 'refactored-space-robot-97qrgx65675r2p46-3000.app.github.dev',
-      port: 443,
-      protocol: 'wss',
-    },
+    hmr: false,
   },
 });

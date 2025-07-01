@@ -3,40 +3,40 @@ import { BrowserRouter as Router, Route, Routes, useLocation, Navigate, useNavig
 import Box from '@mui/joy/Box';
 import { CssVarsProvider } from '@mui/joy/styles';
 
-import Sidebar from './src/navigation/Sidebar';
-import PageOrderDesktop from './src/Page/PageOrderDesktop';
-import PageProductDesktop from './src/Page/PageProductDesktop';
-import PageUsersDesktop from './src/Page/PageUsersDesktop';
-import PageUsersMobile from './src/Page/PageUsersMobile';
-import PageSuppliersDesktop from './src/Page/PageSuppliersDesktop';
-import PagePurchaseOrderDesktop from './src/Page/PagePurchaseOrderDesktop';
-import PagePurchaseOrderMobile from './src/Page/PagePurchaseOrderMobile';
-import Login from './src/auth/Login';
-import { supabase } from './src/utils/supabaseClient';
+import Sidebar from './navigation/Sidebar';
+import PageOrderDesktop from './Page/PageOrderDesktop';
+import PageProductDesktop from './Page/PageProductDesktop';
+import PageUsersDesktop from './Page/PageUsersDesktop';
+import PageUsersMobile from './Page/PageUsersMobile';
+import PageSuppliersDesktop from './Page/PageSuppliersDesktop';
+import PagePurchaseOrderDesktop from './Page/PagePurchaseOrderDesktop';
+import PagePurchaseOrderMobile from './Page/PagePurchaseOrderMobile';
+import Login from './auth/Login';
+import { supabase } from './utils/supabaseClient';
 import { useState } from 'react';
-import MobileMenu, { MobileMenuItem } from './src/navigation/MobileMenu';
+import MobileMenu, { MobileMenuItem } from './navigation/MobileMenu';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import TicketList from './src/Page/PageTicketDesktop';
-import PageSmsCampaignsDesktop from './src/Page/PageSmsCampaignsDesktop';
-import PageSmsCampaignsMobile, { PageSmsCampaignsMobileItem } from './src/Page/PageSmsCampaignsMobile';
+import TicketList from './Page/PageTicketDesktop';
+import PageSmsCampaignsDesktop from './Page/PageSmsCampaignsDesktop';
+import PageSmsCampaignsMobile, { PageSmsCampaignsMobileItem } from './Page/PageSmsCampaignsMobile';
 import { User, UserResponse } from '@supabase/supabase-js';
-import { PagePurchaseOrderMobileItem } from './src/Page/PagePurchaseOrderMobile';
+import { PagePurchaseOrderMobileItem } from './Page/PagePurchaseOrderMobile';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import PageDashboard from './src/Page/PageDashboard';
-import { Database } from './src/general/supabase.types';
-import ProtectedRoute from './src/auth/ProtectedRoute';
+import PageDashboard from './Page/PageDashboard';
+import { Database } from './general/supabase.types';
+import ProtectedRoute from './auth/ProtectedRoute';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
 import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
-import './src/App.css'; // Import custom styles
-import LoginLayout from './src/auth/LoginLayout';
-import PageMovementsDesktop from './src/Page/PageMovementsDesktop';
-import PageInventoryDesktop from './src/Page/PageInventoryDesktop';
-import PageSettingsDesktop from './src/Page/PageSettingsDesktop';
-import PageSettingsMobile from './src/Page/PageSettingsMobile';
-import PageMovementsMobile from './src/Page/PageMovementsMobile';
-import { MenuValue } from './src/navigation/menuConfig';
+import './App.css'; // Import custom styles
+import LoginLayout from './auth/LoginLayout';
+import PageMovementsDesktop from './Page/PageMovementsDesktop';
+import PageInventoryDesktop from './Page/PageInventoryDesktop';
+import PageSettingsDesktop from './Page/PageSettingsDesktop';
+import PageSettingsMobile from './Page/PageSettingsMobile';
+import PageMovementsMobile from './Page/PageMovementsMobile';
+import { MenuValue } from './navigation/menuConfig';
 
 function Layout() {
   const location = useLocation();

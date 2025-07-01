@@ -10,6 +10,15 @@ DEVELOPER INSTRUCTION: How to write release notes
 -->
 
 ## [1.2.2] - 2025-06-30
+## [1.2.3] - 2025-07-01
+**Project Structure & Import Path Fixes**
+### Changed
+- Migrated all source files under `src/` and updated import paths accordingly.
+- Removed unused root-level `App.tsx` and consolidated entry point to `src/App.tsx`.
+- Optimized Vite config to pre-bundle MUI icons and updated MUI packages to latest versions.
+### Fixed
+- Resolved blank screen and missing module errors by correcting file imports and paths.
+
 **Mobile and Desktop Order List/Table UI Improvements**
 ### Fixed
 - Corrected mobile menu positioning to always stay fixed at the bottom and prevent scrolling.
