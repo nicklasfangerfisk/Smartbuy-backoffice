@@ -11,7 +11,7 @@ import Button from '@mui/joy/Button';
 import withAuth from '../auth/withAuth';
 
 // Props interface
-interface TicketResFormProps {
+interface DialogTicketResolveProps {
   open: boolean; // Whether the modal is open
   onClose: () => void; // Function to close the modal
   onSubmit: (resolution: string, comment: string) => void; // Callback function to handle form submission
@@ -28,7 +28,7 @@ const resolutionOptions = [
 ];
 
 /**
- * TicketResForm Component
+ * DialogTicketResolve Component
  *
  * A modal form for resolving tickets.
  *
@@ -37,7 +37,7 @@ const resolutionOptions = [
  * - onClose: Function to close the modal.
  * - onSubmit: Callback function to handle form submission with resolution and comment.
  */
-const TicketResForm: React.FC<TicketResFormProps> = ({ open, onClose, onSubmit }) => {
+const DialogTicketResolve: React.FC<DialogTicketResolveProps> = ({ open, onClose, onSubmit }) => {
   const [resolution, setResolution] = React.useState('');
   const [resolutionComment, setResolutionComment] = React.useState('');
 
@@ -93,4 +93,4 @@ const TicketResForm: React.FC<TicketResFormProps> = ({ open, onClose, onSubmit }
   );
 };
 
-export default withAuth(TicketResForm);
+export default withAuth(DialogTicketResolve);

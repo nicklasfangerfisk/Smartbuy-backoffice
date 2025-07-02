@@ -9,6 +9,32 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
+## [1.2.4] - 2025-07-02
+**Complete Ticketing System Implementation**
+### Added
+- Comprehensive ticketing system with ticket list and chat-style communication area.
+- Ticket creation dialog with subject and requester name fields.
+- Ticket resolution dialog with predefined resolution options and comments.
+- Real-time message sending and receiving functionality.
+- Search and status filtering for tickets (Open, Pending, Closed, All).
+- Friendly relative timestamps for tickets and activities.
+- Professional chat bubble interface with sender differentiation.
+- Date separators for better conversation flow.
+- Keyboard shortcuts (Enter to send, Shift+Enter for new line).
+
+### Changed
+- Migrated ticketing system from test data to live Supabase integration.
+- Renamed `TicketForm.tsx` to `DialogTicketCreate.tsx` for consistency.
+- Renamed `TicketResForm.tsx` to `DialogTicketResolve.tsx` for consistency.
+- Updated ticket list layout with status chips and improved spacing.
+- Enhanced message area with modern chat bubble design and white text for current user messages.
+- Increased ticket list width by 30% for better usability.
+
+### Fixed
+- Resolved database constraint violation by using 'chat' activity type instead of 'message'.
+- Corrected import paths for DialogTicketCreate component.
+- Fixed message sending functionality with proper error handling and user feedback.
+
 ## [1.2.3] - 2025-07-01
 **Project Structure & Import Path Fixes**
 ### Changed
