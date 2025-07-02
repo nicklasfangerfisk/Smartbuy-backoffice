@@ -45,7 +45,7 @@ import UserDialog from '../Dialog/UserDialog';
 import { useEffect, useState } from 'react';
 import { supabase } from '../utils/supabaseClient';
 import withAuth from '../auth/withAuth';
-import { menuByArea, MenuArea, MenuItem } from '../../navigation/menuConfig.tsx';
+import { menuByArea, MenuArea, MenuItem } from './menuConfig';
 
 /**
  * Sidebar component for navigation.

@@ -14,7 +14,7 @@ import GeneralTable from '../general/GeneralTable';
 import type { PagePurchaseOrderMobileItem } from './PagePurchaseOrderMobile';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import PagePurchaseOrderMobile from './PagePurchaseOrderMobile';
-import fonts from '../../theme/fonts';
+import fonts from '../theme/fonts';
 import Table from '@mui/joy/Table';
 import DialogReceivePurchaseOrder from '../Dialog/DialogReceivePurchaseOrder';
 import type { Database } from '../general/supabase.types';

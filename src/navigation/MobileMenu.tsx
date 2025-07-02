@@ -6,7 +6,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import MenuIcon from '@mui/icons-material/Menu';
 import { supabase } from '../utils/supabaseClient';
 import { useLocation } from 'react-router-dom';
-import { menuItems, menuByArea, MenuArea } from '../../navigation/menuConfig.tsx';
+import { menuItems, menuByArea, MenuArea } from './menuConfig';
 import { MenuValue, MobileMenuItem } from './menuConfig';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';

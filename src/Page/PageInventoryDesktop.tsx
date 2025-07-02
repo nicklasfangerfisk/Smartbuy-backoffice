@@ -7,7 +7,7 @@ import Typography from '@mui/joy/Typography';
 import Chip from '@mui/joy/Chip';
 import Input from '@mui/joy/Input';
 import SearchIcon from '@mui/icons-material/Search';
-import fonts from '../../theme/fonts';
+import fonts from '../theme/fonts';
 import type { Database } from '../general/supabase.types';
 import DialogInventory from '../Dialog/DialogInventory';
 import PageLayout from '../layouts/PageLayout';

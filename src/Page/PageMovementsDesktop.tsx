@@ -21,7 +21,8 @@ import Snackbar from '@mui/joy/Snackbar';
 import { supabase } from '../utils/supabaseClient';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
-import fonts from '../../theme/fonts';
+import fonts from '../theme/fonts';
+
 import type { Database, StockMovementWithProduct, StockMovementType } from '../general/supabase.types';
 import PageLayout from '../layouts/PageLayout';
 

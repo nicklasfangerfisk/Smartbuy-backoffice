@@ -28,7 +28,7 @@ This page documents how to set up Supabase for the Smartbuy Backoffice project.
 ## 3. Regenerate Supabase Types
 After changing the schema, regenerate the TypeScript types:
 ```bash
-npx supabase gen types typescript --project-id <your-project-id> > components/supabase.types.ts
+npx supabase gen types typescript --project-id <your-project-id> > components/general/supabase.types.ts
 ```
 
 ## 4. Environment Variables
@@ -42,7 +42,17 @@ SUPABASE_ANON_KEY=your-anon-key
 - The app uses `utils/supabaseClient.ts` to connect to Supabase.
 - All database operations use the generated types for type safety.
 
-## 6. Useful Links
+## 6. Updating Supabase Types
+
+The `supabase.types.ts` file is auto-generated and should never be edited manually. To update the file, run the following command:
+
+```bash
+./update-supabase-types.sh
+```
+
+This script fetches the latest schema from Supabase and updates the file accordingly. Any manual edits will be overwritten.
+
+## 7. Useful Links
 - [Supabase Docs](https://supabase.com/docs)
 - [Supabase CLI](https://supabase.com/docs/guides/cli)
 - [Supabase SQL Editor](https://app.supabase.com/project/_/sql)

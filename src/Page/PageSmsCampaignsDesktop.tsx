@@ -32,7 +32,7 @@ import PageOrderMobile, { PageOrderMobileItem } from './PageOrderMobile';
 import Card from '@mui/joy/Card';
 import LinearProgress from '@mui/joy/LinearProgress';
 // No handleOrderClick utility found. If needed, define locally or use inline logic.
-import fonts from '../../theme/fonts';
+import fonts from '../theme/fonts';
 import { format } from 'date-fns';
 
 import FilterAltIcon from '@mui/icons-material/FilterAlt';

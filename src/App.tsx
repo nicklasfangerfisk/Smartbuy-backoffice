@@ -14,7 +14,8 @@ import PagePurchaseOrderMobile from './Page/PagePurchaseOrderMobile';
 import Login from './auth/Login';
 import { supabase } from './utils/supabaseClient';
 import { useState } from 'react';
-import MobileMenu, { MobileMenuItem } from './navigation/MobileMenu';
+import MobileMenu from './navigation/MobileMenu';
+import { MobileMenuItem } from './navigation/menuConfig';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import TicketList from './Page/PageTicketDesktop';
 import PageSmsCampaignsDesktop from './Page/PageSmsCampaignsDesktop';
@@ -26,6 +27,7 @@ import PageDashboard from './Page/PageDashboard';
 import { Database } from './general/supabase.types';
 import ProtectedRoute from './auth/ProtectedRoute';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
+import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
 import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
@@ -43,7 +45,7 @@ function Layout() {
   const isMobile = useMediaQuery('(max-width:600px)');
   const navigate = useNavigate();
 
-  const [mobileMenuValue, setMobileMenuValue] = useState<MenuValue>('home');
+  const [mobileMenuValue, setMobileMenuValue] = useState<MenuValue>('dashboard');
   const [users, setUsers] = useState<{
     id: string;
     name: string | null;
@@ -55,26 +57,28 @@ function Layout() {
   }[]>([]);
 
   const mobileMenuItems: MobileMenuItem[] = [
-    { label: 'Home', icon: <HomeRoundedIcon />, value: 'home' },
+    { label: 'Dashboard', icon: <DashboardRoundedIcon />, value: 'dashboard' },
     { label: 'Orders', icon: <ShoppingCartRoundedIcon />, value: 'orders' },
     { label: 'Users', icon: <GroupRoundedIcon />, value: 'users' },
-    { label: 'Suppliers', icon: <SettingsRoundedIcon />, value: 'suppliers' },
+    { label: 'Settings', icon: <SettingsRoundedIcon />, value: 'settings' },
   ];
 
   React.useEffect(() => {
     const pathToValueMap: Record<string, typeof mobileMenuValue> = {
-      '/': 'home',
-      '/dashboard': 'home',
+      '/': 'dashboard',
+      '/dashboard': 'dashboard',
       '/orders': 'orders',
-      '/products': 'products',
+      '/products': 'dashboard', // Products grouped under dashboard for mobile
       '/users': 'users',
-      '/suppliers': 'suppliers',
-      '/purchase-orders': 'purchaseorders',
-      '/tickets': 'tickets',
-      '/sms-campaigns': 'smscampaigns',
-      '/movements': 'movements',
+      '/suppliers': 'dashboard', // Suppliers grouped under dashboard for mobile
+      '/purchase-orders': 'dashboard', // Purchase orders grouped under dashboard for mobile
+      '/tickets': 'dashboard', // Tickets grouped under dashboard for mobile
+      '/sms-campaigns': 'dashboard', // SMS campaigns grouped under dashboard for mobile
+      '/movements': 'dashboard', // Movements grouped under dashboard for mobile
+      '/inventory': 'dashboard', // Inventory grouped under dashboard for mobile
+      '/settings': 'settings',
     };
-    setMobileMenuValue(pathToValueMap[location.pathname] || 'home');
+    setMobileMenuValue(pathToValueMap[location.pathname] || 'dashboard');
   }, [location.pathname]);
 
   React.useEffect(() => {

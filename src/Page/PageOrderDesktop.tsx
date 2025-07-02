@@ -43,7 +43,7 @@ import AutorenewRoundedIcon from '@mui/icons-material/AutorenewRounded';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
-import fonts from '../../theme/fonts';
+import fonts from '../theme/fonts';
 
 // Apply font size to Typography components
 // Update font size to use small instead of medium

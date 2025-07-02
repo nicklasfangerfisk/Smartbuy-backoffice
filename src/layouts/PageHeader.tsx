@@ -1,7 +1,7 @@
 import React from 'react';
 import Box from '@mui/joy/Box';
 import Typography from '@mui/joy/Typography';
-import fonts from '../../theme/fonts';
+import fonts from '../theme/fonts';
 
 interface PageHeaderProps {
   title: string;

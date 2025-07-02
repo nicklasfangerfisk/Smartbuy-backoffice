@@ -25,7 +25,7 @@ import { supabase } from '../../utils/supabaseClient';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import SearchIcon from '@mui/icons-material/Search';
 import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
-import fonts from '../../theme/fonts';
+import fonts from '../theme/fonts';
 import PageLayout from '../layouts/PageLayout';
 
 const typographyStyles = { fontSize: fonts.sizes.small };

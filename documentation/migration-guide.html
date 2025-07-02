@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Stock Adjustment Migration</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .sql-box { background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .step { margin: 20px 0; padding: 15px; border-left: 4px solid #007acc; background: #f9f9f9; }
+        .warning { border-left-color: #ff6b35; background: #fff5f5; }
+        .success { border-left-color: #28a745; background: #f8fff8; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        .copy-btn { background: #007acc; color: white; border: none; border-radius: 3px; }
+        .copy-btn:hover { background: #005a9e; }
+        pre { white-space: pre-wrap; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Manual Stock Adjustment Migration Guide</h1>
+    
+    <div class="step warning">
+        <h3>⚠️ Important: Backup First!</h3>
+        <p>Before applying this migration, ensure you have a backup of your database. This migration will modify the stock_movements table structure.</p>
+    </div>
+
+    <div class="step">
+        <h3>Step 1: Copy the Migration SQL</h3>
+        <p>Click the button below to copy the migration SQL to your clipboard:</p>
+        <button class="copy-btn" onclick="copyMigrationSQL()">📋 Copy Migration SQL</button>
+        
+        <div class="sql-box">
+            <pre id="migrationSQL">-- Migration: Improve stock movements to handle signed quantities
+-- This allows for cleaner stock calculations without text parsing
+
+-- 1. Remove the quantity > 0 constraint to allow negative adjustments
+ALTER TABLE stock_movements DROP CONSTRAINT IF EXISTS stock_movements_quantity_check;
+
+-- 2. Add new constraint that allows negative quantities only for adjustments
+ALTER TABLE stock_movements ADD CONSTRAINT stock_movements_quantity_check 
+CHECK (
+    (movement_type IN ('incoming', 'outgoing') AND quantity > 0) OR
+    (movement_type = 'adjustment' AND quantity != 0)
+);
+
+-- 3. Add a check constraint to prevent negative stock levels
+-- This requires a function to calculate current stock
+CREATE OR REPLACE FUNCTION check_stock_not_negative()
+RETURNS TRIGGER AS $$
+DECLARE
+    current_stock INTEGER;
+BEGIN
+    -- Calculate current stock after this movement
+    SELECT COALESCE(SUM(
+        CASE 
+            WHEN movement_type = 'incoming' THEN quantity
+            WHEN movement_type = 'outgoing' THEN -quantity  
+            WHEN movement_type = 'adjustment' THEN quantity
+            ELSE 0
+        END
+    ), 0) INTO current_stock
+    FROM stock_movements 
+    WHERE product_id = NEW.product_id;
+    
+    -- Prevent negative stock
+    IF current_stock < 0 THEN
+        RAISE EXCEPTION 'Stock cannot go negative. Current stock would be: %', current_stock;
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 4. Create trigger to enforce non-negative stock
+CREATE TRIGGER prevent_negative_stock
+    AFTER INSERT OR UPDATE ON stock_movements
+    FOR EACH ROW
+    EXECUTE FUNCTION check_stock_not_negative();
+
+COMMENT ON CONSTRAINT stock_movements_quantity_check ON stock_movements 
+IS 'Incoming/outgoing must be positive, adjustments can be positive or negative but not zero';
+
+COMMENT ON FUNCTION check_stock_not_negative() 
+IS 'Prevents stock levels from going below zero by calculating total stock after movement';</pre>
+        </div>
+    </div>
+
+    <div class="step">
+        <h3>Step 2: Apply in Supabase</h3>
+        <ol>
+            <li>Go to your <strong>Supabase Dashboard</strong></li>
+            <li>Navigate to <strong>SQL Editor</strong></li>
+            <li>Create a <strong>New query</strong></li>
+            <li>Paste the copied SQL</li>
+            <li>Click <strong>Run</strong></li>
+        </ol>
+        <p><em>The migration should complete successfully with no errors.</em></p>
+    </div>
+
+    <div class="step success">
+        <h3>Step 3: Verify Migration Success</h3>
+        <p>After running the migration, you can verify it worked by running this test query:</p>
+        <button class="copy-btn" onclick="copyTestSQL()">📋 Copy Test Query</button>
+        <div class="sql-box">
+            <pre id="testSQL">-- Test query to verify the migration worked
+SELECT 
+    constraint_name, 
+    check_clause
+FROM information_schema.check_constraints 
+WHERE constraint_name = 'stock_movements_quantity_check';
+
+-- Should show the new constraint allowing signed quantities for adjustments</pre>
+        </div>
+    </div>
+
+    <div class="step success">
+        <h3>✅ What This Migration Does:</h3>
+        <ul>
+            <li><strong>Removes old constraint</strong> that required all quantities to be positive</li>
+            <li><strong>Adds new smart constraint</strong> that allows negative quantities only for adjustments</li>
+            <li><strong>Creates database function</strong> to calculate stock levels</li>
+            <li><strong>Adds trigger</strong> to prevent negative stock automatically</li>
+            <li><strong>Maintains data integrity</strong> while allowing signed quantities</li>
+        </ul>
+    </div>
+
+    <div class="step">
+        <h3>Step 4: Test the Feature</h3>
+        <p>After applying the migration:</p>
+        <ol>
+            <li>Go to your Stock Movements page</li>
+            <li>Click "Manual Adjustment"</li>
+            <li>Test with both positive and negative adjustments</li>
+            <li>Verify the database prevents negative stock levels</li>
+        </ol>
+    </div>
+
+    <script>
+        function copyMigrationSQL() {
+            const sql = document.getElementById('migrationSQL').textContent;
+            navigator.clipboard.writeText(sql).then(() => {
+                alert('Migration SQL copied to clipboard!');
+            });
+        }
+
+        function copyTestSQL() {
+            const sql = document.getElementById('testSQL').textContent;
+            navigator.clipboard.writeText(sql).then(() => {
+                alert('Test query copied to clipboard!');
+            });
+        }
+    </script>
+</body>
+</html>
