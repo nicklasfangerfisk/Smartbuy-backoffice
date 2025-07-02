@@ -339,25 +339,25 @@ export type Database = {
         Row: {
           date: string
           id: string
-          movement_type: string
+          movement_type: "incoming" | "outgoing" | "adjustment"
           product_id: string
-          quantity: number
+          quantity: number // Can be negative for adjustments (signed integer)
           reason: string | null
         }
         Insert: {
           date?: string
           id?: string
-          movement_type: string
+          movement_type: "incoming" | "outgoing" | "adjustment"
           product_id: string
-          quantity: number
+          quantity: number // Can be negative for adjustments (signed integer)
           reason?: string | null
         }
         Update: {
           date?: string
           id?: string
-          movement_type?: string
+          movement_type?: "incoming" | "outgoing" | "adjustment"
           product_id?: string
-          quantity?: number
+          quantity?: number // Can be negative for adjustments (signed integer)
           reason?: string | null
         }
         Relationships: [
@@ -668,3 +668,24 @@ export const Constants = {
     },
   },
 } as const
+
+// Type definitions for improved Manual Stock Adjustment feature
+export type StockMovementType = "incoming" | "outgoing" | "adjustment";
+
+// Helper type for stock movements with product information (for joins)
+export type StockMovementWithProduct = Database['public']['Tables']['stock_movements']['Row'] & {
+  Products?: {
+    ProductName: string | null;
+    ProductID: number | null;
+    uuid: string;
+  } | null;
+};
+
+// Stock movement quantity rules:
+// - 'incoming': always positive (stock received)
+// - 'outgoing': always positive (stock shipped, stored as positive but calculated as negative)
+// - 'adjustment': can be positive (increase) or negative (decrease) - SIGNED QUANTITY
+export type StockMovementInsert = Database['public']['Tables']['stock_movements']['Insert'] & {
+  // Ensures type safety for manual adjustments
+  quantity: number; // For adjustments: positive = increase, negative = decrease
+};

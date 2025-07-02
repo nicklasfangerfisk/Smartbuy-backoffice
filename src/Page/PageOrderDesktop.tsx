@@ -49,6 +49,15 @@ import fonts from '../../theme/fonts';
 // Update font size to use small instead of medium
 const typographyStyles = { fontSize: fonts.sizes.small };
 
+// Define handleOrderClick function for mobile usage
+const handleOrderClick = (orderId: string, rows: any[], setSelectedOrder: any, setOrderDetailsOpen: any) => {
+  const order = rows.find(row => row.uuid === orderId);
+  if (order) {
+    setSelectedOrder(order);
+    setOrderDetailsOpen(true);
+  }
+};
+
 export type OrderStatus = 'Paid' | 'Refunded' | 'Cancelled';
 
 type Customer = {

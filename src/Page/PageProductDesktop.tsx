@@ -39,6 +39,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import ImageIcon from '@mui/icons-material/Image';
 import Card from '@mui/joy/Card';
 import LinearProgress from '@mui/joy/LinearProgress';
+import Chip from '@mui/joy/Chip';
+import Tooltip from '@mui/joy/Tooltip';
 import ProductTableForm from '../Dialog/ProductTableForm';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import ProductTableMobile from './PageProductMobile';
@@ -53,6 +55,8 @@ import PageLayout from '../layouts/PageLayout';
 
 export default function ProductTable() {
   const [products, setProducts] = React.useState<any[]>([]);
+  const [productStocks, setProductStocks] = React.useState<{ [productId: string]: number }>({});
+  const [stockLoading, setStockLoading] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [form, setForm] = React.useState({
     ProductName: '',
@@ -68,12 +72,59 @@ export default function ProductTable() {
   const [search, setSearch] = React.useState('');
   const isMobile = useMediaQuery('(max-width: 600px)');
 
+  // Calculate current stock for all products
+  const fetchProductStocks = async (productList: any[]) => {
+    setStockLoading(true);
+    const stockMap: { [productId: string]: number } = {};
+    
+    try {
+      // Get all stock movements in one query
+      const { data: movements, error } = await supabase
+        .from('stock_movements')
+        .select('product_id, movement_type, quantity');
+
+      if (!error && movements) {
+        // Calculate stock for each product
+        productList.forEach(product => {
+          const productMovements = movements.filter(m => m.product_id === product.uuid);
+          const totalStock = productMovements.reduce((total, movement) => {
+            switch (movement.movement_type) {
+              case 'incoming':
+                return total + movement.quantity;
+              case 'outgoing':
+                return total - movement.quantity;
+              case 'adjustment':
+                return total + movement.quantity; // Already signed
+              default:
+                return total;
+            }
+          }, 0);
+          stockMap[product.uuid] = totalStock;
+        });
+      }
+    } catch (err) {
+      console.error('Error fetching stock levels:', err);
+    } finally {
+      setProductStocks(stockMap);
+      setStockLoading(false);
+    }
+  };
+
+  // Get stock level status and color
+  const getStockStatus = (stock: number) => {
+    if (stock <= 0) return { status: 'Out of Stock', color: 'danger' as const };
+    if (stock <= 10) return { status: 'Low Stock', color: 'warning' as const };
+    return { status: 'In Stock', color: 'success' as const };
+  };
+
   React.useEffect(() => {
     async function fetchProducts() {
       setLoading(true);
       const { data, error } = await supabase.from('Products').select('*');
       if (!error && data) {
         setProducts(data);
+        // Fetch stock levels for all products
+        await fetchProductStocks(data);
       }
       setLoading(false);
     }
@@ -143,7 +194,10 @@ export default function ProductTable() {
       setImageFile(null);
       // Refresh products
       const { data } = await supabase.from('Products').select('*');
-      if (data) setProducts(data);
+      if (data) {
+        setProducts(data);
+        await fetchProductStocks(data);
+      }
     }
   };
 
@@ -183,7 +237,10 @@ export default function ProductTable() {
     if (!error) {
       // Refresh products
       const { data } = await supabase.from('Products').select('*');
-      if (data) setProducts(data);
+      if (data) {
+        setProducts(data);
+        await fetchProductStocks(data);
+      }
     }
   };
 
@@ -202,7 +259,10 @@ export default function ProductTable() {
     if (!error) {
       // Refresh products
       const { data } = await supabase.from('Products').select('*');
-      if (data) setProducts(data);
+      if (data) {
+        setProducts(data);
+        await fetchProductStocks(data);
+      }
     }
   };
 
@@ -269,6 +329,7 @@ export default function ProductTable() {
                 <th>ID</th>
                 <th>Image</th>
                 <th>Product</th>
+                <th>Current Stock</th>
                 <th>Sales price</th>
                 <th>Cost price</th>
                 <th>Created</th>
@@ -291,6 +352,58 @@ export default function ProductTable() {
                     )}
                   </td>
                   <td>{product.ProductName}</td>
+                  <td>
+                    {stockLoading ? (
+                      <Typography level="body-sm" sx={{ color: 'neutral.500' }}>Loading...</Typography>
+                    ) : (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Chip
+                          size="sm"
+                          variant="soft"
+                          color={getStockStatus(productStocks[product.uuid] || 0).color}
+                        >
+                          {getStockStatus(productStocks[product.uuid] || 0).status}
+                        </Chip>
+                        <Tooltip 
+                          title={`Current stock level: ${productStocks[product.uuid] || 0} units`}
+                          arrow
+                        >
+                          <Typography 
+                            level="body-sm" 
+                            sx={{ 
+                              fontWeight: 'bold',
+                              color: getStockStatus(productStocks[product.uuid] || 0).color === 'danger' ? 'danger.500' :
+                                     getStockStatus(productStocks[product.uuid] || 0).color === 'warning' ? 'warning.600' : 
+                                     'success.600'
+                            }}
+                          >
+                            {productStocks[product.uuid] || 0}
+                          </Typography>
+                        </Tooltip>
+                        {/* Stock level bar indicator */}
+                        <Box
+                          sx={{
+                            width: 40,
+                            height: 4,
+                            bgcolor: 'neutral.200',
+                            borderRadius: 2,
+                            overflow: 'hidden'
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              width: `${Math.min(100, Math.max(0, ((productStocks[product.uuid] || 0) / 50) * 100))}%`,
+                              height: '100%',
+                              bgcolor: getStockStatus(productStocks[product.uuid] || 0).color === 'danger' ? 'danger.400' :
+                                      getStockStatus(productStocks[product.uuid] || 0).color === 'warning' ? 'warning.400' : 
+                                      'success.400',
+                              borderRadius: 2
+                            }}
+                          />
+                        </Box>
+                      </Box>
+                    )}
+                  </td>
                   <td>{product.SalesPrice}</td>
                   <td>{product.CostPrice}</td>
                   <td>{product.CreatedAt}</td>
@@ -319,7 +432,10 @@ export default function ProductTable() {
                             await uploadImageToStorage(file, product.id);
                             // Refresh products after upload
                             const { data } = await supabase.from('Products').select('*');
-                            if (data) setProducts(data);
+                            if (data) {
+                              setProducts(data);
+                              await fetchProductStocks(data);
+                            }
                             setImageUploading(false);
                           }
                         }}
@@ -331,7 +447,7 @@ export default function ProductTable() {
               ))}
               {filteredProducts.length === 0 && !loading && (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', color: '#888' }}>No products found.</td>
+                  <td colSpan={8} style={{ textAlign: 'center', color: '#888' }}>No products found.</td>
                 </tr>
               )}
             </tbody>
