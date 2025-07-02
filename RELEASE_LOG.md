@@ -9,6 +9,35 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
+## [1.2.5] - 2025-07-02
+**Complete Manual Stock Adjustment Feature Implementation**
+### Added
+- Robust mobile-first Manual Stock Adjustment feature with Joy UI components.
+- Edge-to-edge, responsive mobile layout with proper content isolation.
+- Compact row-based movements list with color-coded icons and quantity chips.
+- Advanced filtering system with movement type, product, and reason category filters.
+- Active filter chips display with clear all functionality.
+- Subtle "+ Movement" floating action button positioned above mobile menu.
+- Comprehensive stock adjustment dialog with current stock display and real-time calculation.
+- Joy UI toast notifications replacing browser alerts for better UX.
+- Signed quantity support for positive/negative adjustments.
+- Database integration preventing negative stock levels.
+
+### Changed
+- Migrated PageMovementsMobile from Material-UI to Joy UI for consistency.
+- Converted mobile movements list from card-based to compact row layout.
+- Replaced all browser alert() calls with Joy UI Snackbar notifications.
+- Updated stock movement calculations to use signed quantities for adjustments.
+- Simplified edge-to-edge CSS implementation for better maintainability.
+- Enhanced mobile menu to avoid alert() usage and improved error handling.
+
+### Fixed
+- Resolved layout isolation issues ensuring content doesn't scroll under mobile menu.
+- Fixed TypeScript errors and missing imports in MobileMenu component.
+- Eliminated aggressive CSS overrides in favor of cleaner implementation.
+- Increased bottom padding to 100px ensuring last row visibility above mobile menu.
+- Cleaned up console errors from Material-UI/Joy UI component mixing.
+
 ## [1.2.4] - 2025-07-02
 **Complete Ticketing System Implementation**
 ### Added

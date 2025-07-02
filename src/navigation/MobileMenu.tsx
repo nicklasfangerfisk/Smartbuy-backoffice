@@ -6,18 +6,13 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import MenuIcon from '@mui/icons-material/Menu';
 import { supabase } from '../utils/supabaseClient';
 import { useLocation } from 'react-router-dom';
-import { menuItems, menuByArea, MenuArea, MenuValue } from '../../navigation/menuConfig.tsx';
+import { menuItems, menuByArea, MenuArea } from '../../navigation/menuConfig.tsx';
+import { MenuValue, MobileMenuItem } from './menuConfig';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-
-export interface MobileMenuItem {
-  label: string;
-  icon: React.ReactNode;
-  value: MenuValue;
-}
 
 interface MobileMenuProps {
   items: MobileMenuItem[];
@@ -73,7 +68,9 @@ export default function MobileMenu({ value, onChange, toggleSidebar }: MobileMen
     if (!session && [
       'orders', 'products', 'users', 'suppliers', 'purchaseorders', 'tickets', 'smscampaigns', 'movements'
     ].includes(newValue)) {
-      alert('You must be logged in to access this page.');
+      console.warn('Authentication required for this page');
+      // Redirect to login instead of showing alert
+      onChange('home' as MobileMenuProps['value']);
       return;
     }
     onChange(newValue as MobileMenuProps['value']);

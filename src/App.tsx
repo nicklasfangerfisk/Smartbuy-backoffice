@@ -115,7 +115,7 @@ function Layout() {
           minHeight: 0,
           overflowY: 'auto',
           bgcolor: 'background.default',
-          p: location.pathname !== '/dashboard' && location.pathname !== '/login' && location.pathname !== '/tickets' ? 3 : 0,
+          p: location.pathname !== '/dashboard' && location.pathname !== '/login' && location.pathname !== '/tickets' && location.pathname !== '/movements' ? 3 : 0,
           width: { sm: '100%', md: 'calc(100% - 240px)' },
           marginBottom: isMobile ? '56px' : 0, // Adjust for MobileMenu height
         }}
