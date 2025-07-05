@@ -60,7 +60,7 @@ function incrementVersion(currentVersion, type) {
 }
 
 function getCurrentVersion() {
-  const releaseLogPath = path.join(__dirname, 'documentation', 'RELEASE_LOG.md');
+  const releaseLogPath = path.join(__dirname, 'RELEASE_LOG.md');
   const releaseLog = fs.readFileSync(releaseLogPath, 'utf8');
   
   const lines = releaseLog.split('\n');
@@ -103,7 +103,7 @@ function createReleaseEntry(version, title, sections) {
 }
 
 function updateReleaseLog(newEntry) {
-  const releaseLogPath = path.join(__dirname, 'documentation', 'RELEASE_LOG.md');
+  const releaseLogPath = path.join(__dirname, 'RELEASE_LOG.md');
   const content = fs.readFileSync(releaseLogPath, 'utf8');
   
   // Find the insertion point (after the comment block)

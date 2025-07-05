@@ -57,7 +57,7 @@ function main() {
   allChecksPass &= checkFile('release-automation.js', 'Release automation script');
   allChecksPass &= checkFile('smart-auto-release.js', 'Smart auto-release script');
   allChecksPass &= checkFile('sync-version.js', 'Version sync script');
-  allChecksPass &= checkFile('documentation/RELEASE_LOG.md', 'Release log');
+  allChecksPass &= checkFile('RELEASE_LOG.md', 'Release log');
   allChecksPass &= checkFile('documentation/RELEASE_AUTOMATION.md', 'Automation documentation');
   allChecksPass &= checkFile('documentation/SMART_AUTO_RELEASE.md', 'Smart release documentation');
   

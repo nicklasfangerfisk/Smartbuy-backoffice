@@ -4,7 +4,7 @@
 # This script ensures package.json version matches the latest release in RELEASE_LOG.md
 
 # Extract the latest version from RELEASE_LOG.md
-LATEST_VERSION=$(grep -m 1 "## \[" documentation/RELEASE_LOG.md | sed 's/.*\[\([0-9.]*\)\].*/\1/')
+LATEST_VERSION=$(grep -m 1 "## \[" RELEASE_LOG.md | sed 's/.*\[\([0-9.]*\)\].*/\1/')
 
 # Get current version from package.json
 CURRENT_VERSION=$(node -p "require('./package.json').version")
