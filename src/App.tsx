@@ -6,21 +6,18 @@ import { CssVarsProvider } from '@mui/joy/styles';
 import Sidebar from './navigation/Sidebar';
 import PageOrders from './Page/PageOrders';
 import PageProducts from './Page/PageProducts';
-import PageUsersDesktop from './Page/PageUsersDesktop';
-import PageUsersMobile from './Page/PageUsersMobile';
-import PageSuppliersDesktop from './Page/PageSuppliersDesktop';
-import PagePurchaseOrderDesktop from './Page/PagePurchaseOrderDesktop';
-import PagePurchaseOrderMobile from './Page/PagePurchaseOrderMobile';
+import PageUsers from './Page/PageUsers';
+import PageSuppliers from './Page/PageSuppliers';
+import PagePurchaseOrders from './Page/PagePurchaseOrders';
 import Login from './auth/Login';
 import { supabase } from './utils/supabaseClient';
 import { useState } from 'react';
 import MobileMenu from './navigation/MobileMenu';
 import { MobileMenuItem } from './navigation/menuConfig';
-import TicketList from './Page/PageTicketDesktop';
-import PageSmsCampaignsDesktop from './Page/PageSmsCampaignsDesktop';
-import PageSmsCampaignsMobile, { PageSmsCampaignsMobileItem } from './Page/PageSmsCampaignsMobile';
+import PageTickets from './Page/PageTickets';
+import PageSmsCampaigns from './Page/PageSmsCampaigns';
 import { User, UserResponse } from '@supabase/supabase-js';
-import { PagePurchaseOrderMobileItem } from './Page/PagePurchaseOrderMobile';
+
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { useResponsive } from './hooks/useResponsive';
 import PageDashboard from './Page/PageDashboard';
@@ -34,9 +31,7 @@ import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import './App.css'; // Import custom styles
 import LoginLayout from './auth/LoginLayout';
 import PageMovements from './Page/PageMovements';
-import PageInventoryDesktop from './Page/PageInventoryDesktop';
-import PageSettingsDesktop from './Page/PageSettingsDesktop';
-import PageSettingsMobile from './Page/PageSettingsMobile';
+import PageSettings from './Page/PageSettings';
 import { MenuValue } from './navigation/menuConfig';
 
 function Layout() {
@@ -45,15 +40,6 @@ function Layout() {
   const navigate = useNavigate();
 
   const [mobileMenuValue, setMobileMenuValue] = useState<MenuValue>('dashboard');
-  const [users, setUsers] = useState<{
-    id: string;
-    name: string | null;
-    email: string;
-    role: string | null;
-    created_at: string | null;
-    last_login: string | null;
-    phone: string | null;
-  }[]>([]);
 
   const mobileMenuItems: MobileMenuItem[] = [
     { label: 'Dashboard', icon: <DashboardRoundedIcon />, value: 'dashboard' },
@@ -74,34 +60,10 @@ function Layout() {
       '/tickets': 'dashboard', // Tickets grouped under dashboard for mobile
       '/sms-campaigns': 'dashboard', // SMS campaigns grouped under dashboard for mobile
       '/movements': 'dashboard', // Movements grouped under dashboard for mobile
-      '/inventory': 'dashboard', // Inventory grouped under dashboard for mobile
       '/settings': 'settings',
     };
     setMobileMenuValue(pathToValueMap[location.pathname] || 'dashboard');
   }, [location.pathname]);
-
-  React.useEffect(() => {
-    async function fetchUsers() {
-      const { data, error } = await supabase.from('users').select('*');
-      if (error) {
-        console.error('Error fetching users:', error);
-      } else {
-        console.log('Fetched users:', data);
-        const mappedUsers = (data || []).map((user) => ({
-          id: user.id,
-          name: user.name || null,
-          email: user.email,
-          role: user.role || null,
-          created_at: user.created_at || null,
-          last_login: user.last_login || null,
-          phone: user.phone || null,
-        }));
-        setUsers(mappedUsers);
-      }
-    }
-
-    fetchUsers();
-  }, []);
 
   console.log('isMobile:', isMobile);
 
@@ -156,11 +118,7 @@ function Layout() {
             path="/users"
             element={
               <ProtectedRoute>
-                {isMobile ? (
-                  <PageUsersMobile users={users} />
-                ) : (
-                  <PageUsersDesktop users={users} />
-                )}
+                <PageUsers />
               </ProtectedRoute>
             }
           />
@@ -168,7 +126,7 @@ function Layout() {
             path="/suppliers"
             element={
               <ProtectedRoute>
-                <PageSuppliersDesktop />
+                <PageSuppliers />
               </ProtectedRoute>
             }
           />
@@ -176,7 +134,7 @@ function Layout() {
             path="/purchase-orders"
             element={
               <ProtectedRoute>
-                <PagePurchaseOrderDesktop />
+                <PagePurchaseOrders />
               </ProtectedRoute>
             }
           />
@@ -184,7 +142,7 @@ function Layout() {
             path="/tickets"
             element={
               <ProtectedRoute>
-                <TicketList />
+                <PageTickets />
               </ProtectedRoute>
             }
           />
@@ -192,7 +150,7 @@ function Layout() {
             path="/sms-campaigns"
             element={
               <ProtectedRoute>
-                <PageSmsCampaignsDesktop campaigns={[]} />
+                <PageSmsCampaigns />
               </ProtectedRoute>
             }
           />
@@ -213,18 +171,10 @@ function Layout() {
             }
           />
           <Route
-            path="/inventory"
-            element={
-              <ProtectedRoute>
-                <PageInventoryDesktop />
-              </ProtectedRoute>
-            }
-          />
-          <Route
             path="/settings"
             element={
               <ProtectedRoute>
-                {isMobile ? <PageSettingsMobile /> : <PageSettingsDesktop />}
+                <PageSettings />
               </ProtectedRoute>
             }
           />
