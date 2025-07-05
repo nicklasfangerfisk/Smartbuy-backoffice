@@ -10,6 +10,15 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
+## [1.5.1] - 2025-07-05 21:47:38
+**UI Bug Fixes**
+### Fixed
+- Bug fixes and stability improvements
+- Performance optimizations
+- Resolved user interface issues
+- Updated documentation accuracy
+
+
 ## [1.5.0] - 2025-07-05 21:10:57
 **Documentation Enhancements**
 ### Added

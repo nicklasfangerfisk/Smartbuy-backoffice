@@ -1,4 +1,4 @@
-import { OrderStatus } from '../Page/PageOrderDesktop';
+import { OrderStatus } from '../Page/PageOrders';
 
 export function openSidebar() {
   if (typeof window !== 'undefined') {

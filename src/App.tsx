@@ -4,8 +4,8 @@ import Box from '@mui/joy/Box';
 import { CssVarsProvider } from '@mui/joy/styles';
 
 import Sidebar from './navigation/Sidebar';
-import PageOrderDesktop from './Page/PageOrderDesktop';
-import PageProductDesktop from './Page/PageProductDesktop';
+import PageOrders from './Page/PageOrders';
+import PageProducts from './Page/PageProducts';
 import PageUsersDesktop from './Page/PageUsersDesktop';
 import PageUsersMobile from './Page/PageUsersMobile';
 import PageSuppliersDesktop from './Page/PageSuppliersDesktop';
@@ -140,7 +140,7 @@ function Layout() {
             path="/orders"
             element={
               <ProtectedRoute>
-                <PageOrderDesktop rows={[]} orderDetailsOpen={false} selectedOrder={null} fetchOrderItems={(orderUuid) => Promise.resolve([])} onCloseOrderDetails={() => {}} />
+                <PageOrders />
               </ProtectedRoute>
             }
           />
@@ -148,7 +148,7 @@ function Layout() {
             path="/products"
             element={
               <ProtectedRoute>
-                <PageProductDesktop />
+                <PageProducts />
               </ProtectedRoute>
             }
           />

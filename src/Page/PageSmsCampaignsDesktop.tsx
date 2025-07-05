@@ -28,7 +28,6 @@ import { supabase } from '../utils/supabaseClient';
 import OrderTableCreate from '../Dialog/OrderTableCreate';
 import OrderTableDetails from '../Dialog/OrderTableDetails';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import PageOrderMobile, { PageOrderMobileItem } from './PageOrderMobile';
 import Card from '@mui/joy/Card';
 import LinearProgress from '@mui/joy/LinearProgress';
 // No handleOrderClick utility found. If needed, define locally or use inline logic.

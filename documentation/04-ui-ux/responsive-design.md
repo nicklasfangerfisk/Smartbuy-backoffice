@@ -511,7 +511,11 @@ PageOrderDesktop.tsx
 PageOrderMobile.tsx
 
 // After: Unified component
-PageOrder.tsx (with responsive logic)
+PageOrders.tsx (with responsive logic)
+
+// Completed migrations:
+✅ PageMovements.tsx (unified from PageMovementsDesktop.tsx + PageMovementsMobile.tsx)
+✅ PageOrders.tsx (unified from PageOrderDesktop.tsx + PageOrderMobile.tsx)
 ```
 
 ### 2. Implementation Steps
