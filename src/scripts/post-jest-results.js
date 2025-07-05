@@ -41,7 +41,7 @@ const payload = {
 
 console.log('Payload being sent to Supabase:', JSON.stringify(payload, null, 2));
 
-fetch(`${supabaseUrl}/rest/v1/jest_results`, {
+fetch(`${supabaseUrl}/rest/v1/testresults`, {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
