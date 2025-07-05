@@ -3,6 +3,7 @@ import GlobalStyles from '@mui/joy/GlobalStyles';
 import Avatar from '@mui/joy/Avatar';
 import Box from '@mui/joy/Box';
 import Button from '@mui/joy/Button';
+import Tooltip from '@mui/joy/Tooltip';
 import Card from '@mui/joy/Card';
 import Chip from '@mui/joy/Chip';
 import Divider from '@mui/joy/Divider';
@@ -46,6 +47,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../utils/supabaseClient';
 import withAuth from '../auth/withAuth';
 import { menuByArea, MenuArea, MenuItem } from './menuConfig';
+import { useResponsive } from '../hooks/useResponsive';
 
 /**
  * Sidebar component for navigation.
@@ -56,6 +58,11 @@ import { menuByArea, MenuArea, MenuItem } from './menuConfig';
 function Sidebar({ setView, view }: { setView: (view: MenuItem['value']) => void, view: string }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { isMobile, isTablet, isDesktop } = useResponsive();
+  
+  // Sidebar collapse state
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  
   const [users, setUsers] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null); // Auth user
   const [userProfile, setUserProfile] = useState<any>(null); // Contextual user row
@@ -123,9 +130,47 @@ function Sidebar({ setView, view }: { setView: (view: MenuItem['value']) => void
     setEditOpen(false);
   };
 
+  // Auto-collapse logic based on breakpoints
+  useEffect(() => {
+    if (isTablet) {
+      // Between 900-600px: auto-collapse on mount
+      setIsCollapsed(true);
+    } else if (isDesktop) {
+      // Above 900px: keep current state (user can manually toggle)
+      // Don't auto-expand, let user decide
+    }
+    // Below 600px: mobile menu handles navigation, sidebar is hidden
+  }, [isTablet, isDesktop]);
+  
+  // Handle menu item clicks
+  const handleMenuItemClick = (item: MenuItem) => {
+    // Navigate to the route
+    navigate(item.route);
+    setView(item.value);
+    
+    // Auto-collapse behavior based on breakpoint
+    if (isTablet) {
+      // Between 900-600px: auto-collapse after navigation
+      setIsCollapsed(true);
+    }
+    // Above 900px: don't auto-collapse, let user keep it open
+  };
+  
+  // Toggle sidebar collapse
+  const toggleSidebar = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
   const handleNavigation = (route: string, viewName: string) => {
-    setView(viewName as any);
-    navigate(route);
+    // Create a MenuItem-like object for the handleMenuItemClick logic
+    const menuItem: MenuItem = {
+      value: viewName as any,
+      route: route,
+      label: viewName,
+      icon: null as any, // Icon not needed for navigation logic
+      showInMobile: true // Default value
+    };
+    handleMenuItemClick(menuItem);
   };
 
   const isSelected = (route: string) => location.pathname === route;
@@ -134,7 +179,7 @@ function Sidebar({ setView, view }: { setView: (view: MenuItem['value']) => void
     <Box
       className="Sidebar"
       sx={{
-        display: { xs: 'none', md: 'flex' }, // hide sidebar on mobile
+        display: isMobile ? 'none' : 'flex', // hide sidebar only on mobile (<=600px)
         position: { xs: 'fixed', md: 'sticky' },
         transform: {
           xs: 'translateX(calc(100% * (var(--SideNavigation-slideIn, 0) - 1)))',
@@ -157,9 +202,9 @@ function Sidebar({ setView, view }: { setView: (view: MenuItem['value']) => void
       <GlobalStyles
         styles={(theme) => ({
           ':root': {
-            '--Sidebar-width': '220px',
+            '--Sidebar-width': isCollapsed ? '60px' : '220px',
             [theme.breakpoints.up('lg')]: {
-              '--Sidebar-width': '240px',
+              '--Sidebar-width': isCollapsed ? '60px' : '240px',
             },
           },
         })}
@@ -185,12 +230,31 @@ function Sidebar({ setView, view }: { setView: (view: MenuItem['value']) => void
       />
       {/* Sidebar header with logo and theme toggle */}
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-        <img src="/favicon.svg" alt="Logo" style={{ width: 28, height: 28, borderRadius: 6 }} />
-        <Typography level="title-lg">Smartbuy</Typography>
-        <ColorSchemeToggle sx={{ ml: 'auto' }} />
+        <IconButton
+          size="sm"
+          variant="plain"
+          onClick={toggleSidebar}
+          sx={{ 
+            p: 0.5,
+            borderRadius: 1,
+            '&:hover': {
+              bgcolor: 'neutral.100'
+            }
+          }}
+        >
+          <img src="/favicon.svg" alt="Logo" style={{ width: 28, height: 28, borderRadius: 6 }} />
+        </IconButton>
+        {!isCollapsed && (
+          <>
+            <Typography level="title-lg">Smartbuy</Typography>
+            <ColorSchemeToggle sx={{ ml: 'auto' }} />
+          </>
+        )}
       </Box>
-      {/* Search input */}
-      <Input size="sm" startDecorator={<SearchRoundedIcon />} placeholder="Search" />
+      {/* Search input - only show when not collapsed */}
+      {!isCollapsed && (
+        <Input size="sm" startDecorator={<SearchRoundedIcon />} placeholder="Search" />
+      )}
       {/* Navigation list */}
       <Box
         sx={{
@@ -215,30 +279,66 @@ function Sidebar({ setView, view }: { setView: (view: MenuItem['value']) => void
         >
           {(['Sales', 'Support', 'Operations', 'Marketing'] as MenuArea[]).map((area) => (
             <ListItem nested key={area}>
-              <Toggler defaultExpanded={true}
+              <Toggler defaultExpanded={!isCollapsed}
                 renderToggle={({ open, setOpen }) => (
-                  <ListItemButton onClick={() => setOpen(!open)}>
-                    {menuByArea[area][0]?.icon}
-                    <ListItemContent>
-                      <Typography level="title-sm">{area}</Typography>
-                    </ListItemContent>
-                    <KeyboardArrowDownIcon
-                      sx={[
-                        open ? { transform: 'rotate(180deg)' } : { transform: 'none' },
-                      ]}
-                    />
-                  </ListItemButton>
+                  isCollapsed ? (
+                    <Tooltip title={area} placement="right" arrow>
+                      <ListItemButton onClick={() => setOpen(!open)}>
+                        {menuByArea[area][0]?.icon}
+                      </ListItemButton>
+                    </Tooltip>
+                  ) : (
+                    <ListItemButton onClick={() => setOpen(!open)}>
+                      {menuByArea[area][0]?.icon}
+                      <ListItemContent>
+                        <Typography level="title-sm">{area}</Typography>
+                      </ListItemContent>
+                      <KeyboardArrowDownIcon
+                        sx={[
+                          open ? { transform: 'rotate(180deg)' } : { transform: 'none' },
+                        ]}
+                      />
+                    </ListItemButton>
+                  )
                 )}
               >
                 <List sx={{ gap: 0.5 }}>
                   {menuByArea[area].map((item: MenuItem) => (
                     <ListItem key={item.value}>
-                      <ListItemButton selected={isSelected(item.route)} onClick={() => handleNavigation(item.route, item.value)}>
-                        {item.icon}
-                        <ListItemContent>
-                          <Typography level="body-sm">{item.label}</Typography>
-                        </ListItemContent>
-                      </ListItemButton>
+                      {isCollapsed ? (
+                        <Tooltip 
+                          title={item.label} 
+                          placement="right" 
+                          arrow
+                        >
+                          <ListItemButton 
+                            selected={isSelected(item.route)} 
+                            onClick={() => handleNavigation(item.route, item.value)}
+                            sx={{
+                              justifyContent: 'center',
+                              px: 1,
+                              width: '100%',
+                            }}
+                          >
+                            {item.icon}
+                          </ListItemButton>
+                        </Tooltip>
+                      ) : (
+                        <ListItemButton 
+                          selected={isSelected(item.route)} 
+                          onClick={() => handleNavigation(item.route, item.value)}
+                          sx={{
+                            justifyContent: 'flex-start',
+                            px: 2,
+                            width: '100%',
+                          }}
+                        >
+                          {item.icon}
+                          <ListItemContent>
+                            <Typography level="body-sm">{item.label}</Typography>
+                          </ListItemContent>
+                        </ListItemButton>
+                      )}
                     </ListItem>
                   ))}
                 </List>
@@ -251,30 +351,80 @@ function Sidebar({ setView, view }: { setView: (view: MenuItem['value']) => void
       <Box sx={{ mt: 'auto', mb: 2 }}>
         <List sx={{ p: 0 }}>
           <ListItem sx={{ p: 0, alignItems: 'stretch' }}>
-            <ListItemButton
-              selected={isSelected('/settings')}
-              onClick={() => handleNavigation('/settings', 'settings')}
-              sx={{ width: '100%', alignItems: 'center', minHeight: 40 }}
-            >
-              <SettingsRoundedIcon sx={{ mr: 1 }} />
-              <ListItemContent sx={{ display: 'flex', alignItems: 'center', p: 0 }}>
-                <Typography level="body-sm">Settings</Typography>
-              </ListItemContent>
-            </ListItemButton>
+            {isCollapsed ? (
+              <Tooltip title="Settings" placement="right" arrow>
+                <ListItemButton
+                  selected={isSelected('/settings')}
+                  onClick={() => handleNavigation('/settings', 'settings')}
+                  sx={{ 
+                    width: '100%', 
+                    alignItems: 'center', 
+                    minHeight: 40,
+                    justifyContent: 'center',
+                    px: 1,
+                  }}
+                >
+                  <SettingsRoundedIcon />
+                </ListItemButton>
+              </Tooltip>
+            ) : (
+              <ListItemButton
+                selected={isSelected('/settings')}
+                onClick={() => handleNavigation('/settings', 'settings')}
+                sx={{ 
+                  width: '100%', 
+                  alignItems: 'center', 
+                  minHeight: 40,
+                  justifyContent: 'flex-start',
+                  px: 2,
+                }}
+              >
+                <SettingsRoundedIcon sx={{ mr: 1 }} />
+                <ListItemContent sx={{ display: 'flex', alignItems: 'center', p: 0 }}>
+                  <Typography level="body-sm">Settings</Typography>
+                </ListItemContent>
+              </ListItemButton>
+            )}
           </ListItem>
           <ListItem sx={{ p: 0, alignItems: 'stretch' }}>
-            <ListItemButton
-              onClick={async () => {
-                await supabase.auth.signOut();
-                window.location.href = '/login'; // Redirect to login page after logout
-              }}
-              sx={{ width: '100%', alignItems: 'center', minHeight: 40 }}
-            >
-              <LogoutRoundedIcon sx={{ mr: 1 }} />
-              <ListItemContent sx={{ display: 'flex', alignItems: 'center', p: 0 }}>
-                <Typography level="body-sm">Logout</Typography>
-              </ListItemContent>
-            </ListItemButton>
+            {isCollapsed ? (
+              <Tooltip title="Logout" placement="right" arrow>
+                <ListItemButton
+                  onClick={async () => {
+                    await supabase.auth.signOut();
+                    window.location.href = '/login'; // Redirect to login page after logout
+                  }}
+                  sx={{ 
+                    width: '100%', 
+                    alignItems: 'center', 
+                    minHeight: 40,
+                    justifyContent: 'center',
+                    px: 1,
+                  }}
+                >
+                  <LogoutRoundedIcon />
+                </ListItemButton>
+              </Tooltip>
+            ) : (
+              <ListItemButton
+                onClick={async () => {
+                  await supabase.auth.signOut();
+                  window.location.href = '/login'; // Redirect to login page after logout
+                }}
+                sx={{ 
+                  width: '100%', 
+                  alignItems: 'center', 
+                  minHeight: 40,
+                  justifyContent: 'flex-start',
+                  px: 2,
+                }}
+              >
+                <LogoutRoundedIcon sx={{ mr: 1 }} />
+                <ListItemContent sx={{ display: 'flex', alignItems: 'center', p: 0 }}>
+                  <Typography level="body-sm">Logout</Typography>
+                </ListItemContent>
+              </ListItemButton>
+            )}
           </ListItem>
         </List>
       </Box>

@@ -1,13 +1,58 @@
 <!--
 DEVELOPER INSTRUCTION: How to write release notes
 - Do NOT render this section in the app.
-- Each release entry must start with a version and date, e.g. ## [1.2.0] - YYYY-MM-DD
+- Each release entry must start with a version, date and time, e.g. ## [1.2.0] - YYYY-MM-DD HH:MM:SS
+- Use Copenhagen time (CET/CEST) for all timestamps
 - Each entry must have a title line summarizing the main feature or change of that version.
 - Use concise wording for all notes.
 - Use sections Added, Changed, Fixed
 - List items should be short and to the point.
 - Place newest releases at the top.
 -->
+
+## [1.3.2] - 2025-07-05 10:10:39
+**UI Bug Fixes**
+### Fixed
+- Bug fixes and stability improvements
+- Performance optimizations
+- Resolved user interface issues
+- Updated documentation accuracy
+
+
+## [1.3.1] - 2025-07-05 09:53:00
+**Version Management Enhancement**
+### Added
+- Support for multiple releases per day with timestamp format (YYYY-MM-DD HH:MM:SS)
+- Enhanced version sync documentation and workflow
+- Automated version consistency checks
+
+### Changed
+- Updated release log format to include precise timestamps
+- Improved version sync script robustness
+
+## [1.3.0] - 2025-07-05 09:35:00
+**Collapsible Sidebar and Responsive Layout Enhancements**
+### Added
+- Fully responsive collapsible sidebar with breakpoint-aware behavior
+- Clickable favicon toggle for manual sidebar collapse/expand
+- Auto-collapse functionality for tablet users (900-600px)
+- Smooth CSS transitions and animations for sidebar state changes
+- Tooltip support for collapsed menu items with icons-only display
+- Unified responsive breakpoint system at 600px across all components
+- Enhanced PageMovements component with mobile/desktop responsive views
+- ResponsiveContainer and ResponsiveModal components for consistent layouts
+
+### Changed
+- Unified App.tsx sidebar visibility logic with custom responsive hooks
+- Updated sidebar width from 240px to 60px in collapsed state
+- Improved mobile menu and sidebar coordination at consistent breakpoints
+- Enhanced navigation UX with context-aware auto-collapse behavior
+
+### Fixed
+- Sidebar visibility breakpoint corrected from 900px to 600px
+- Consistent responsive behavior across all page components
+- TypeScript import path issues in multiple component files
+- Build performance optimizations with proper code splitting
 
 ## [1.2.5] - 2025-07-02
 **Complete Manual Stock Adjustment Feature Implementation**

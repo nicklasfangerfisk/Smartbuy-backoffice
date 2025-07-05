@@ -1,13 +1,21 @@
 {
   "name": "smartback",
-  "version": "1.0.0",
+  "version": "1.3.2",
   "description": "",
   "main": "index.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "jest"
+    "test": "jest",
+    "sync-version": "node sync-version.js",
+    "release": "npm run sync-version && npm run build",
+    "auto-release": "node release-automation.js",
+    "copilot-release": "node copilot-auto-release.js",
+    "copilot-patch": "node copilot-auto-release.js patch",
+    "copilot-minor": "node copilot-auto-release.js minor",
+    "copilot-major": "node copilot-auto-release.js major",
+    "validate-release": "node validate-release-setup.js"
   },
   "keywords": [],
   "author": "",

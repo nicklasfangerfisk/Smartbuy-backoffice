@@ -3,7 +3,7 @@ import Box from '@mui/joy/Box';
 import Typography from '@mui/joy/Typography';
 import GeneralTableMobile from '../general/GeneralTableMobile';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../../utils/supabaseClient';
+import { supabase } from '../utils/supabaseClient';
 import LinearProgress from '@mui/joy/LinearProgress';
 import { format } from 'date-fns';
 

@@ -16,13 +16,13 @@ import { supabase } from './utils/supabaseClient';
 import { useState } from 'react';
 import MobileMenu from './navigation/MobileMenu';
 import { MobileMenuItem } from './navigation/menuConfig';
-import useMediaQuery from '@mui/material/useMediaQuery';
 import TicketList from './Page/PageTicketDesktop';
 import PageSmsCampaignsDesktop from './Page/PageSmsCampaignsDesktop';
 import PageSmsCampaignsMobile, { PageSmsCampaignsMobileItem } from './Page/PageSmsCampaignsMobile';
 import { User, UserResponse } from '@supabase/supabase-js';
 import { PagePurchaseOrderMobileItem } from './Page/PagePurchaseOrderMobile';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { useResponsive } from './hooks/useResponsive';
 import PageDashboard from './Page/PageDashboard';
 import { Database } from './general/supabase.types';
 import ProtectedRoute from './auth/ProtectedRoute';
@@ -33,16 +33,15 @@ import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import './App.css'; // Import custom styles
 import LoginLayout from './auth/LoginLayout';
-import PageMovementsDesktop from './Page/PageMovementsDesktop';
+import PageMovements from './Page/PageMovements';
 import PageInventoryDesktop from './Page/PageInventoryDesktop';
 import PageSettingsDesktop from './Page/PageSettingsDesktop';
 import PageSettingsMobile from './Page/PageSettingsMobile';
-import PageMovementsMobile from './Page/PageMovementsMobile';
 import { MenuValue } from './navigation/menuConfig';
 
 function Layout() {
   const location = useLocation();
-  const isMobile = useMediaQuery('(max-width:600px)');
+  const { isMobile } = useResponsive();
   const navigate = useNavigate();
 
   const [mobileMenuValue, setMobileMenuValue] = useState<MenuValue>('dashboard');
@@ -108,7 +107,7 @@ function Layout() {
 
   return (
     <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
-      {location.pathname !== '/login' && <Sidebar setView={(view) => console.log(view)} view="home" />}
+      {location.pathname !== '/login' && !isMobile && <Sidebar setView={(view) => console.log(view)} view="home" />}
       <Box
         component="main"
         sx={{
@@ -120,7 +119,7 @@ function Layout() {
           overflowY: 'auto',
           bgcolor: 'background.default',
           p: location.pathname !== '/dashboard' && location.pathname !== '/login' && location.pathname !== '/tickets' && location.pathname !== '/movements' ? 3 : 0,
-          width: { sm: '100%', md: 'calc(100% - 240px)' },
+          width: isMobile ? '100%' : 'calc(100% - var(--Sidebar-width, 240px))',
           marginBottom: isMobile ? '56px' : 0, // Adjust for MobileMenu height
         }}
       >
@@ -209,11 +208,7 @@ function Layout() {
             path="/movements"
             element={
               <ProtectedRoute>
-                {isMobile ? (
-                  <PageMovementsMobile />
-                ) : (
-                  <PageMovementsDesktop />
-                )}
+                <PageMovements />
               </ProtectedRoute>
             }
           />

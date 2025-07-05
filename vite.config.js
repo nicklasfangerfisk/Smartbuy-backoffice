@@ -25,20 +25,41 @@ export default defineConfig({
       '@mui/joy/Chip',
       '@mui/joy/ListDivider',
       '@mui/joy/Typography',
-      // '@mui/icons-material' // Removed to ensure icon components are pre-bundled
     ],
     include: [
       'prop-types',
       'react-is',
-      // Pre-bundle all material icon modules
-      '@mui/icons-material'
+      // Pre-bundle specific material icons only
+      '@mui/icons-material/HomeRounded',
+      '@mui/icons-material/DashboardRounded',
+      '@mui/icons-material/ShoppingCartRounded',
+      '@mui/icons-material/GroupRounded',
+      '@mui/icons-material/SettingsRounded',
+      '@mui/icons-material/Add',
+      '@mui/icons-material/Search',
+      '@mui/icons-material/FilterList'
     ]
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Separate vendor chunks for better caching
+          'mui-core': ['@mui/joy', '@mui/material', '@mui/system'],
+          'mui-icons': ['@mui/icons-material'],
+          'supabase': ['@supabase/supabase-js'],
+          'router': ['react-router-dom'],
+          'utils': ['date-fns']
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000
   },
   server: {
     port: 3000,
     proxy: {
       '/api': 'http://localhost:3000',
     },
-    hmr: false,
+    hmr: true, // Re-enable HMR for better dev experience
   },
 });

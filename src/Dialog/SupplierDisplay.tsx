@@ -4,7 +4,7 @@ import Typography from '@mui/joy/Typography';
 import Divider from '@mui/joy/Divider';
 import Card from '@mui/joy/Card';
 import Button from '@mui/joy/Button';
-import { supabase } from '../../utils/supabaseClient';
+import { supabase } from '../utils/supabaseClient';
 import Table from '@mui/joy/Table';
 
 // Define TypeScript interface for supplier prop

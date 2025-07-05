@@ -12,7 +12,8 @@
     "isolatedModules": true,
     "noEmit": true,
     "outDir": "./dist",
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "types": ["jest", "@testing-library/jest-dom"]
   },
   "include": ["./**/*.ts", "./**/*.tsx"],
   "exclude": [
