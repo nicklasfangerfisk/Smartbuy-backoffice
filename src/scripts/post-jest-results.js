@@ -12,8 +12,14 @@ if (!supabaseUrl || !supabaseKey) {
   process.exit(1);
 }
 
-// Run Jest and capture results
-const jestOutput = execSync('npx jest --json').toString();
+// Run Jest and capture results, handling both success and failure
+let jestOutput;
+try {
+  jestOutput = execSync('npx jest --json').toString();
+} catch (error) {
+  // Jest failed, but we still want to capture the JSON output
+  jestOutput = error.stdout.toString();
+}
 const jestResults = JSON.parse(jestOutput);
 
 const payload = {
