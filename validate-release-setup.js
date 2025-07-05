@@ -55,16 +55,16 @@ function main() {
   
   // Check required files
   allChecksPass &= checkFile('release-automation.js', 'Release automation script');
-  allChecksPass &= checkFile('copilot-auto-release.js', 'Copilot auto-release script');
+  allChecksPass &= checkFile('smart-auto-release.js', 'Smart auto-release script');
   allChecksPass &= checkFile('sync-version.js', 'Version sync script');
   allChecksPass &= checkFile('documentation/RELEASE_LOG.md', 'Release log');
   allChecksPass &= checkFile('documentation/RELEASE_AUTOMATION.md', 'Automation documentation');
-  allChecksPass &= checkFile('documentation/COPILOT_AUTO_RELEASE.md', 'Copilot documentation');
+  allChecksPass &= checkFile('documentation/SMART_AUTO_RELEASE.md', 'Smart release documentation');
   
   // Check package.json scripts
-  allChecksPass &= checkPackageScript('copilot-patch');
-  allChecksPass &= checkPackageScript('copilot-minor');
-  allChecksPass &= checkPackageScript('copilot-major');
+  allChecksPass &= checkPackageScript('patch');
+  allChecksPass &= checkPackageScript('minor');
+  allChecksPass &= checkPackageScript('major');
   allChecksPass &= checkPackageScript('auto-release');
   allChecksPass &= checkPackageScript('sync-version');
   allChecksPass &= checkPackageScript('release');
@@ -81,13 +81,13 @@ function main() {
   
   log('\n' + '='.repeat(40), 'magenta');
   if (allChecksPass) {
-    log('🎉 All checks passed! Copilot Auto-Release is ready.', 'green');
-    log('\n🤖 Copilot Commands (Recommended):', 'cyan');
-    log('npm run copilot-patch    # Bug fixes', 'yellow');
-    log('npm run copilot-minor    # New features', 'yellow');
-    log('npm run copilot-major    # Breaking changes', 'yellow');
+    log('🎉 All checks passed! SmartBack Auto-Release is ready.', 'green');
+    log('\n🚀 Smart Commands (Recommended):', 'cyan');
+    log('npm run patch        # Bug fixes', 'yellow');
+    log('npm run minor        # New features', 'yellow');
+    log('npm run major        # Breaking changes', 'yellow');
     log('\n📋 Interactive Command:', 'cyan');
-    log('npm run auto-release     # Manual entry', 'yellow');
+    log('npm run auto-release # Manual entry', 'yellow');
   } else {
     log('❌ Some checks failed. Please fix the issues above.', 'red');
   }

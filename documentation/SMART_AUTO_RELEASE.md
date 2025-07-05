@@ -1,24 +1,24 @@
-# 🤖 Copilot Auto-Release System
+# 🚀 SmartBack Auto-Release System
 
-## ✅ FULLY AUTOMATED RELEASE WITH COPILOT
+## ✅ FULLY AUTOMATED RELEASE SYSTEM
 
 ### The Ultimate Automation
-Copilot now handles **everything** except the version type decision. You just specify `patch`, `minor`, or `major` and Copilot takes care of the rest automatically.
+SmartBack now handles **everything** except the version type decision. You just specify `patch`, `minor`, or `major` and the system takes care of the rest automatically.
 
 ## 🚀 **THE ULTIMATE COMMANDS**
 
 ```bash
 # For bug fixes and small changes
-npm run copilot-patch
+npm run patch
 
 # For new features  
-npm run copilot-minor
+npm run minor
 
 # For breaking changes
-npm run copilot-major
+npm run major
 ```
 
-## 🤖 **What Copilot Does Automatically**
+## 🚀 **What SmartBack Does Automatically**
 
 ### 📝 **Intelligent Content Generation**
 - **Analyzes git changes** to understand what was modified
@@ -42,7 +42,7 @@ npm run copilot-major
 ## 📊 **Smart Content Generation**
 
 ### Based on File Changes
-Copilot analyzes recent git changes and generates appropriate content:
+SmartBack analyzes recent git changes and generates appropriate content:
 
 | Files Changed | Generated Content |
 |---------------|-------------------|
@@ -63,13 +63,13 @@ Copilot analyzes recent git changes and generates appropriate content:
 
 ### Example 1: Bug Fix Release
 ```bash
-npm run copilot-patch
+npm run patch
 ```
 
-**Copilot Output:**
+**SmartBack Output:**
 ```
-🤖 Copilot Auto-Release Mode
-===========================
+🚀 SmartBack Auto-Release Mode
+===============================
 📦 Current version: 1.3.1
 📈 New version: 1.3.2 (patch)
 📊 Recent files changed: 3
@@ -92,18 +92,18 @@ npm run copilot-patch
 ✅ Creating release tag completed
 ✅ Pushing tags completed
 
-🎉 Copilot Auto-Release completed successfully!
+🎉 SmartBack Auto-Release completed successfully!
 ```
 
 ### Example 2: Feature Release
 ```bash
-npm run copilot-minor
+npm run minor
 ```
 
-**Copilot Output:**
+**SmartBack Output:**
 ```
-🤖 Copilot Auto-Release Mode
-===========================
+🚀 SmartBack Auto-Release Mode
+===============================
 📦 Current version: 1.3.2
 📈 New version: 1.4.0 (minor)
 📊 Recent files changed: 8
@@ -119,23 +119,23 @@ npm run copilot-minor
 - Enhanced existing functionality
 - Improved user experience
 
-🎉 Copilot Auto-Release completed successfully!
+🎉 SmartBack Auto-Release completed successfully!
 ```
 
 ## 🔧 **Command Reference**
 
 ### Primary Commands (Choose One)
 ```bash
-npm run copilot-patch    # Bug fixes (1.3.1 → 1.3.2)
-npm run copilot-minor    # New features (1.3.1 → 1.4.0)
-npm run copilot-major    # Breaking changes (1.3.1 → 2.0.0)
+npm run patch        # Bug fixes (1.3.1 → 1.3.2)
+npm run minor        # New features (1.3.1 → 1.4.0)
+npm run major        # Breaking changes (1.3.1 → 2.0.0)
 ```
 
 ### Alternative Syntax
 ```bash
-npm run copilot-release patch
-npm run copilot-release minor
-npm run copilot-release major
+npm run smart-release patch
+npm run smart-release minor
+npm run smart-release major
 ```
 
 ### Utility Commands
@@ -147,28 +147,28 @@ npm run sync-version       # Sync versions only
 
 ## 🎯 **When to Use Each Version Type**
 
-### 🐛 **Patch (`npm run copilot-patch`)**
+### 🐛 **Patch (`npm run patch`)**
 - Bug fixes
 - Security patches
 - Performance improvements
 - Documentation corrections
 - Small UI fixes
 
-### ✨ **Minor (`npm run copilot-minor`)**
+### ✨ **Minor (`npm run minor`)**
 - New features
 - New components
 - Enhanced functionality
 - New documentation sections
 - Significant improvements
 
-### 💥 **Major (`npm run copilot-major`)**
+### 💥 **Major (`npm run major`)**
 - Breaking changes
 - Complete redesigns
 - Major architecture changes
 - API changes
 - Major version dependencies
 
-## 🎊 **Benefits of Copilot Auto-Release**
+## 🎊 **Benefits of SmartBack Auto-Release**
 
 ### ⚡ **Speed**
 - **10 seconds** from decision to deployment
@@ -196,25 +196,25 @@ npm run sync-version       # Sync versions only
 2. **Choose the version type** (patch/minor/major)
 3. **Run the command**:
    ```bash
-   npm run copilot-patch
+   npm run patch
    ```
-4. **That's it!** Copilot handles everything else.
+4. **That's it!** SmartBack handles everything else.
 
 ## 🎯 **Perfect for Daily Development**
 
 ```bash
 # Morning: Fixed a bug
-npm run copilot-patch
+npm run patch
 
 # Afternoon: Added new feature  
-npm run copilot-minor
+npm run minor
 
 # Evening: Another quick fix
-npm run copilot-patch
+npm run patch
 ```
 
 Each command creates a perfect release with appropriate content, timestamps, and git operations - **completely automatically!**
 
 ---
 
-**🤖 Copilot Auto-Release: The ultimate "set it and forget it" release system!**
+**🚀 SmartBack Auto-Release: The ultimate "set it and forget it" release system!**

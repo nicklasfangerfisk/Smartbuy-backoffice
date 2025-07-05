@@ -1,6 +1,6 @@
 {
   "name": "smartback",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -11,10 +11,10 @@
     "sync-version": "node sync-version.js",
     "release": "npm run sync-version && npm run build",
     "auto-release": "node release-automation.js",
-    "copilot-release": "node copilot-auto-release.js",
-    "copilot-patch": "node copilot-auto-release.js patch",
-    "copilot-minor": "node copilot-auto-release.js minor",
-    "copilot-major": "node copilot-auto-release.js major",
+    "smart-release": "node smart-auto-release.js",
+    "patch": "node smart-auto-release.js patch",
+    "minor": "node smart-auto-release.js minor",
+    "major": "node smart-auto-release.js major",
     "validate-release": "node validate-release-setup.js"
   },
   "keywords": [],
