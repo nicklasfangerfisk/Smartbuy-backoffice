@@ -10,6 +10,21 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
+## [2.1.0] - 2025-07-05 23:15:00
+**Mobile Ticket Communication Enhancement**
+### Added
+- Full mobile communication interface for tickets with messaging functionality
+- Mobile ticket detail view with back navigation to ticket list
+- Two-view mobile experience: list view and communication view
+- Mobile message input with send button and keyboard shortcuts
+- Mobile-optimized message bubbles and conversation layout
+- Header with ticket details, status, and resolve button in mobile communication view
+
+### Changed
+- Enhanced mobile ticket interaction with clickable ticket cards
+- Improved mobile user experience with dedicated communication screen
+- Updated mobile layout to support full-screen messaging interface
+
 ## [2.0.0] - 2025-07-05 22:45:00
 **Complete Unified Responsive Design System**
 ### Added

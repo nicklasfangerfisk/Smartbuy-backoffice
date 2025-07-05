@@ -16,6 +16,7 @@ import Typography from '@mui/joy/Typography';
 import Input from '@mui/joy/Input';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import IconButton from '@mui/joy/IconButton';
 import Select from '@mui/joy/Select';
 import Option from '@mui/joy/Option';
@@ -74,6 +75,7 @@ export default function PageTickets() {
   const [statusFilter, setStatusFilter] = useState<string>('Open');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isResolveDialogOpen, setIsResolveDialogOpen] = useState(false);
+  const [showMobileCommunication, setShowMobileCommunication] = useState(false);
 
   // Fetch tickets from supabase
   useEffect(() => {
@@ -202,6 +204,16 @@ export default function PageTickets() {
     }
   };
 
+  const handleMobileTicketSelect = (ticketId: string) => {
+    setSelectedTicketId(ticketId);
+    setShowMobileCommunication(true);
+  };
+
+  const handleMobileBackToList = () => {
+    setShowMobileCommunication(false);
+    setSelectedTicketId(null);
+  };
+
   // Filter tickets based on search query and status
   const filteredTickets = tickets.filter((ticket) => {
     // Status filter
@@ -224,6 +236,233 @@ export default function PageTickets() {
     // Show beach splash if all tickets are closed and filtering for open
     const allClosedSplash = tickets.length > 0 && tickets.every(t => t.status === 'Closed') && (statusFilter === 'Open');
 
+    // Show communication view when a ticket is selected
+    if (showMobileCommunication && selectedTicketId) {
+      const selectedTicket = tickets.find(t => t.id === selectedTicketId);
+      
+      return (
+        <PageLayout>
+          <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+            {/* Mobile Communication Header */}
+            <Box sx={{ 
+              px: 2, 
+              py: 1.5, 
+              borderBottom: '1px solid', 
+              borderColor: 'divider',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+              bgcolor: 'background.surface'
+            }}>
+              <IconButton
+                size="sm"
+                variant="plain"
+                onClick={handleMobileBackToList}
+              >
+                <ArrowBackIcon />
+              </IconButton>
+              <Avatar 
+                size="sm" 
+                sx={{ 
+                  bgcolor: 'primary.100', 
+                  color: 'primary.700', 
+                  fontWeight: 600 
+                }}
+              >
+                {selectedTicket?.requester_name?.[0]?.toUpperCase() || '?'}
+              </Avatar>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography level="title-sm" sx={{ fontWeight: 600, mb: 0.5 }}>
+                  {selectedTicket?.subject || 'Untitled'}
+                </Typography>
+                <Typography level="body-xs" color="neutral">
+                  {selectedTicket?.requester_name}
+                </Typography>
+              </Box>
+              <Chip
+                variant="soft"
+                size="sm"
+                color={statusColors[selectedTicket?.status || 'Open']?.color}
+                sx={{ fontWeight: 600 }}
+              >
+                {statusColors[selectedTicket?.status || 'Open']?.label}
+              </Chip>
+              {selectedTicket?.status !== 'Closed' && (
+                <Button 
+                  variant="solid" 
+                  color="primary" 
+                  size="sm" 
+                  onClick={() => setIsResolveDialogOpen(true)}
+                >
+                  Resolve
+                </Button>
+              )}
+            </Box>
+
+            {/* Mobile Messages Area */}
+            <Box sx={{ flex: 1, overflowY: 'auto', px: 2, py: 2 }}>
+              <Stack spacing={3}>
+                {ticketActivities.map((activity, index) => {
+                  const isCurrentUser = activity.sender_name === 'You';
+                  return (
+                    <Box key={activity.id}>
+                      {/* Show date separator if this is a new day */}
+                      {index === 0 || new Date(activity.timestamp || '').toDateString() !== new Date(ticketActivities[index - 1]?.timestamp || '').toDateString() ? (
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                          <Box sx={{ flex: 1, height: '1px', bgcolor: 'divider' }} />
+                          <Typography level="body-xs" sx={{ mx: 2, color: 'text.secondary' }}>
+                            {activity.timestamp ? new Date(activity.timestamp).toLocaleDateString('en-US', { 
+                              weekday: 'long',
+                              month: 'long', 
+                              day: 'numeric'
+                            }) : ''}
+                          </Typography>
+                          <Box sx={{ flex: 1, height: '1px', bgcolor: 'divider' }} />
+                        </Box>
+                      ) : null}
+                      
+                      {/* Message bubble */}
+                      <Stack direction="row" spacing={1} sx={{ alignItems: 'flex-start' }}>
+                        {!isCurrentUser && (
+                          <Avatar size="sm" sx={{ bgcolor: 'primary.100', color: 'primary.700', fontWeight: 600 }}>
+                            {activity.sender_name?.[0]?.toUpperCase() || '?'}
+                          </Avatar>
+                        )}
+                        <Box sx={{ 
+                          flex: 1,
+                          display: 'flex',
+                          flexDirection: isCurrentUser ? 'row-reverse' : 'row'
+                        }}>
+                          <Box sx={{ 
+                            maxWidth: '85%',
+                            bgcolor: isCurrentUser ? 'primary.500' : 'neutral.50',
+                            color: isCurrentUser ? 'white' : 'text.primary',
+                            borderRadius: isCurrentUser ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                            px: 2,
+                            py: 1.5,
+                            position: 'relative',
+                            boxShadow: 'sm'
+                          }}>
+                            {!isCurrentUser && (
+                              <Typography level="body-xs" sx={{ 
+                                fontWeight: 600, 
+                                mb: 0.5,
+                                color: isCurrentUser ? 'white' : 'text.primary'
+                              }}>
+                                {activity.sender_name}
+                              </Typography>
+                            )}
+                            <Typography level="body-sm" sx={{ 
+                              lineHeight: 1.4,
+                              color: isCurrentUser ? 'white' : 'text.primary'
+                            }}>
+                              {activity.message}
+                            </Typography>
+                          </Box>
+                        </Box>
+                        {isCurrentUser && (
+                          <Avatar size="sm" sx={{ bgcolor: 'primary.100', color: 'primary.700', fontWeight: 600 }}>
+                            {activity.sender_name?.[0]?.toUpperCase() || '?'}
+                          </Avatar>
+                        )}
+                      </Stack>
+                      
+                      {/* Timestamp */}
+                      <Box sx={{ 
+                        display: 'flex', 
+                        justifyContent: isCurrentUser ? 'flex-end' : 'flex-start',
+                        mt: 0.5,
+                        ml: isCurrentUser ? 0 : 5
+                      }}>
+                        <Typography level="body-xs" sx={{ color: 'text.tertiary' }}>
+                          {activity.timestamp ? new Date(activity.timestamp).toLocaleTimeString('en-US', { 
+                            hour: 'numeric',
+                            minute: '2-digit',
+                            hour12: true
+                          }) : ''}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  );
+                })}
+              </Stack>
+            </Box>
+
+            {/* Mobile Message Input */}
+            <Box sx={{ 
+              px: 2, 
+              py: 1.5, 
+              borderTop: '1px solid', 
+              borderColor: 'divider',
+              bgcolor: 'background.surface'
+            }}>
+              <Stack direction="row" spacing={1} alignItems="flex-end">
+                <Box sx={{ flex: 1 }}>
+                  <Textarea
+                    placeholder="Type something here..."
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    minRows={1}
+                    maxRows={3}
+                    sx={{ 
+                      borderRadius: '20px',
+                      border: '1px solid',
+                      borderColor: 'neutral.300',
+                      '&:focus-within': {
+                        borderColor: 'primary.500'
+                      },
+                      '& textarea': {
+                        border: 'none',
+                        outline: 'none',
+                        resize: 'none',
+                        px: 2,
+                        py: 1
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSend();
+                      }
+                    }}
+                  />
+                </Box>
+                <Button 
+                  onClick={handleSend}
+                  disabled={!newMessage.trim()}
+                  variant="solid"
+                  color="primary"
+                  size="sm"
+                  sx={{ 
+                    borderRadius: '20px',
+                    minWidth: 50,
+                    height: 36,
+                    fontWeight: 600
+                  }}
+                >
+                  Send
+                </Button>
+              </Stack>
+            </Box>
+          </Box>
+
+          {/* Dialogs */}
+          <DialogTicketCreate
+            open={isCreateDialogOpen}
+            onClose={() => setIsCreateDialogOpen(false)}
+            onCreated={refreshTickets}
+          />
+          
+          <DialogTicketResolve
+            open={isResolveDialogOpen}
+            onClose={() => setIsResolveDialogOpen(false)}
+            onSubmit={handleResolve}
+          />
+        </PageLayout>
+      );
+    }
+
+    // Show ticket list view
     return (
       <PageLayout>
         <Box sx={{ p: 2 }}>
@@ -289,14 +528,14 @@ export default function PageTickets() {
                       alignItems: 'flex-start',
                       gap: 2,
                       cursor: 'pointer',
-                      background: selectedTicketId === ticket.id ? 'primary.50' : 'transparent',
+                      background: 'transparent',
                       borderRadius: 1,
                       transition: 'all 0.2s',
                       '&:hover': {
                         bgcolor: 'neutral.50'
                       }
                     }}
-                    onClick={() => setSelectedTicketId(ticket.id)}
+                    onClick={() => handleMobileTicketSelect(ticket.id)}
                   >
                     <Avatar 
                       size="sm" 
