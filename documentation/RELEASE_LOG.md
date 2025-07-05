@@ -10,6 +10,17 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
+## [1.4.0] - 2025-07-05 10:15:01
+**New Page Features**
+### Added
+- New feature implementations
+- Updated documentation and guides
+
+### Changed
+- Enhanced existing functionality
+- Improved user experience
+
+
 ## [1.3.2] - 2025-07-05 10:10:39
 **UI Bug Fixes**
 ### Fixed
