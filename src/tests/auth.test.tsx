@@ -1,10 +1,10 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import Login from '../components/auth/Login';
-import { supabase } from '../src/utils/supabaseClient';
+import Login from '../auth/Login';
+import { supabase } from '../utils/supabaseClient';
 
-jest.mock('../src/utils/supabaseClient', () => ({
+jest.mock('../utils/supabaseClient', () => ({
   supabase: {
     auth: {
       signInWithPassword: jest.fn(() => Promise.resolve({

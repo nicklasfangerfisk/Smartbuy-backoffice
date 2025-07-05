@@ -59,8 +59,8 @@
       "^.+\\.[tj]sx?$": "babel-jest"
     },
     "moduleNameMapper": {
-      "^\\.\\./src/utils/supabaseClient$": "<rootDir>/utils/supabaseClient.js",
-      "^\\.\\./utils/supabaseClient$": "<rootDir>/utils/supabaseClient.js"
+      "^\\.\\./src/utils/supabaseClient$": "<rootDir>/src/utils/supabaseClient.ts",
+      "^\\.\\./utils/supabaseClient$": "<rootDir>/src/utils/supabaseClient.ts"
     },
     "reporters": [
       "default"
