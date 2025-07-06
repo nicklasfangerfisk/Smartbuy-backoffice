@@ -10,6 +10,25 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
+## [2.1.2] - 2025-07-06 16:45:00
+**Modern Login Page Redesign with Split Layout**
+### Added
+- Beautiful split-screen login layout inspired by MUI Joy UI sign-in side template
+- Glassmorphism effect with backdrop blur and semi-transparent backgrounds
+- Dynamic mountain landscape background images that change with light/dark mode
+- Dark/light mode toggle in login page header
+- Company branding with SmartBack logo and name in header
+- Modern typography and improved spacing using Joy UI components
+- Responsive design that adapts to mobile and desktop screens
+
+### Changed
+- Complete visual redesign of login page while preserving all authentication functionality
+- Enhanced user experience with modern, professional appearance
+- Improved form layout with better visual hierarchy and spacing
+
+### Fixed
+- Removed Google OAuth option as requested to simplify authentication flow
+
 ## [2.1.1] - 2025-07-06 14:30:00
 **Enhanced Settings Page with User Profile Management**
 ### Added
