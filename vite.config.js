@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
+  publicDir: 'public', // Ensure public directory is properly configured
   resolve: {
     alias: {
       '@emotion/react': require.resolve('@emotion/react'),

@@ -10,15 +10,6 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
-## [2.1.3] - 2025-07-06 17:45:00
-**Release Log Display Fix for Production Deployment**
-### Fixed
-- Fixed release log not displaying in production/Vercel deployment by moving RELEASE_LOG.md to public folder for proper static asset serving
-- Enhanced ReleaseLog component with fallback content mechanism to ensure meaningful display even when file is unavailable
-- Added proper error handling and debug logging for production troubleshooting
-- Configured Vite publicDir setting to ensure consistent static asset handling across environments
-- Improved user experience with graceful fallback instead of error messages when release log cannot be loaded
-
 ## [2.1.2] - 2025-07-06 16:45:00
 **Modern Login Page Redesign with Split Layout**
 ### Added

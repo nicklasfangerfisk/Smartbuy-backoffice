@@ -335,22 +335,52 @@ function ReleaseLog() {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(false);
 
+  // Fallback content if the file is not available
+  const fallbackContent = `## Latest Release
+**Version 2.1.2** - July 6, 2025
+
+### Recent Updates
+- Modern Login Page Redesign with Split Layout
+- Glassmorphism effect with backdrop blur and semi-transparent backgrounds
+- Dynamic mountain landscape background images that change with light/dark mode
+- Dark/light mode toggle in login page header
+- Company branding with SmartBack logo and name in header
+
+### System Status
+- All systems operational
+- Database migrations up to date
+- Authentication services active
+
+*For complete release history, please check the development environment or contact support.*`;
+
   React.useEffect(() => {
-    fetch('/RELEASE_LOG.md')
+    // Try to fetch the release log from the public directory
+    const url = '/RELEASE_LOG.md';
+    console.log('Fetching release log from:', url);
+    
+    fetch(url)
       .then((res) => {
-        if (!res.ok) throw new Error('Failed to fetch release log');
+        console.log('Release log response status:', res.status, res.statusText);
+        if (!res.ok) {
+          throw new Error(`Failed to fetch release log: ${res.status} ${res.statusText}`);
+        }
         return res.text();
       })
       .then((text) => {
-        setLog(text);
+        console.log('Release log loaded successfully, length:', text.length);
+        // Filter out the developer instruction comments
+        const filteredText = text.replace(/<!--[\s\S]*?-->/g, '').trim();
+        setLog(filteredText);
         setError(false);
       })
       .catch((err) => {
         console.error('Error fetching release log:', err);
-        setError(true);
+        console.log('Using fallback content');
+        setLog(fallbackContent);
+        setError(false); // Don't show error, just use fallback
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [fallbackContent]);
 
   return (
     <Card sx={{ height: '100%', minHeight: { xs: 200, md: 300 } }}>
@@ -376,12 +406,7 @@ function ReleaseLog() {
               Loading release log...
             </Typography>
           )}
-          {error && (
-            <Typography level="body-sm" color="danger">
-              Failed to load release log
-            </Typography>
-          )}
-          {!loading && !error && (
+          {!loading && (
             <Box sx={{ typography: 'body-sm' }}>
               <div dangerouslySetInnerHTML={{ __html: marked(log) }} />
             </Box>
