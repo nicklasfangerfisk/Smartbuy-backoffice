@@ -10,6 +10,14 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
+## [2.1.4] - 2025-07-06 18:30:00
+**Static Asset Organization and Production Build Fixes**
+### Fixed
+- Fixed duplicate index.html files by removing empty src/public/index.html and keeping root index.html as the correct Vite template
+- Fixed duplicate RELEASE_LOG.md files by removing root version and keeping public/RELEASE_LOG.md as the correct static asset
+- Fixed favicon.svg not loading in Vercel production by moving from root to public directory for proper static asset serving
+- Cleaned up project structure to follow Vite best practices for static asset placement in public directory
+
 ## [2.1.3] - 2025-07-06 17:45:00
 **Release Log Display Fix for Production Deployment**
 ### Fixed
