@@ -10,6 +10,29 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
+## [2.1.1] - 2025-07-06 14:30:00
+**Enhanced Settings Page with User Profile Management**
+### Added
+- Comprehensive user profile management in Settings page with tabbed interface
+- "User", "App", and "Releases" tabs for organized settings navigation
+- Full-featured user profile form with avatar, name, role, email, country, and timezone fields
+- Profile editing with save/cancel functionality and success/error messaging
+- "My Profile" menu item in sidebar navigation (Support section)
+- Logout button in Settings page header for both mobile and desktop views
+- Responsive profile form layout with avatar positioning (top on mobile, left on desktop)
+
+### Changed
+- Settings page now accessible via clickable user profile in sidebar footer
+- Removed Settings and Logout menu items from sidebar navigation
+- Enhanced mobile responsiveness for profile form with stacked layout
+- Updated user profile interaction to navigate directly to Settings page
+- Improved Settings page UX with modern tabbed interface design
+
+### Fixed
+- User profile form now properly responsive across all screen sizes
+- Consistent navigation patterns between sidebar user profile and menu items
+- Proper form field validation and state management in profile editing
+
 ## [2.1.0] - 2025-07-05 23:15:00
 **Mobile Ticket Communication Enhancement**
 ### Added

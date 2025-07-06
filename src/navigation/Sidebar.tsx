@@ -40,8 +40,6 @@ import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 import ColorSchemeToggle from './ColorSchemeToggle';
-import UserDialog from '../Dialog/UserDialog';
-// import { closeSidebar } from '../utils';
 // TODO: Implement closeSidebar or remove its usage if not needed.
 import { useEffect, useState } from 'react';
 import { supabase } from '../utils/supabaseClient';
@@ -66,10 +64,6 @@ function Sidebar({ setView, view }: { setView: (view: MenuItem['value']) => void
   const [users, setUsers] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null); // Auth user
   const [userProfile, setUserProfile] = useState<any>(null); // Contextual user row
-  const [editOpen, setEditOpen] = useState(false);
-  const [editName, setEditName] = useState('');
-  const [editAvatar, setEditAvatar] = useState('');
-  const [userDialogOpen, setUserDialogOpen] = useState(false);
   /**
    * Fetches the list of users from the database.
    */
@@ -102,12 +96,8 @@ function Sidebar({ setView, view }: { setView: (view: MenuItem['value']) => void
         }
         // Do NOT sign out or block user here based on role; only set profile state
         setUserProfile(userRow);
-        setEditName(userRow.name || '');
-        setEditAvatar(userRow.avatar_url || '');
       } else {
         setUserProfile(null);
-        setEditName('');
-        setEditAvatar('');
       }
     }
 
@@ -117,18 +107,6 @@ function Sidebar({ setView, view }: { setView: (view: MenuItem['value']) => void
     });
     return () => { listener?.subscription.unsubscribe(); };
   }, []);
-
-  /**
-   * Updates the user profile with the edited name and avatar.
-   */
-  const handleEditProfile = async () => {
-    if (!user) return;
-    await supabase.from('users').update({ name: editName, avatar_url: editAvatar }).eq('id', user.id);
-    // Refresh user profile
-    const { data: userRows } = await supabase.from('users').select('*').eq('id', user.id).single();
-    setUserProfile(userRows || null);
-    setEditOpen(false);
-  };
 
   // Auto-collapse logic based on breakpoints
   useEffect(() => {
@@ -187,7 +165,8 @@ function Sidebar({ setView, view }: { setView: (view: MenuItem['value']) => void
         },
         transition: 'transform 0.4s, width 0.4s',
         zIndex: 10000,
-        height: '100dvh', // changed from minHeight to height for strict viewport fit
+        height: '100vh', // use viewport height instead of dynamic viewport height
+        maxHeight: '100vh', // ensure it doesn't exceed viewport
         width: 'var(--Sidebar-width)',
         top: 0,
         p: 2,
@@ -197,6 +176,7 @@ function Sidebar({ setView, view }: { setView: (view: MenuItem['value']) => void
         borderRight: '1px solid',
         borderColor: 'divider',
         background: 'var(--joy-palette-background-surface, #fff)',
+        overflow: 'hidden', // prevent sidebar itself from scrolling
       }}
     >
       <GlobalStyles
@@ -261,10 +241,10 @@ function Sidebar({ setView, view }: { setView: (view: MenuItem['value']) => void
           minHeight: 0,
           overflowY: 'auto',
           overflowX: 'hidden',
-          flex: '0 0 auto',
-           display: 'flex',
-           flexDirection: 'column',
-           [`& .${listItemButtonClasses.root}`]: {
+          flex: 1, // take up available space between header and footer
+          display: 'flex',
+          flexDirection: 'column',
+          [`& .${listItemButtonClasses.root}`]: {
             gap: 1.5,
           },
         }}
@@ -346,113 +326,39 @@ function Sidebar({ setView, view }: { setView: (view: MenuItem['value']) => void
             </ListItem>
           ))}
         </List>
-        {/* Settings Button (stick to bottom) */}
+        {/* Settings and Logout removed - user profile now handles navigation to settings */}
       </Box>
-      <Box sx={{ mt: 'auto', mb: 2 }}>
-        <List sx={{ p: 0 }}>
-          <ListItem sx={{ p: 0, alignItems: 'stretch' }}>
-            {isCollapsed ? (
-              <Tooltip title="Settings" placement="right" arrow>
-                <ListItemButton
-                  selected={isSelected('/settings')}
-                  onClick={() => handleNavigation('/settings', 'settings')}
-                  sx={{ 
-                    width: '100%', 
-                    alignItems: 'center', 
-                    minHeight: 40,
-                    justifyContent: 'center',
-                    px: 1,
-                  }}
-                >
-                  <SettingsRoundedIcon />
-                </ListItemButton>
-              </Tooltip>
-            ) : (
-              <ListItemButton
-                selected={isSelected('/settings')}
-                onClick={() => handleNavigation('/settings', 'settings')}
-                sx={{ 
-                  width: '100%', 
-                  alignItems: 'center', 
-                  minHeight: 40,
-                  justifyContent: 'flex-start',
-                  px: 2,
-                }}
-              >
-                <SettingsRoundedIcon sx={{ mr: 1 }} />
-                <ListItemContent sx={{ display: 'flex', alignItems: 'center', p: 0 }}>
-                  <Typography level="body-sm">Settings</Typography>
-                </ListItemContent>
-              </ListItemButton>
-            )}
-          </ListItem>
-          <ListItem sx={{ p: 0, alignItems: 'stretch' }}>
-            {isCollapsed ? (
-              <Tooltip title="Logout" placement="right" arrow>
-                <ListItemButton
-                  onClick={async () => {
-                    await supabase.auth.signOut();
-                    window.location.href = '/login'; // Redirect to login page after logout
-                  }}
-                  sx={{ 
-                    width: '100%', 
-                    alignItems: 'center', 
-                    minHeight: 40,
-                    justifyContent: 'center',
-                    px: 1,
-                  }}
-                >
-                  <LogoutRoundedIcon />
-                </ListItemButton>
-              </Tooltip>
-            ) : (
-              <ListItemButton
-                onClick={async () => {
-                  await supabase.auth.signOut();
-                  window.location.href = '/login'; // Redirect to login page after logout
-                }}
-                sx={{ 
-                  width: '100%', 
-                  alignItems: 'center', 
-                  minHeight: 40,
-                  justifyContent: 'flex-start',
-                  px: 2,
-                }}
-              >
-                <LogoutRoundedIcon sx={{ mr: 1 }} />
-                <ListItemContent sx={{ display: 'flex', alignItems: 'center', p: 0 }}>
-                  <Typography level="body-sm">Logout</Typography>
-                </ListItemContent>
-              </ListItemButton>
-            )}
-          </ListItem>
-        </List>
+      <Box sx={{ flexShrink: 0 }}>
+        {/* Settings and Logout buttons removed as requested */}
       </Box>
       <Divider />
-      {/* User profile section */}
-      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', minHeight: 48 }}>
+      {/* User profile section - clickable to navigate to Settings */}
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          gap: 1, 
+          alignItems: 'center', 
+          minHeight: 48,
+          cursor: 'pointer',
+          borderRadius: 'sm',
+          '&:hover': {
+            bgcolor: 'neutral.50'
+          }
+        }}
+        onClick={() => handleNavigation('/settings', 'settings')}
+      >
         <Avatar
           variant="outlined"
           size="sm"
           src={userProfile?.avatar_url || user?.user_metadata?.avatar_url || undefined}
-          onClick={() => setUserDialogOpen(true)}
-          sx={{ cursor: 'pointer' }}
         />
-        <Box sx={{ minWidth: 0, flex: 1, cursor: 'pointer' }} onClick={() => setUserDialogOpen(true)}>
-          <Typography level="title-sm">{userProfile?.name || user?.user_metadata?.full_name || user?.email || 'Not signed in'}</Typography>
-          <Typography level="body-xs">{userProfile?.email || user?.email || ''}</Typography>
-        </Box>
+        {!isCollapsed && (
+          <Box sx={{ minWidth: 0, flex: 1 }}>
+            <Typography level="title-sm">{userProfile?.name || user?.user_metadata?.full_name || user?.email || 'Not signed in'}</Typography>
+            <Typography level="body-xs">{userProfile?.email || user?.email || ''}</Typography>
+          </Box>
+        )}
       </Box>
-      <UserDialog
-        open={userDialogOpen}
-        onClose={() => setUserDialogOpen(false)}
-        userProfile={userProfile}
-        editName={editName}
-        setEditName={setEditName}
-        editAvatar={editAvatar}
-        setEditAvatar={setEditAvatar}
-        onSave={handleEditProfile}
-      />
     </Box>
   );
 }

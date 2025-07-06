@@ -1,3 +1,13 @@
+/**
+ * PagePurchaseOrders - Purchase order management and receiving
+ * 
+ * HOCs: ProtectedRoute (route-level auth guard)
+ * Layout: PageLayout + ResponsiveContainer(table-page) - 16px padding
+ * Responsive: Mobile/Desktop views, useResponsive() hook
+ * Dialogs: PurchaseOrderForm, DialogReceivePurchaseOrder
+ * Data: Supabase PurchaseOrders and PurchaseOrderItems tables
+ */
+
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../utils/supabaseClient';
 import Box from '@mui/joy/Box';
@@ -377,7 +387,7 @@ const PagePurchaseOrders = () => {
 
   // Desktop View Component
   const DesktopView = () => (
-    <ResponsiveContainer>
+    <ResponsiveContainer variant="table-page">
       <Typography level="h2" sx={{ mb: 2, fontSize: fonts.sizes.xlarge }}>
         Purchase Orders
       </Typography>
@@ -412,11 +422,11 @@ const PagePurchaseOrders = () => {
         </Button>
       </Box>
 
-      <Card>
+      <Card sx={{ overflow: 'visible' }}>
         {loading && <LinearProgress />}
         {error && <Typography color="danger">Error: {error}</Typography>}
         
-        <Table aria-label="Purchase Orders" sx={{ minWidth: 800 }}>
+        <Table aria-label="Purchase Orders" sx={{ tableLayout: 'auto' }}>
           <thead>
             <tr>
               <th style={headerStyles}>Order Number</th>

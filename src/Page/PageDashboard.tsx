@@ -1,3 +1,12 @@
+/**
+ * PageDashboard - Main dashboard with key metrics
+ * 
+ * HOCs: ProtectedRoute (route-level auth guard)
+ * Layout: PageLayout (16px padding wrapper)
+ * Responsive: useMediaQuery for mobile detection
+ * Data: Direct Supabase queries for dashboard stats
+ */
+
 import * as React from 'react';
 import { Box, Typography, Grid, Card } from '@mui/joy';
 import { supabase } from '../utils/supabaseClient';

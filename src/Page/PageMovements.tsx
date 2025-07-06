@@ -1,3 +1,13 @@
+/**
+ * PageMovements - Stock movement tracking and adjustments
+ * 
+ * HOCs: ProtectedRoute (route-level auth guard)
+ * Layout: PageLayout + ResponsiveContainer(table-page) - 16px padding
+ * Responsive: Mobile/Desktop views, useResponsive() hook
+ * Dialogs: ResponsiveModal for stock adjustments
+ * Data: Supabase stock_movements and adjustments tables
+ */
+
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../utils/supabaseClient';
 import Box from '@mui/joy/Box';
@@ -488,7 +498,7 @@ const PageMovements = () => {
 
     // Desktop view component
     const DesktopView = () => (
-        <ResponsiveContainer variant="page" padding="large">
+        <ResponsiveContainer variant="table-page">
             <Typography level="h2" sx={{ mb: 2, fontSize: fonts.sizes.xlarge }}>
                 Stock Movements
             </Typography>
@@ -511,7 +521,7 @@ const PageMovements = () => {
                 </Button>
             </Box>
             
-            <Card>
+            <Card sx={{ overflow: 'visible' }}>
                 <Table aria-label="Stock Movements" sx={{ tableLayout: 'auto' }}>
                     <thead>
                         <tr>

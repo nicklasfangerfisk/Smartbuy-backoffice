@@ -1,3 +1,13 @@
+/**
+ * PageSmsCampaigns - SMS campaign management and messaging
+ * 
+ * HOCs: ProtectedRoute (route-level auth guard)
+ * Layout: PageLayout + ResponsiveContainer(table-page) - 16px padding
+ * Responsive: Mobile/Desktop views, useResponsive() hook
+ * Data: Supabase sms_campaigns table
+ * External: Twilio integration for SMS sending
+ */
+
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../utils/supabaseClient';
 import Box from '@mui/joy/Box';
@@ -295,7 +305,7 @@ const PageSmsCampaigns = () => {
 
   // Desktop View Component
   const DesktopView = () => (
-    <ResponsiveContainer>
+    <ResponsiveContainer variant="table-page">
       <Typography level="h2" sx={{ mb: 2, fontSize: fonts.sizes.xlarge }}>
         SMS Campaigns
       </Typography>
@@ -329,11 +339,11 @@ const PageSmsCampaigns = () => {
         </Button>
       </Box>
 
-      <Card>
+      <Card sx={{ overflow: 'visible' }}>
         {loading && <LinearProgress />}
         {error && <Typography color="danger">Error: {error}</Typography>}
         
-        <Table aria-label="SMS Campaigns" sx={{ minWidth: 800 }}>
+        <Table aria-label="SMS Campaigns" sx={{ tableLayout: 'auto' }}>
           <thead>
             <tr>
               <th style={headerStyles}>Campaign #</th>

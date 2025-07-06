@@ -7,11 +7,11 @@ import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded';
 import QuestionAnswerRoundedIcon from '@mui/icons-material/QuestionAnswerRounded';
 import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
 import SupportRoundedIcon from '@mui/icons-material/SupportRounded';
-import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
+import PersonIcon from '@mui/icons-material/Person';
 
-export type MenuValue = 'home' | 'dashboard' | 'orders' | 'users' | 'suppliers' | 'products' | 'purchaseorders' | 'tickets' | 'smscampaigns' | 'movements' | 'settings';
+export type MenuValue = 'home' | 'dashboard' | 'orders' | 'users' | 'suppliers' | 'products' | 'purchaseorders' | 'tickets' | 'smscampaigns' | 'movements' | 'settings' | 'profile';
 
 export type MenuArea = 'Sales' | 'Support' | 'Marketing' | 'Operations';
 
@@ -40,7 +40,7 @@ export const menuItems: MenuItem[] = [
   { label: 'Tickets', icon: React.createElement(QuestionAnswerRoundedIcon), value: 'tickets', route: '/tickets', showInMobile: true },
   { label: 'SMS Campaigns', icon: React.createElement(AssignmentRoundedIcon), value: 'smscampaigns', route: '/sms-campaigns', showInMobile: true },
   { label: 'Movements', icon: React.createElement(AssignmentRoundedIcon), value: 'movements', route: '/movements', showInMobile: true },
-  { label: 'Settings', icon: React.createElement(SettingsRoundedIcon), value: 'settings', route: '/settings', showInMobile: false },
+  { label: 'My Profile', icon: React.createElement(PersonIcon), value: 'profile', route: '/settings', showInMobile: true },
 ];
 
 export const menuByArea: Record<MenuArea, MenuItem[]> = {
@@ -52,6 +52,7 @@ export const menuByArea: Record<MenuArea, MenuItem[]> = {
   Support: [
     { label: 'Tickets', icon: React.createElement(QuestionAnswerRoundedIcon), value: 'tickets', route: '/tickets', showInMobile: true },
     { label: 'Users', icon: React.createElement(GroupRoundedIcon), value: 'users', route: '/users', showInMobile: true },
+    { label: 'My Profile', icon: React.createElement(PersonIcon), value: 'profile', route: '/settings', showInMobile: true },
   ],
   Marketing: [
     { label: 'SMS Campaigns', icon: React.createElement(AssignmentRoundedIcon), value: 'smscampaigns', route: '/sms-campaigns', showInMobile: true },

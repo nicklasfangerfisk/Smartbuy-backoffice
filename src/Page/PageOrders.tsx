@@ -1,4 +1,14 @@
-import React, { useEffect, useState } from 'react';
+/**
+ * PageOrders - Order management table with CRUD operations
+ * 
+ * HOCs: ProtectedRoute (route-level auth guard)
+ * Layout: PageLayout + ResponsiveContainer(table-page) - 16px padding
+ * Responsive: Mobile/Desktop views, useResponsive() hook
+ * Dialogs: OrderTableCreate, OrderTableDetails, ResponsiveModal
+ * Data: Supabase Orders table with real-time updates
+ */
+
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabaseClient';
 import Box from '@mui/joy/Box';
 import Button from '@mui/joy/Button';
@@ -469,7 +479,7 @@ const PageOrders = () => {
 
     // Desktop view component
     const DesktopView = () => (
-        <ResponsiveContainer variant="page" padding="large">
+        <ResponsiveContainer variant="table-page">
             <Typography level="h2" sx={{ mb: 2, fontSize: fonts.sizes.xlarge }}>
                 Orders
             </Typography>
@@ -505,7 +515,7 @@ const PageOrders = () => {
                 </Button>
             </Box>
             
-            <Card>
+            <Card sx={{ overflow: 'visible' }}>
                 {loading && <LinearProgress />}
                 <Table aria-label="Orders" sx={{ tableLayout: 'auto' }}>
                     <thead>

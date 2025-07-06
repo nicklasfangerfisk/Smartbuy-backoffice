@@ -4,7 +4,7 @@ import { useResponsive, useResponsiveSpacing } from '../hooks/useResponsive';
 
 interface ResponsiveContainerProps {
   children: React.ReactNode;
-  variant?: 'page' | 'dialog' | 'form' | 'card';
+  variant?: 'page' | 'dialog' | 'form' | 'card' | 'table-page';
   padding?: 'none' | 'small' | 'medium' | 'large';
   fullHeight?: boolean;
   className?: string;
@@ -68,6 +68,17 @@ export function ResponsiveContainer({
           ...baseStyles,
           borderRadius: 1,
           bgcolor: 'background.surface'
+        };
+      case 'table-page':
+        return {
+          width: '100%',
+          overflow: 'visible',
+          // Simple, consistent padding for desktop table pages
+          pt: isMobile ? 1 : 2,  // 16px top
+          pl: isMobile ? 1 : 2,  // 16px left  
+          pr: isMobile ? 1 : 2,  // 16px right
+          pb: isMobile ? 1 : 2,  // 16px bottom
+          boxSizing: 'border-box' as const
         };
       default:
         return baseStyles;

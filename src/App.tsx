@@ -28,6 +28,7 @@ import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
 import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
+import PersonIcon from '@mui/icons-material/Person';
 import './App.css'; // Import custom styles
 import LoginLayout from './auth/LoginLayout';
 import PageMovements from './Page/PageMovements';
@@ -45,6 +46,7 @@ function Layout() {
     { label: 'Dashboard', icon: <DashboardRoundedIcon />, value: 'dashboard' },
     { label: 'Orders', icon: <ShoppingCartRoundedIcon />, value: 'orders' },
     { label: 'Users', icon: <GroupRoundedIcon />, value: 'users' },
+    { label: 'My Profile', icon: <PersonIcon />, value: 'profile' },
     { label: 'Settings', icon: <SettingsRoundedIcon />, value: 'settings' },
   ];
 
@@ -60,7 +62,7 @@ function Layout() {
       '/tickets': 'dashboard', // Tickets grouped under dashboard for mobile
       '/sms-campaigns': 'dashboard', // SMS campaigns grouped under dashboard for mobile
       '/movements': 'dashboard', // Movements grouped under dashboard for mobile
-      '/settings': 'settings',
+      '/settings': 'profile', // Settings page maps to profile in mobile
     };
     setMobileMenuValue(pathToValueMap[location.pathname] || 'dashboard');
   }, [location.pathname]);
@@ -68,7 +70,7 @@ function Layout() {
   console.log('isMobile:', isMobile);
 
   return (
-    <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
       {location.pathname !== '/login' && !isMobile && <Sidebar setView={(view) => console.log(view)} view="home" />}
       <Box
         component="main"
@@ -76,11 +78,9 @@ function Layout() {
           flexGrow: 1,
           display: 'flex',
           flexDirection: 'column',
-          height: '100%',
-          minHeight: 0,
-          overflowY: 'auto',
+          minHeight: '100vh',
           bgcolor: 'background.default',
-          p: location.pathname !== '/dashboard' && location.pathname !== '/login' && location.pathname !== '/tickets' && location.pathname !== '/movements' ? 3 : 0,
+          p: 0, // Remove app-level padding, let PageLayout handle all padding consistently
           width: isMobile ? '100%' : 'calc(100% - var(--Sidebar-width, 240px))',
           marginBottom: isMobile ? '56px' : 0, // Adjust for MobileMenu height
         }}
@@ -91,7 +91,12 @@ function Layout() {
             value={mobileMenuValue}
             onChange={(value: typeof mobileMenuValue) => {
               setMobileMenuValue(value);
-              navigate(`/${value}`);
+              // Handle profile navigation
+              if (value === 'profile') {
+                navigate('/settings');
+              } else {
+                navigate(`/${value}`);
+              }
             }}
             toggleSidebar={() => console.log('Sidebar toggled')} // Provide toggleSidebar prop
           />

@@ -1,3 +1,13 @@
+/**
+ * PageProducts - Product management with inventory tracking
+ * 
+ * HOCs: ProtectedRoute (route-level auth guard)
+ * Layout: PageLayout + ResponsiveContainer(table-page) - 16px padding
+ * Responsive: Mobile/Desktop views, useResponsive() hook
+ * Dialogs: ProductTableForm for CRUD operations
+ * Data: Supabase Products table
+ */
+
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../utils/supabaseClient';
 import Box from '@mui/joy/Box';
@@ -503,7 +513,7 @@ const PageProducts = () => {
 
     // Desktop view component
     const DesktopView = () => (
-        <ResponsiveContainer variant="page" padding="large">
+        <ResponsiveContainer variant="table-page">
             <Typography level="h2" sx={{ mb: 2, fontSize: fonts.sizes.xlarge }}>
                 Products
             </Typography>
@@ -537,7 +547,7 @@ const PageProducts = () => {
                 </Button>
             </Box>
             
-            <Card>
+            <Card sx={{ overflow: 'visible' }}>
                 {loading && <LinearProgress />}
                 <Table aria-label="Products" sx={{ tableLayout: 'auto' }}>
                     <thead>

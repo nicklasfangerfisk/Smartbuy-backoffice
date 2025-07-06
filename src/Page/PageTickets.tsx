@@ -1,3 +1,13 @@
+/**
+ * PageTickets - Support ticket system with real-time messaging
+ * 
+ * HOCs: ProtectedRoute (route-level auth guard)
+ * Layout: PageLayout (no ResponsiveContainer - custom layout)
+ * Responsive: useResponsive() hook for mobile detection
+ * Dialogs: DialogTicketCreate, DialogTicketResolve
+ * Data: Supabase tickets and ticket_messages tables with real-time
+ */
+
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { supabase } from '../utils/supabaseClient';

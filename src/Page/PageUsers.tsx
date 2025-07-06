@@ -1,3 +1,12 @@
+/**
+ * PageUsers - User management and administration
+ * 
+ * HOCs: ProtectedRoute (route-level auth guard)
+ * Layout: PageLayout + ResponsiveContainer(table-page) - 16px padding
+ * Responsive: Mobile/Desktop views, useResponsive() hook
+ * Data: Supabase Users table with role management
+ */
+
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../utils/supabaseClient';
 import Box from '@mui/joy/Box';
@@ -340,7 +349,7 @@ const PageUsers = () => {
 
   // Desktop View Component
   const DesktopView = () => (
-    <ResponsiveContainer>
+    <ResponsiveContainer variant="table-page">
       <Typography level="h2" sx={{ mb: 2, fontSize: fonts.sizes.xlarge }}>
         Users
       </Typography>
@@ -373,11 +382,11 @@ const PageUsers = () => {
         </Button>
       </Box>
 
-      <Card>
+      <Card sx={{ overflow: 'visible' }}>
         {loading && <LinearProgress />}
         {error && <Typography color="danger">Error: {error}</Typography>}
         
-        <Table aria-label="Users" sx={{ minWidth: 800 }}>
+        <Table aria-label="Users" sx={{ tableLayout: 'auto' }}>
           <thead>
             <tr>
               <th style={headerStyles}>Name</th>

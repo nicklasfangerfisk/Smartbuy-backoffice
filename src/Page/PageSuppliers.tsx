@@ -1,3 +1,13 @@
+/**
+ * PageSuppliers - Supplier management with contact details
+ * 
+ * HOCs: ProtectedRoute (route-level auth guard)
+ * Layout: PageLayout + ResponsiveContainer(table-page) - 16px padding
+ * Responsive: Mobile/Desktop views, useResponsive() hook
+ * Dialogs: SupplierForm for CRUD operations
+ * Data: Supabase Suppliers table
+ */
+
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../utils/supabaseClient';
 import Box from '@mui/joy/Box';
@@ -347,7 +357,7 @@ const PageSuppliers = () => {
 
   // Desktop View Component
   const DesktopView = () => (
-    <ResponsiveContainer>
+    <ResponsiveContainer variant="table-page">
       <Typography level="h2" sx={{ mb: 2, fontSize: fonts.sizes.xlarge }}>
         Suppliers
       </Typography>
