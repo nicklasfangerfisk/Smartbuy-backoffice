@@ -53,6 +53,7 @@ function UserProfile() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'danger', text: string } | null>(null);
   
   // Form states
@@ -139,6 +140,108 @@ function UserProfile() {
     }
   };
 
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setMessage({ type: 'danger', text: 'Please select a valid image file' });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage({ type: 'danger', text: 'Image size must be less than 5MB' });
+      return;
+    }
+
+    try {
+      setUploading(true);
+      setMessage(null);
+
+      // Create unique filename
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+      
+      console.log('User ID:', user.id);
+      console.log('Generated filename:', fileName);
+
+      // Upload directly to bucket root
+      const filePath = fileName;
+
+      console.log('Attempting to upload file:', fileName);
+
+      // Upload file to Supabase storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true // Allow overwriting
+        });
+
+      console.log('Upload result:', { uploadData, uploadError });
+
+      if (uploadError) {
+        console.error('Upload error details:', uploadError);
+        throw new Error(`Upload failed: ${uploadError.message}`);
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      console.log('Generated public URL:', publicUrl);
+
+      // Add cache busting parameter to ensure fresh load
+      const cacheBustedUrl = `${publicUrl}?t=${Date.now()}`;
+
+      // Update avatar URL in state first for immediate UI update
+      setAvatarUrl(cacheBustedUrl);
+      
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ avatar_url: publicUrl }) // Store the clean URL in database
+        .eq('id', user.id);
+
+      if (updateError) {
+        console.error('Database update error:', updateError);
+        throw new Error(`Database update failed: ${updateError.message}`);
+      }
+
+      // Force reload user data to sync with database
+      await loadUserData();
+      
+      // Small delay to ensure UI updates
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      setMessage({ type: 'success', text: 'Avatar uploaded successfully' });
+      
+      // Clear message after 3 seconds
+      setTimeout(() => setMessage(null), 3000);
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      let errorMessage = 'Failed to upload avatar';
+      
+      if (error instanceof Error) {
+        if (error.message.includes('not found')) {
+          errorMessage = 'Storage bucket not configured. Please contact admin.';
+        } else if (error.message.includes('permission')) {
+          errorMessage = 'Permission denied. Please contact admin.';
+        } else {
+          errorMessage = `Upload failed: ${error.message}`;
+        }
+      }
+      
+      setMessage({ type: 'danger', text: errorMessage });
+    } finally {
+      setUploading(false);
+      // Clear the input
+      event.target.value = '';
+    }
+  };
+
   const handleCancel = () => {
     // Reset form to current data
     const nameParts = (userProfile?.name || '').split(' ');
@@ -193,26 +296,57 @@ function UserProfile() {
             <Avatar
               size="lg"
               src={avatarUrl || userProfile?.avatar_url || user?.user_metadata?.avatar_url}
-              sx={{ width: 80, height: 80 }}
+              sx={{ width: 160, height: 160 }}
+              key={avatarUrl} // Force re-render when avatarUrl changes
             >
               {firstName?.[0]}{lastName?.[0]}
             </Avatar>
-            {editing && (
+            
+            {/* Upload button overlay */}
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: 0,
+                right: 0,
+                display: 'flex',
+                gap: 1,
+              }}
+            >
+              {/* Upload button */}
               <IconButton
+                component="label"
                 size="sm"
                 variant="solid"
+                color="primary"
+                loading={uploading}
                 sx={{
-                  position: 'absolute',
-                  bottom: 0,
-                  right: 0,
                   borderRadius: '50%',
-                  minHeight: 24,
-                  minWidth: 24,
+                  minHeight: 32,
+                  minWidth: 32,
                 }}
               >
                 <EditIcon fontSize="small" />
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarUpload}
+                  style={{ display: 'none' }}
+                />
               </IconButton>
-            )}
+            </Box>
+            
+            {/* Upload helper text */}
+            <Typography 
+              level="body-xs" 
+              color="neutral" 
+              sx={{ 
+                mt: 1, 
+                textAlign: 'center',
+                maxWidth: 160 
+              }}
+            >
+              Click the edit button to upload a new avatar (max 5MB)
+            </Typography>
           </Box>
 
           {/* Form Section */}
