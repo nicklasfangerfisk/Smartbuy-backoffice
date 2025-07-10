@@ -1,9 +1,18 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { readFileSync } from 'fs';
+
+// Read version from package.json
+const packageJson = JSON.parse(readFileSync('./package.json', 'utf-8'));
 
 export default defineConfig({
   plugins: [react()],
   publicDir: 'public', // Ensure public directory is properly configured
+  define: {
+    // Inject version information
+    __APP_VERSION__: JSON.stringify(packageJson.version),
+    __APP_NAME__: JSON.stringify(packageJson.name),
+  },
   resolve: {
     alias: {
       '@emotion/react': require.resolve('@emotion/react'),

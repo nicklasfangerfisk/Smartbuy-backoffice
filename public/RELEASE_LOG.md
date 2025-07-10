@@ -10,6 +10,20 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
+## [2.1.6] - 2025-07-10 12:45:00
+**Enhanced User Profile Management with Full Supabase Integration**
+### Added
+- Department field to user profile for better organization
+- Avatar URL field with live preview support
+- Account information section showing member since date, last login, and user ID
+### Changed
+- User profile now fully synchronized with Supabase users table
+- Removed country and timezone fields (not stored in database)
+- Enhanced form validation and data persistence
+### Fixed
+- All user profile fields now properly save to and load from Supabase
+- Avatar display correctly uses database-stored avatar URL
+
 ## [2.1.5] - 2025-07-10 12:20:00
 **Mobile Menu Navigation Fix for SMS Campaigns and Purchase Orders**
 ### Fixed

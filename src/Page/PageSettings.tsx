@@ -60,8 +60,8 @@ function UserProfile() {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('');
-  const [country, setCountry] = useState('Thailand');
-  const [timezone, setTimezone] = useState('Indochina Time (Bangkok) — GMT+07:00');
+  const [department, setDepartment] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState('');
 
   useEffect(() => {
     loadUserData();
@@ -92,6 +92,8 @@ function UserProfile() {
           setFirstName(nameParts[0] || '');
           setLastName(nameParts.slice(1).join(' ') || '');
           setRole(profileData.role || 'UI Developer');
+          setDepartment(profileData.department || '');
+          setAvatarUrl(profileData.avatar_url || '');
         }
       }
     } catch (error) {
@@ -115,6 +117,8 @@ function UserProfile() {
         .update({
           name: fullName,
           role: role,
+          department: department,
+          avatar_url: avatarUrl || null,
         })
         .eq('id', user.id);
 
@@ -141,6 +145,8 @@ function UserProfile() {
     setFirstName(nameParts[0] || '');
     setLastName(nameParts.slice(1).join(' ') || '');
     setRole(userProfile?.role || 'UI Developer');
+    setDepartment(userProfile?.department || '');
+    setAvatarUrl(userProfile?.avatar_url || '');
     setEditing(false);
     setMessage(null);
   };
@@ -186,7 +192,7 @@ function UserProfile() {
           }}>
             <Avatar
               size="lg"
-              src={userProfile?.avatar_url || user?.user_metadata?.avatar_url}
+              src={avatarUrl || userProfile?.avatar_url || user?.user_metadata?.avatar_url}
               sx={{ width: 80, height: 80 }}
             >
               {firstName?.[0]}{lastName?.[0]}
@@ -237,7 +243,7 @@ function UserProfile() {
                 </Box>
               </Box>
 
-              {/* Role and Email Row */}
+              {/* Role and Department Row */}
               <Box sx={{ 
                 display: 'flex', 
                 flexDirection: { xs: 'column', sm: 'row' },
@@ -252,35 +258,61 @@ function UserProfile() {
                   />
                 </FormControl>
                 <FormControl sx={{ flex: 1 }}>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>Department</FormLabel>
                   <Input
-                    value={email}
-                    disabled
-                    startDecorator="✉️"
+                    value={department}
+                    onChange={(e) => setDepartment(e.target.value)}
+                    disabled={!editing}
+                    placeholder="e.g., Engineering, Sales, Marketing"
                   />
                 </FormControl>
               </Box>
 
-              {/* Country */}
+              {/* Email */}
               <FormControl>
-                <FormLabel>Country</FormLabel>
+                <FormLabel>Email</FormLabel>
                 <Input
-                  value={country}
-                  onChange={(e) => setCountry(e.target.value)}
-                  disabled={!editing}
+                  value={email}
+                  disabled
+                  startDecorator="✉️"
                 />
               </FormControl>
 
-              {/* Timezone */}
+              {/* Avatar URL */}
               <FormControl>
-                <FormLabel>Timezone</FormLabel>
+                <FormLabel>Avatar URL</FormLabel>
                 <Input
-                  value={timezone}
-                  onChange={(e) => setTimezone(e.target.value)}
+                  value={avatarUrl}
+                  onChange={(e) => setAvatarUrl(e.target.value)}
                   disabled={!editing}
-                  startDecorator="🕐"
+                  placeholder="https://example.com/avatar.jpg"
+                  startDecorator="🖼️"
                 />
               </FormControl>
+
+              {/* Read-only info */}
+              {userProfile && (
+                <Box sx={{ mt: 2, p: 2, bgcolor: 'background.level1', borderRadius: 'sm' }}>
+                  <Typography level="body-sm" color="neutral" sx={{ mb: 1 }}>
+                    Account Information
+                  </Typography>
+                  <Stack spacing={1}>
+                    {userProfile.created_at && (
+                      <Typography level="body-sm">
+                        <strong>Member since:</strong> {new Date(userProfile.created_at).toLocaleDateString()}
+                      </Typography>
+                    )}
+                    {userProfile.last_login && (
+                      <Typography level="body-sm">
+                        <strong>Last login:</strong> {new Date(userProfile.last_login).toLocaleDateString()}
+                      </Typography>
+                    )}
+                    <Typography level="body-sm">
+                      <strong>User ID:</strong> {userProfile.id}
+                    </Typography>
+                  </Stack>
+                </Box>
+              )}
             </Stack>
 
             {/* Action Buttons */}
@@ -390,17 +422,7 @@ function ReleaseLog() {
           <Typography level="h4">Release Log</Typography>
         </Box>
         
-        <Box
-          sx={{
-            flex: 1,
-            overflow: 'auto',
-            bgcolor: 'background.level1',
-            borderRadius: 'var(--joy-radius-md)',
-            border: '1px solid',
-            borderColor: 'divider',
-            p: 2,
-          }}
-        >
+        <Box sx={{ flex: 1, overflow: 'auto' }}>
           {loading && (
             <Typography level="body-sm" color="neutral">
               Loading release log...
@@ -431,7 +453,7 @@ function AppInfo() {
         
         <Stack spacing={1.5} sx={{ flex: 1 }}>
           <Typography level="title-md" sx={{ fontWeight: 'bold' }}>
-            Smartback Inventory System
+            {__APP_NAME__.charAt(0).toUpperCase() + __APP_NAME__.slice(1)} business System
           </Typography>
           
           <Stack spacing={0.5}>
@@ -439,13 +461,13 @@ function AppInfo() {
               <strong>Environment:</strong> {import.meta.env.MODE}
             </Typography>
             <Typography level="body-sm" color="neutral">
-              <strong>Version:</strong> {import.meta.env.VITE_APP_VERSION || 'N/A'}
+              <strong>Version:</strong> {__APP_VERSION__}
             </Typography>
             <Typography level="body-sm" color="neutral">
-              <strong>Build:</strong> {import.meta.env.VITE_GIT_COMMIT || 'N/A'}
+              <strong>Build Date:</strong> {new Date().toLocaleDateString()}
             </Typography>
             <Typography level="body-sm" color="neutral">
-              <strong>Date:</strong> {new Date().toLocaleDateString()}
+              <strong>Platform:</strong> Web Application
             </Typography>
           </Stack>
         </Stack>
@@ -511,17 +533,21 @@ const PageSettings = () => {
           </Button>
         </Box>
         
-        <Tabs value={activeTab} onChange={(event, newValue) => setActiveTab(typeof newValue === 'number' ? newValue : 0)}>
-          <TabList>
+        <Tabs 
+          value={activeTab} 
+          onChange={(event, newValue) => setActiveTab(typeof newValue === 'number' ? newValue : 0)}
+          sx={{ bgcolor: 'transparent' }}
+        >
+          <TabList sx={{ bgcolor: 'transparent' }}>
             {tabs.map((tab, index) => (
-              <Tab key={index} value={index}>
+              <Tab key={index} value={index} sx={{ bgcolor: 'transparent' }}>
                 {tab.label}
               </Tab>
             ))}
           </TabList>
           
           {tabs.map((tab, index) => (
-            <TabPanel key={index} value={index} sx={{ p: 0, pt: 3 }}>
+            <TabPanel key={index} value={index} sx={{ p: 0, pt: 3, bgcolor: 'transparent' }}>
               {tab.content}
             </TabPanel>
           ))}
@@ -547,17 +573,21 @@ const PageSettings = () => {
         </Button>
       </Box>
       
-      <Tabs value={activeTab} onChange={(event, newValue) => setActiveTab(typeof newValue === 'number' ? newValue : 0)}>
-        <TabList>
+      <Tabs 
+        value={activeTab} 
+        onChange={(event, newValue) => setActiveTab(typeof newValue === 'number' ? newValue : 0)}
+        sx={{ bgcolor: 'transparent' }}
+      >
+        <TabList sx={{ bgcolor: 'transparent' }}>
           {tabs.map((tab, index) => (
-            <Tab key={index} value={index}>
+            <Tab key={index} value={index} sx={{ bgcolor: 'transparent' }}>
               {tab.label}
             </Tab>
           ))}
         </TabList>
         
         {tabs.map((tab, index) => (
-          <TabPanel key={index} value={index} sx={{ p: 0, pt: 3 }}>
+          <TabPanel key={index} value={index} sx={{ p: 0, pt: 3, bgcolor: 'transparent' }}>
             {tab.content}
           </TabPanel>
         ))}
