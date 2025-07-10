@@ -91,12 +91,24 @@ function Layout() {
             value={mobileMenuValue}
             onChange={(value: typeof mobileMenuValue) => {
               setMobileMenuValue(value);
-              // Handle profile navigation
-              if (value === 'profile') {
-                navigate('/settings');
-              } else {
-                navigate(`/${value}`);
-              }
+              // Create route mapping from menu value to actual route
+              const routeMap: Record<string, string> = {
+                'home': '/',
+                'dashboard': '/dashboard',
+                'orders': '/orders',
+                'products': '/products',
+                'users': '/users',
+                'suppliers': '/suppliers',
+                'purchaseorders': '/purchase-orders',
+                'tickets': '/tickets',
+                'smscampaigns': '/sms-campaigns',
+                'movements': '/movements',
+                'profile': '/settings',
+                'settings': '/settings'
+              };
+              
+              const targetRoute = routeMap[value] || `/${value}`;
+              navigate(targetRoute);
             }}
             toggleSidebar={() => console.log('Sidebar toggled')} // Provide toggleSidebar prop
           />

@@ -10,6 +10,13 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
+## [2.1.5] - 2025-07-10 12:20:00
+**Mobile Menu Navigation Fix for SMS Campaigns and Purchase Orders**
+### Fixed
+- Fixed mobile menu navigation not working for SMS Campaigns and Purchase Orders buttons
+- Corrected route mapping in App.tsx to properly handle hyphenated routes (/sms-campaigns, /purchase-orders)
+- Mobile users can now successfully navigate to SMS Campaigns and Purchase Orders pages from the mobile bottom navigation menu
+
 ## [2.1.4] - 2025-07-06 18:30:00
 **Static Asset Organization and Production Build Fixes**
 ### Fixed
