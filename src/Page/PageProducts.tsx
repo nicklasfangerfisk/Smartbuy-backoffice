@@ -45,6 +45,8 @@ import ResponsiveModal from '../components/ResponsiveModal';
 import PageLayout from '../layouts/PageLayout';
 import ProductTableForm from '../Dialog/ProductTableForm';
 import fonts from '../theme/fonts';
+import { formatCurrency } from '../utils/currencyUtils';
+import { prepareProductCurrencyData } from '../utils/currencyUtils';
 
 // Typography styles for consistency
 const typographyStyles = { fontSize: fonts.sizes.small };
@@ -122,13 +124,6 @@ const PageProducts = () => {
                 <InventoryIcon sx={{ fontSize: '12px' }} />
             </Box>
         );
-    };
-
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD'
-        }).format(amount);
     };
 
     // Data fetching
@@ -257,14 +252,16 @@ const PageProducts = () => {
     const handleAddDialogSave = async (values: { ProductName: string; SalesPrice: string; CostPrice: string }) => {
         setSubmitting(true);
         try {
+            const productData = prepareProductCurrencyData({
+                ProductName: values.ProductName,
+                SalesPrice: parseFloat(values.SalesPrice),
+                CostPrice: parseFloat(values.CostPrice),
+                CreatedAt: new Date().toISOString(),
+            });
+
             const { data, error } = await supabase
                 .from('Products')
-                .insert([{
-                    ProductName: values.ProductName,
-                    SalesPrice: parseFloat(values.SalesPrice),
-                    CostPrice: parseFloat(values.CostPrice),
-                    CreatedAt: new Date().toISOString(),
-                }])
+                .insert([productData])
                 .select()
                 .single();
 
@@ -290,13 +287,15 @@ const PageProducts = () => {
 
         setSubmitting(true);
         try {
+            const productData = prepareProductCurrencyData({
+                ProductName: values.ProductName,
+                SalesPrice: parseFloat(values.SalesPrice),
+                CostPrice: parseFloat(values.CostPrice),
+            });
+
             const { error } = await supabase
                 .from('Products')
-                .update({
-                    ProductName: values.ProductName,
-                    SalesPrice: parseFloat(values.SalesPrice),
-                    CostPrice: parseFloat(values.CostPrice),
-                })
+                .update(productData)
                 .eq('uuid', editProduct.uuid);
 
             if (error) {

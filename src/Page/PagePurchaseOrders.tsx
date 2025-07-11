@@ -40,6 +40,7 @@ import DialogReceivePurchaseOrder from '../Dialog/DialogReceivePurchaseOrder';
 import PageLayout from '../layouts/PageLayout';
 import fonts from '../theme/fonts';
 import type { Database } from '../general/supabase.types';
+import { formatCurrencyWithSymbol } from '../utils/currencyUtils';
 
 // Types
 export interface PurchaseOrderItem {
@@ -352,7 +353,7 @@ const PagePurchaseOrders = () => {
                   </Typography>
                   
                   <Typography level="body-sm" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
-                    Total: ${order.total?.toFixed(2) || '0.00'}
+                    Total: {formatCurrencyWithSymbol(order.total || 0)}
                   </Typography>
 
                   {/* Action Buttons */}
@@ -459,7 +460,7 @@ const PagePurchaseOrders = () => {
                     {order.status}
                   </Chip>
                 </td>
-                <td style={typographyStyles}>${order.total?.toFixed(2) || '0.00'}</td>
+                <td style={typographyStyles}>{formatCurrencyWithSymbol(order.total || 0)}</td>
                 <td style={typographyStyles}>{order.supplier_name}</td>
                 <td style={typographyStyles}>{order.notes || '-'}</td>
                 <td>

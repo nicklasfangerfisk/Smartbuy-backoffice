@@ -10,6 +10,61 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
+## [2.1.7] - 2025-07-11 14:30:00
+**Avatar Upload System and User Profile UI Improvements**
+### Added
+- Full avatar upload functionality with Supabase storage integration
+- File validation for image type and size (max 5MB)
+- Real-time avatar preview and database synchronization
+- Clean upload UI that only appears in edit mode
+### Changed
+- Improved avatar section layout with proper spacing and centering
+- Upload button moved underneath avatar to eliminate overlap
+- Simplified upload helper text for better user experience
+- Enhanced form field spacing consistency between name and role/department fields
+### Fixed
+- Resolved container overflow issues in user profile layout
+- Fixed avatar image loading with proper Supabase storage bucket configuration
+- Eliminated debugging UI elements for production-ready interface
+
+## [2.1.6] - 2025-07-10 12:45:00
+**Enhanced User Profile Management with Full Supabase Integration**
+### Added
+- Department field to user profile for better organization
+- Avatar URL field with live preview support
+- Account information section showing member since date, last login, and user ID
+### Changed
+- User profile now fully synchronized with Supabase users table
+- Removed country and timezone fields (not stored in database)
+- Enhanced form validation and data persistence
+### Fixed
+- All user profile fields now properly save to and load from Supabase
+- Avatar display correctly uses database-stored avatar URL
+
+## [2.1.5] - 2025-07-10 12:20:00
+**Mobile Menu Navigation Fix for SMS Campaigns and Purchase Orders**
+### Fixed
+- Fixed mobile menu navigation not working for SMS Campaigns and Purchase Orders buttons
+- Corrected route mapping in App.tsx to properly handle hyphenated routes (/sms-campaigns, /purchase-orders)
+- Mobile users can now successfully navigate to SMS Campaigns and Purchase Orders pages from the mobile bottom navigation menu
+
+## [2.1.4] - 2025-07-06 18:30:00
+**Static Asset Organization and Production Build Fixes**
+### Fixed
+- Fixed duplicate index.html files by removing empty src/public/index.html and keeping root index.html as the correct Vite template
+- Fixed duplicate RELEASE_LOG.md files by removing root version and keeping public/RELEASE_LOG.md as the correct static asset
+- Fixed favicon.svg not loading in Vercel production by moving from root to public directory for proper static asset serving
+- Cleaned up project structure to follow Vite best practices for static asset placement in public directory
+
+## [2.1.3] - 2025-07-06 17:45:00
+**Release Log Display Fix for Production Deployment**
+### Fixed
+- Fixed release log not displaying in production/Vercel deployment by moving RELEASE_LOG.md to public folder for proper static asset serving
+- Enhanced ReleaseLog component with fallback content mechanism to ensure meaningful display even when file is unavailable
+- Added proper error handling and debug logging for production troubleshooting
+- Configured Vite publicDir setting to ensure consistent static asset handling across environments
+- Improved user experience with graceful fallback instead of error messages when release log cannot be loaded
+
 ## [2.1.2] - 2025-07-06 16:45:00
 **Modern Login Page Redesign with Split Layout**
 ### Added

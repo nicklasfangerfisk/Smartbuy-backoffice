@@ -10,6 +10,34 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
+## [2.2.0] - 2025-07-11 16:45:00
+**Major Update: Comprehensive Currency Persistence & Multi-Currency Foundation**
+### Added
+- Complete currency persistence system across all price-related database tables
+- Currency and exchange rate fields for Products (SalesPrice, CostPrice)
+- Currency and exchange rate fields for Orders (order_total)
+- Currency and exchange rate fields for OrderItems (unitprice, price)
+- Currency and exchange rate fields for PurchaseOrderItems (unit_price)
+- Database migration with proper indexes for performance optimization
+- Enhanced currency utilities with multi-currency support functions
+- Currency data preparation functions for all price operations
+- TypeScript interfaces for currency-enabled database tables
+- Validation functions for currency persistence testing
+- Currency information display in Settings page Application Info section
+- Comprehensive documentation for currency implementation
+### Changed
+- All product creation/editing operations now include currency data persistence
+- Order and order item creation enhanced with currency field storage
+- Purchase order item operations updated with currency persistence
+- Currency utilities expanded with exchange rate conversion capabilities
+- Application now foundation-ready for international multi-currency operations
+### Technical Details
+- Database schema extended with ISO 4217 currency codes (3-character)
+- Exchange rates stored with 6 decimal precision for accurate conversions
+- Default currency set to Danish Kroner (DKK) with 1.0 exchange rate
+- Backward compatibility maintained for all existing data
+- Performance optimized with strategic database indexes
+
 ## [2.1.7] - 2025-07-11 14:30:00
 **Avatar Upload System and User Profile UI Improvements**
 ### Added

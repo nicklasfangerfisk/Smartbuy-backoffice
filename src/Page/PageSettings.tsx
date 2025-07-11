@@ -43,6 +43,7 @@ import { useResponsive } from '../hooks/useResponsive';
 import ResponsiveContainer from '../components/ResponsiveContainer';
 import PageLayout from '../layouts/PageLayout';
 import fonts from '../theme/fonts';
+import { CURRENCY_CONFIG } from '../utils/currencyUtils';
 import { marked } from 'marked';
 import { supabase } from '../utils/supabaseClient';
 
@@ -607,6 +608,9 @@ function AppInfo() {
             </Typography>
             <Typography level="body-sm" color="neutral">
               <strong>Platform:</strong> Web Application
+            </Typography>
+            <Typography level="body-sm" color="neutral">
+              <strong>Currency:</strong> {CURRENCY_CONFIG.currency} ({CURRENCY_CONFIG.symbol}) - {CURRENCY_CONFIG.locale}
             </Typography>
           </Stack>
         </Stack>

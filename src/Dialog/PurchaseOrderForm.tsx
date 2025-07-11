@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { supabase } from '../utils/supabaseClient';
+import { preparePurchaseOrderItemCurrencyData } from '../utils/currencyUtils';
 import Modal from '@mui/joy/Modal';
 import ModalDialog from '@mui/joy/ModalDialog';
 import ModalClose from '@mui/joy/ModalClose';
@@ -146,7 +147,7 @@ export default function PurchaseOrderForm({ open, onClose, onCreated, mode = 'ad
       // Insert items
       const itemsPayload = items
         .filter(item => item.product_id)
-        .map(item => ({
+        .map(item => preparePurchaseOrderItemCurrencyData({
           purchase_order_id: purchaseOrderId,
           product_id: item.product_id,
           quantity_ordered: item.quantity_ordered,

@@ -6,6 +6,7 @@ import Card from '@mui/joy/Card';
 import Button from '@mui/joy/Button';
 import { supabase } from '../utils/supabaseClient';
 import Table from '@mui/joy/Table';
+import { formatCurrencyWithSymbol } from '../utils/currencyUtils';
 
 interface Supplier {
   id: string;
@@ -62,7 +63,7 @@ export default function DialogPageSupplierDesktop({ supplier, onClose }: Supplie
             <td>{order.order_number}</td>
             <td>{order.order_date}</td>
             <td>{order.status}</td>
-            <td>{order.total != null ? `$${order.total.toFixed(2)}` : '—'}</td>
+            <td>{order.total != null ? formatCurrencyWithSymbol(order.total) : '—'}</td>
             <td>{order.notes || ''}</td>
           </tr>
         ))}

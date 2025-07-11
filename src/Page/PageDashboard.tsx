@@ -11,6 +11,7 @@ import * as React from 'react';
 import { Box, Typography, Grid, Card } from '@mui/joy';
 import { supabase } from '../utils/supabaseClient';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import { formatCurrencyWithSymbol } from '../utils/currencyUtils';
 
 /**
  * Dashboard page component that displays key metrics such as total sales,
@@ -143,7 +144,7 @@ const PageDashboard: React.FC = () => {
           <Card variant="outlined">
             <Typography level="h4">Total Sales</Typography>
             <Typography level="h2" color="success">
-              {initialLoading ? 'Loading...' : error ? '—' : `$${totalSales?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+              {initialLoading ? 'Loading...' : error ? '—' : formatCurrencyWithSymbol(totalSales)}
             </Typography>
             <Typography level="body-sm" color="neutral">
               {initialLoading ? '' : formatPercentageChange(salesChange)} from last 30 days

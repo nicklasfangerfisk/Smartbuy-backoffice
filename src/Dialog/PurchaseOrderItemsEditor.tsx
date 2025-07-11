@@ -5,6 +5,7 @@ import Button from '@mui/joy/Button';
 import Input from '@mui/joy/Input';
 import Autocomplete from '@mui/joy/Autocomplete';
 import Box from '@mui/joy/Box';
+import { formatCurrencyWithSymbol } from '../utils/currencyUtils';
 
 /**
  * Represents a product in the database.
@@ -140,7 +141,7 @@ export default function PurchaseOrderItemsEditor({ orderId, editable, onItemsCha
                   required
                 />
               </td>
-              <td>{(item.quantity_ordered * item.unit_price).toFixed(2)}</td>
+              <td>{formatCurrencyWithSymbol(item.quantity_ordered * item.unit_price)}</td>
               {editable && (
                 <td>
                   <Button size="sm" color="danger" onClick={() => handleRemoveItem(idx)}>

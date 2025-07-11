@@ -1,5 +1,7 @@
 import * as React from 'react';
 import { Modal, ModalDialog, ModalClose, Typography, Divider, Box, Table } from '@mui/joy';
+import type { Database } from '../general/supabase.types';
+import { formatCurrencyWithSymbol } from '../utils/currencyUtils';
 
 export type OrderDetailsDialogProps = {
   open: boolean;
@@ -97,9 +99,9 @@ export default function OrderDetailsDialog({ open, onClose, selectedOrder, fetch
                           <tr key={item.id || item.uuid}>
                             <td>{item.ProductName || item.name || item.product_uuid}</td>
                             <td style={{ textAlign: 'right' }}>{item.quantity}</td>
-                            <td style={{ textAlign: 'right' }}>{typeof item.unitprice === 'number' || typeof item.unitprice === 'string' ? `$${Number(item.unitprice).toFixed(2)}` : '-'}</td>
+                            <td style={{ textAlign: 'right' }}>{typeof item.unitprice === 'number' || typeof item.unitprice === 'string' ? formatCurrencyWithSymbol(Number(item.unitprice)) : '-'}</td>
                             <td style={{ textAlign: 'right' }}>{typeof item.discount === 'number' || typeof item.discount === 'string' ? `${Number(item.discount).toFixed(2)}%` : '-'}</td>
-                            <td style={{ textAlign: 'right' }}>{typeof item.price === 'number' || typeof item.price === 'string' ? `$${Number(item.price).toFixed(2)}` : '-'}</td>
+                            <td style={{ textAlign: 'right' }}>{typeof item.price === 'number' || typeof item.price === 'string' ? formatCurrencyWithSymbol(Number(item.price)) : '-'}</td>
                           </tr>
                         );
                       })

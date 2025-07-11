@@ -42,6 +42,8 @@ import PageLayout from '../layouts/PageLayout';
 import OrderTableCreate from '../Dialog/OrderTableCreate';
 import OrderTableDetails from '../Dialog/OrderTableDetails';
 import fonts from '../theme/fonts';
+import { formatCurrency } from '../utils/currencyUtils';
+import { prepareOrderCurrencyData, prepareOrderItemCurrencyData } from '../utils/currencyUtils';
 
 // Typography styles for consistency
 const typographyStyles = { fontSize: fonts.sizes.small };
@@ -128,13 +130,6 @@ const PageOrders = () => {
             default:
                 return <ShoppingCartIcon />;
         }
-    };
-
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD'
-        }).format(amount);
     };
 
     // Data fetching
@@ -245,16 +240,22 @@ const PageOrders = () => {
     const handleCreateOrderSubmit = async (orderItems: { product_uuid: string; quantity: number; unitprice: number; discount: number }[], orderDiscount: number) => {
         setCreatingOrder(true);
         try {
+            // Calculate order total
+            const orderTotal = orderItems.reduce((total, item) => total + (item.quantity * item.unitprice * (1 - item.discount / 100)), 0) - orderDiscount;
+            
+            // Prepare order data with currency fields
+            const orderData = prepareOrderCurrencyData({
+                date: newOrder.date,
+                status: newOrder.status,
+                customer_name: newOrder.customer_name,
+                customer_email: newOrder.customer_email,
+                order_total: orderTotal,
+            });
+
             // Create the order first
-            const { data: orderData, error: orderError } = await supabase
+            const { data: createdOrder, error: orderError } = await supabase
                 .from('Orders')
-                .insert({
-                    date: newOrder.date,
-                    status: newOrder.status,
-                    customer_name: newOrder.customer_name,
-                    customer_email: newOrder.customer_email,
-                    order_total: orderItems.reduce((total, item) => total + (item.quantity * item.unitprice * (1 - item.discount / 100)), 0) - orderDiscount,
-                })
+                .insert(orderData)
                 .select()
                 .single();
 
@@ -264,19 +265,21 @@ const PageOrders = () => {
                 return;
             }
 
-            // Create order items
+            // Create order items with currency data
             if (orderItems.length > 0) {
+                const orderItemsData = orderItems.map(item => 
+                    prepareOrderItemCurrencyData({
+                        order_uuid: createdOrder.uuid,
+                        product_uuid: item.product_uuid,
+                        quantity: item.quantity,
+                        unitprice: item.unitprice,
+                        discount_percent: item.discount,
+                    })
+                );
+
                 const { error: itemsError } = await supabase
                     .from('OrderItems')
-                    .insert(
-                        orderItems.map(item => ({
-                            order_uuid: orderData.uuid,
-                            product_uuid: item.product_uuid,
-                            quantity: item.quantity,
-                            unitprice: item.unitprice,
-                            discount_percent: item.discount,
-                        }))
-                    );
+                    .insert(orderItemsData);
 
                 if (itemsError) {
                     console.error('Error creating order items:', itemsError);

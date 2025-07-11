@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Modal, ModalDialog, ModalClose, Typography, Divider, Box, Table } from '@mui/joy';
 import type { Database } from '../general/supabase.types';
+import { formatCurrencyWithSymbol } from '../utils/currencyUtils';
 
 /**
  * Props for the OrderTableDetails component.
@@ -133,9 +134,9 @@ export default function OrderTableDetails({ open, onClose, selectedOrder, fetchO
                           <tr key={item.uuid}>
                             <td>{item.name || item.product_uuid}</td>
                             <td style={{ textAlign: 'right' }}>{item.quantity ?? '-'}</td>
-                            <td style={{ textAlign: 'right' }}>{item.unitprice != null ? `$${Number(item.unitprice).toFixed(2)}` : '-'}</td>
+                            <td style={{ textAlign: 'right' }}>{item.unitprice != null ? formatCurrencyWithSymbol(item.unitprice) : '-'}</td>
                             <td style={{ textAlign: 'right' }}>{item.discount != null ? `${Number(item.discount).toFixed(2)}%` : '-'}</td>
-                            <td style={{ textAlign: 'right' }}>{item.price != null ? `$${Number(item.price).toFixed(2)}` : '-'}</td>
+                            <td style={{ textAlign: 'right' }}>{item.price != null ? formatCurrencyWithSymbol(item.price) : '-'}</td>
                           </tr>
                         );
                       })
