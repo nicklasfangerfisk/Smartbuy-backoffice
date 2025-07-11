@@ -10,6 +10,23 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
+## [2.1.7] - 2025-07-11 14:30:00
+**Avatar Upload System and User Profile UI Improvements**
+### Added
+- Full avatar upload functionality with Supabase storage integration
+- File validation for image type and size (max 5MB)
+- Real-time avatar preview and database synchronization
+- Clean upload UI that only appears in edit mode
+### Changed
+- Improved avatar section layout with proper spacing and centering
+- Upload button moved underneath avatar to eliminate overlap
+- Simplified upload helper text for better user experience
+- Enhanced form field spacing consistency between name and role/department fields
+### Fixed
+- Resolved container overflow issues in user profile layout
+- Fixed avatar image loading with proper Supabase storage bucket configuration
+- Eliminated debugging UI elements for production-ready interface
+
 ## [2.1.6] - 2025-07-10 12:45:00
 **Enhanced User Profile Management with Full Supabase Integration**
 ### Added

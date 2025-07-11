@@ -164,13 +164,8 @@ function UserProfile() {
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}-${Date.now()}.${fileExt}`;
       
-      console.log('User ID:', user.id);
-      console.log('Generated filename:', fileName);
-
       // Upload directly to bucket root
       const filePath = fileName;
-
-      console.log('Attempting to upload file:', fileName);
 
       // Upload file to Supabase storage
       const { data: uploadData, error: uploadError } = await supabase.storage
@@ -180,10 +175,7 @@ function UserProfile() {
           upsert: true // Allow overwriting
         });
 
-      console.log('Upload result:', { uploadData, uploadError });
-
       if (uploadError) {
-        console.error('Upload error details:', uploadError);
         throw new Error(`Upload failed: ${uploadError.message}`);
       }
 
@@ -192,13 +184,8 @@ function UserProfile() {
         .from('avatars')
         .getPublicUrl(filePath);
 
-      console.log('Generated public URL:', publicUrl);
-
-      // Add cache busting parameter to ensure fresh load
-      const cacheBustedUrl = `${publicUrl}?t=${Date.now()}`;
-
       // Update avatar URL in state first for immediate UI update
-      setAvatarUrl(cacheBustedUrl);
+      setAvatarUrl(publicUrl);
       
       const { error: updateError } = await supabase
         .from('users')
@@ -206,22 +193,17 @@ function UserProfile() {
         .eq('id', user.id);
 
       if (updateError) {
-        console.error('Database update error:', updateError);
         throw new Error(`Database update failed: ${updateError.message}`);
       }
 
       // Force reload user data to sync with database
       await loadUserData();
       
-      // Small delay to ensure UI updates
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
       setMessage({ type: 'success', text: 'Avatar uploaded successfully' });
       
       // Clear message after 3 seconds
       setTimeout(() => setMessage(null), 3000);
     } catch (error) {
-      console.error('Error uploading avatar:', error);
       let errorMessage = 'Failed to upload avatar';
       
       if (error instanceof Error) {
@@ -273,7 +255,7 @@ function UserProfile() {
           Personal info
         </Typography>
         <Typography level="body-sm" color="neutral" sx={{ mb: 3 }}>
-          Customize how your profile information will appear to the networks.
+          Your profile information.
         </Typography>
 
         {message && (
@@ -286,71 +268,94 @@ function UserProfile() {
           display: 'flex', 
           flexDirection: { xs: 'column', sm: 'row' },
           gap: 3, 
-          alignItems: { xs: 'center', sm: 'flex-start' }
+          alignItems: { xs: 'center', sm: 'stretch' },
+          width: '100%',
+          maxWidth: '100%',
+          overflow: 'hidden' // Prevent overflow
         }}>
-          {/* Avatar Section */}
+          {/* Avatar Section - Takes 1/3 of space */}
           <Box sx={{ 
+            flex: { xs: 'none', sm: '1' }, // Use flex ratio instead of fixed percentage
+            maxWidth: { xs: '100%', sm: '300px' }, // Limit max width
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center', // Center vertically
+            alignItems: 'center', // Center horizontally
             position: 'relative',
-            alignSelf: { xs: 'center', sm: 'flex-start' }
+            minHeight: { xs: 'auto', sm: '400px' }, // Minimum height for proper centering
+            width: { xs: '100%', sm: 'auto' }
           }}>
-            <Avatar
-              size="lg"
-              src={avatarUrl || userProfile?.avatar_url || user?.user_metadata?.avatar_url}
-              sx={{ width: 160, height: 160 }}
-              key={avatarUrl} // Force re-render when avatarUrl changes
-            >
-              {firstName?.[0]}{lastName?.[0]}
-            </Avatar>
-            
-            {/* Upload button overlay */}
-            <Box
-              sx={{
-                position: 'absolute',
-                bottom: 0,
-                right: 0,
-                display: 'flex',
-                gap: 1,
-              }}
-            >
-              {/* Upload button */}
-              <IconButton
-                component="label"
-                size="sm"
-                variant="solid"
-                color="primary"
-                loading={uploading}
-                sx={{
-                  borderRadius: '50%',
-                  minHeight: 32,
-                  minWidth: 32,
-                }}
+            <Box sx={{ 
+              position: 'relative',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center'
+            }}>
+              <Avatar
+                size="lg"
+                src={avatarUrl || userProfile?.avatar_url || user?.user_metadata?.avatar_url}
+                sx={{ width: 160, height: 160 }}
+                key={`avatar-${avatarUrl}-${userProfile?.avatar_url}`} // Force re-render when URL changes
               >
-                <EditIcon fontSize="small" />
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarUpload}
-                  style={{ display: 'none' }}
-                />
-              </IconButton>
+                {firstName?.[0]}{lastName?.[0]}
+              </Avatar>
+              
+              {/* Upload controls - only show when editing */}
+              {editing && (
+                <Box sx={{ 
+                  mt: 2, 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  alignItems: 'center',
+                  gap: 1
+                }}>
+                  {/* Upload button */}
+                  <IconButton
+                    component="label"
+                    size="sm"
+                    variant="solid"
+                    color="primary"
+                    loading={uploading}
+                    sx={{
+                      borderRadius: '8px',
+                      px: 2,
+                      py: 1,
+                    }}
+                  >
+                    <EditIcon fontSize="small" sx={{ mr: 1 }} />
+                    Upload Avatar
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarUpload}
+                      style={{ display: 'none' }}
+                    />
+                  </IconButton>
+                  
+                  {/* Upload helper text */}
+                  <Typography 
+                    level="body-xs" 
+                    color="neutral" 
+                    sx={{ 
+                      textAlign: 'center',
+                      maxWidth: 180,
+                      lineHeight: 1.4
+                    }}
+                  >
+                    Max 5MB (JPG, PNG, GIF)
+                  </Typography>
+                </Box>
+              )}
             </Box>
-            
-            {/* Upload helper text */}
-            <Typography 
-              level="body-xs" 
-              color="neutral" 
-              sx={{ 
-                mt: 1, 
-                textAlign: 'center',
-                maxWidth: 160 
-              }}
-            >
-              Click the edit button to upload a new avatar (max 5MB)
-            </Typography>
           </Box>
 
-          {/* Form Section */}
-          <Box sx={{ flex: 1, width: { xs: '100%', sm: 'auto' } }}>
+          {/* Form Section - Takes remaining space */}
+          <Box sx={{ 
+            flex: { xs: 'none', sm: '2' }, // Use flex ratio instead of fixed percentage
+            maxWidth: { xs: '100%', sm: 'calc(100% - 300px - 24px)' }, // Ensure it doesn't overflow
+            width: { xs: '100%', sm: 'auto' },
+            minWidth: 0 // Allow flex item to shrink below content size
+          }}>
             <Stack spacing={2}>
               {/* Name Row */}
               <Box>
@@ -358,7 +363,7 @@ function UserProfile() {
                 <Box sx={{ 
                   display: 'flex', 
                   flexDirection: { xs: 'column', sm: 'row' },
-                  gap: 1 
+                  gap: 2 
                 }}>
                   <Input
                     placeholder="First name"
