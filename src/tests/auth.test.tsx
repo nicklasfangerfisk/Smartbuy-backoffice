@@ -35,13 +35,13 @@ describe('Authentication Tests', () => {
         </MemoryRouter>
       );
 
-      fireEvent.change(screen.getByPlaceholderText('Email'), {
+      fireEvent.change(screen.getByPlaceholderText('your@email.com'), {
         target: { value: 'test@example.com' },
       });
-      fireEvent.change(screen.getByPlaceholderText('Password'), {
+      fireEvent.change(screen.getByPlaceholderText('••••••'), {
         target: { value: 'password123' },
       });
-      fireEvent.click(screen.getByText('Sign In'));
+      fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
 
       await waitFor(() => {
         expect(supabase.auth.signInWithPassword).toHaveBeenCalledWith({
@@ -63,13 +63,13 @@ describe('Authentication Tests', () => {
         </MemoryRouter>
       );
 
-      fireEvent.change(screen.getByPlaceholderText('Email'), {
+      fireEvent.change(screen.getByPlaceholderText('your@email.com'), {
         target: { value: 'wrong@example.com' },
       });
-      fireEvent.change(screen.getByPlaceholderText('Password'), {
+      fireEvent.change(screen.getByPlaceholderText('••••••'), {
         target: { value: 'wrongpassword' },
       });
-      fireEvent.click(screen.getByText('Sign In'));
+      fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
 
       await waitFor(() => {
         expect(screen.getByText('Invalid login credentials')).toBeInTheDocument();

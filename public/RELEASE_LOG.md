@@ -10,6 +10,18 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
+## [3.0.2] - 2025-07-11 20:15:00
+**Unit Test Suite Cleanup & Environment Fixes**
+### Fixed
+- Removed temporary debugging test file causing consistent test failures
+- Added window.matchMedia mock for Material-UI components in Jest environment
+- Fixed test selectors to match actual UI placeholders and button text
+- Test suite now properly runs only the three intended authentication test cases
+### Technical Details
+- Enhanced Jest setup configuration for React component testing
+- Improved test reliability and compatibility with Material-UI Joy components
+- All authentication tests now pass consistently (login, error handling, logout)
+
 ## [3.0.1] - 2025-07-11 17:55:00
 **Product Image Upload & Inventory Management Enhancement**
 ### Added
