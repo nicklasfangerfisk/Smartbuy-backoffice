@@ -85,6 +85,12 @@ const DialogReceivePurchaseOrder: React.FC<DialogReceivePurchaseOrderProps> = ({
         receivedItems
       );
 
+      // Call the onConfirm callback to refresh parent component
+      onConfirm(received.map(item => ({
+        id: item.id,
+        quantity_received: item.quantity_received
+      })));
+
       setSnackbarOpen(true); // Show toast
       onClose();
     } catch (error) {

@@ -70,7 +70,7 @@ function Layout() {
   console.log('isMobile:', isMobile);
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
       {location.pathname !== '/login' && !isMobile && <Sidebar setView={(view) => console.log(view)} view="home" />}
       <Box
         component="main"
@@ -78,11 +78,12 @@ function Layout() {
           flexGrow: 1,
           display: 'flex',
           flexDirection: 'column',
-          minHeight: '100vh',
+          height: '100%', // Use 100% instead of 100vh to take available space
           bgcolor: 'background.default',
           p: 0, // Remove app-level padding, let PageLayout handle all padding consistently
           width: isMobile ? '100%' : 'calc(100% - var(--Sidebar-width, 240px))',
           marginBottom: isMobile ? '56px' : 0, // Adjust for MobileMenu height
+          overflow: 'auto', // Allow main content to scroll
         }}
       >
         {isMobile && location.pathname !== '/login' && (

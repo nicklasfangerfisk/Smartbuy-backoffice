@@ -133,8 +133,10 @@ const PageDashboard: React.FC = () => {
 
   return (
     <Box sx={{
-      p: { xs: 1, md: 4 },
-      pt: { xs: 0, md: 4 }, // Remove top padding for mobile since header is gone
+      p: { xs: 2, md: 3 },
+      pt: { xs: 2, md: 3 },
+      height: '100%', // Take available height instead of forcing specific size
+      overflow: 'auto', // Allow scrolling if content exceeds container
     }}>
       <Typography level="h2" sx={{ mb: 2 }}>
         Dashboard

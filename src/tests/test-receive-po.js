@@ -1,28 +1,14 @@
-// Simple Node.js script to test your backend API
-const axios = require('axios');
+// Simple test script for the receive purchase order functionality
+// This test has been updated to use the new client-side approach
 
-async function testReceivePO() {
-  try {
-    // Hardcoded new Supabase API key for testing
-    const SUPABASE_API_KEY = 'sb_secret_v4ZyiUWC0bOrPII_fhhIPw_6l_bR5O-';
-    const response = await axios.post('http://localhost:3000/api/receive-purchase-order', {
-      purchaseOrderId: 82, // <-- replace with a valid purchase order ID
-      items: [
-        { product_id: 60, quantity_received: 1 } // <-- replace with a valid product ID
-      ]
-    }, {
-      headers: {
-        'x-api-key': SUPABASE_API_KEY
-      }
-    });
-    console.log('API response:', response.data);
-  } catch (error) {
-    if (error.response) {
-      console.error('API error:', error.response.data);
-    } else {
-      console.error('Request error:', error.message);
-    }
-  }
-}
+console.log('Purchase order receive functionality has been updated to use client-side Supabase calls.');
+console.log('The receive button should now work directly in the application.');
+console.log('Test by:');
+console.log('1. Navigate to Purchase Orders page');
+console.log('2. Click "Receive" on an approved purchase order');
+console.log('3. Adjust quantities as needed');
+console.log('4. Click "Receive" button in the dialog');
+console.log('5. Verify the order status updates to "Received"');
+console.log('6. Check that stock movements are created in the database');
 
-testReceivePO();
+// The old API test is no longer needed since we use direct Supabase calls

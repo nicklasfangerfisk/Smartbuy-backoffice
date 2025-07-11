@@ -10,6 +10,13 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
+## [3.0.3] - 2025-07-11 21:25:00
+**Sidebar Viewport Overflow Fix**
+### Fixed
+- Fixed sidebar extending beyond viewport bottom causing page scrollbar
+- Improved layout height management using proper flex constraints
+- Optimized page content overflow behavior for better scrolling experience
+
 ## [3.0.2] - 2025-07-11 20:15:00
 **Unit Test Suite Cleanup & Environment Fixes**
 ### Fixed

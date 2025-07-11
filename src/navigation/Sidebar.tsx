@@ -165,8 +165,9 @@ function Sidebar({ setView, view }: { setView: (view: MenuItem['value']) => void
         },
         transition: 'transform 0.4s, width 0.4s',
         zIndex: 10000,
-        height: '100vh', // use viewport height instead of dynamic viewport height
+        height: '100vh', // match main layout viewport height
         maxHeight: '100vh', // ensure it doesn't exceed viewport
+        minHeight: '100vh', // maintain minimum height for proper layout
         width: 'var(--Sidebar-width)',
         top: 0,
         p: 2,
@@ -177,6 +178,7 @@ function Sidebar({ setView, view }: { setView: (view: MenuItem['value']) => void
         borderColor: 'divider',
         background: 'var(--joy-palette-background-surface, #fff)',
         overflow: 'hidden', // prevent sidebar itself from scrolling
+        boxSizing: 'border-box', // ensure padding is included in height calculation
       }}
     >
       <GlobalStyles
@@ -209,7 +211,7 @@ function Sidebar({ setView, view }: { setView: (view: MenuItem['value']) => void
         // onClick={() => closeSidebar()}
       />
       {/* Sidebar header with logo and theme toggle */}
-      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexShrink: 0 }}>
         <IconButton
           size="sm"
           variant="plain"
@@ -233,7 +235,9 @@ function Sidebar({ setView, view }: { setView: (view: MenuItem['value']) => void
       </Box>
       {/* Search input - only show when not collapsed */}
       {!isCollapsed && (
-        <Input size="sm" startDecorator={<SearchRoundedIcon />} placeholder="Search" />
+        <Box sx={{ flexShrink: 0 }}>
+          <Input size="sm" startDecorator={<SearchRoundedIcon />} placeholder="Search" />
+        </Box>
       )}
       {/* Navigation list */}
       <Box
@@ -241,7 +245,7 @@ function Sidebar({ setView, view }: { setView: (view: MenuItem['value']) => void
           minHeight: 0,
           overflowY: 'auto',
           overflowX: 'hidden',
-          flex: 1, // take up available space between header and footer
+          flex: '1 1 auto', // allow it to grow and shrink as needed
           display: 'flex',
           flexDirection: 'column',
           [`& .${listItemButtonClasses.root}`]: {
@@ -331,7 +335,7 @@ function Sidebar({ setView, view }: { setView: (view: MenuItem['value']) => void
       <Box sx={{ flexShrink: 0 }}>
         {/* Settings and Logout buttons removed as requested */}
       </Box>
-      <Divider />
+      <Divider sx={{ flexShrink: 0 }} />
       {/* User profile section - clickable to navigate to Settings */}
       <Box 
         sx={{ 
@@ -339,6 +343,7 @@ function Sidebar({ setView, view }: { setView: (view: MenuItem['value']) => void
           gap: 1, 
           alignItems: 'center', 
           minHeight: 48,
+          flexShrink: 0, // prevent shrinking
           cursor: 'pointer',
           borderRadius: 'sm',
           '&:hover': {

@@ -184,22 +184,12 @@ const PagePurchaseOrders = () => {
   // Handle receive confirmation
   const handleReceiveConfirm = async (receivedItems: any[]) => {
     try {
-      // Update item quantities
-      for (const item of receivedItems) {
-        await supabase
-          .from('purchaseorderitems')
-          .update({ quantity_received: item.quantity_received })
-          .eq('id', item.id);
-      }
-
-      // Update order status
-      if (selectedOrder?.id) {
-        await supabase
-          .from('PurchaseOrders')
-          .update({ status: 'Received' })
-          .eq('id', selectedOrder.id);
-      }
-
+      // The receivePurchaseOrder API function now handles:
+      // - Updating purchase order item quantities
+      // - Creating stock movements
+      // - Updating purchase order status
+      // So we just need to refresh the data
+      
       setReceiveDialogOpen(false);
       setSelectedOrder(null);
       await fetchOrders();
