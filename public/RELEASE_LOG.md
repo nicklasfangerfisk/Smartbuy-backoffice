@@ -10,7 +10,34 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
-## [2.2.0] - 2025-07-11 16:45:00
+## [3.0.1] - 2025-07-11 17:55:00
+**Product Image Upload & Inventory Management Enhancement**
+### Added
+- Product image upload functionality with Supabase storage integration
+- Drag & drop image upload interface with file validation (images only, max 5MB)
+- Image preview and removal capabilities in product forms
+- Inventory management section in product creation/editing forms
+- Minimum stock, maximum stock, and reorder amount fields
+- Dedicated inventory section with clear visual separation and icons
+- Storage policies for productimages bucket with proper RLS configuration
+- Database column consistency improvements (image_url standardization)
+### Changed
+- ProductTableForm and ProductDialog components enhanced with image upload
+- Product interface updated to include inventory management fields
+- Form validation improved with proper type conversion for inventory fields
+- Product save operations now handle image URLs and inventory data
+- Enhanced user experience with intuitive form organization
+### Fixed
+- Column name consistency between database schema and TypeScript interfaces
+- Storage bucket name alignment for successful image uploads
+- RLS policy violations resolved for authenticated image uploads
+### Technical Details
+- Image storage integrated with Supabase productimages bucket
+- Inventory fields connected to existing database schema (min_stock, max_stock, reorder_amount)
+- Proper null handling for optional inventory and image fields
+- TypeScript type safety maintained across all form components
+
+## [3.0.0] - 2025-07-11 16:45:00
 **Major Update: Comprehensive Currency Persistence & Multi-Currency Foundation**
 ### Added
 - Complete currency persistence system across all price-related database tables

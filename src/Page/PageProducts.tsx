@@ -4,7 +4,16 @@
  * HOCs: ProtectedRoute (route-level auth guard)
  * Layout: PageLayout + ResponsiveContainer(table-page) - 16px padding
  * Responsive: Mobile/Desktop views, useResponsive() hook
- * Dialogs: ProductTableForm for CRUD operations
+ * D    const handleAddDialogSave = async (values: { ProductName: string; SalesPrice: string; CostPrice: string; image_url?: string }) => {
+        setSubmitting(true);
+        try {
+            const productData = prepareProductCurrencyData({
+                ProductName: values.ProductName,
+                SalesPrice: parseFloat(values.SalesPrice),
+                CostPrice: parseFloat(values.CostPrice),
+                image_url: values.image_url || null,
+                CreatedAt: new Date().toISOString(),
+            });roductTableForm for CRUD operations
  * Data: Supabase Products table
  */
 
@@ -57,11 +66,12 @@ interface Product {
   ProductName: string;
   SalesPrice: number;
   CostPrice: number;
-  ImageUrl?: string;
+  image_url?: string;
   CreatedAt: string;
   ProductID?: string;
-  min_reorder_level?: number;
-  max_reorder_level?: number;
+  min_stock?: number;
+  max_stock?: number;
+  reorder_amount?: number;
 }
 
 interface ProductStocks {
@@ -249,13 +259,25 @@ const PageProducts = () => {
         }
     };
 
-    const handleAddDialogSave = async (values: { ProductName: string; SalesPrice: string; CostPrice: string }) => {
+    const handleAddDialogSave = async (values: { 
+        ProductName: string; 
+        SalesPrice: string; 
+        CostPrice: string; 
+        image_url?: string;
+        min_stock?: string;
+        max_stock?: string;
+        reorder_amount?: string;
+    }) => {
         setSubmitting(true);
         try {
             const productData = prepareProductCurrencyData({
                 ProductName: values.ProductName,
                 SalesPrice: parseFloat(values.SalesPrice),
                 CostPrice: parseFloat(values.CostPrice),
+                image_url: values.image_url || null,
+                min_stock: values.min_stock ? parseInt(values.min_stock) : null,
+                max_stock: values.max_stock ? parseInt(values.max_stock) : null,
+                reorder_amount: values.reorder_amount ? parseInt(values.reorder_amount) : null,
                 CreatedAt: new Date().toISOString(),
             });
 
@@ -282,7 +304,15 @@ const PageProducts = () => {
         }
     };
 
-    const handleEditDialogSave = async (values: { ProductName: string; SalesPrice: string; CostPrice: string }) => {
+    const handleEditDialogSave = async (values: { 
+        ProductName: string; 
+        SalesPrice: string; 
+        CostPrice: string; 
+        image_url?: string;
+        min_stock?: string;
+        max_stock?: string;
+        reorder_amount?: string;
+    }) => {
         if (!editProduct) return;
 
         setSubmitting(true);
@@ -291,6 +321,10 @@ const PageProducts = () => {
                 ProductName: values.ProductName,
                 SalesPrice: parseFloat(values.SalesPrice),
                 CostPrice: parseFloat(values.CostPrice),
+                image_url: values.image_url || null,
+                min_stock: values.min_stock ? parseInt(values.min_stock) : null,
+                max_stock: values.max_stock ? parseInt(values.max_stock) : null,
+                reorder_amount: values.reorder_amount ? parseInt(values.reorder_amount) : null,
             });
 
             const { error } = await supabase
@@ -383,9 +417,9 @@ const PageProducts = () => {
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                 {/* Product Image */}
                                 <Box sx={{ flexShrink: 0 }}>
-                                    {product.ImageUrl ? (
+                                    {product.image_url ? (
                                         <Avatar 
-                                            src={product.ImageUrl} 
+                                            src={product.image_url} 
                                             sx={{ width: 48, height: 48 }}
                                             alt={product.ProductName}
                                         />
@@ -571,9 +605,9 @@ const PageProducts = () => {
                         {filteredProducts.map((product) => (
                             <tr key={product.uuid}>
                                 <td style={typographyStyles}>
-                                    {product.ImageUrl ? (
+                                    {product.image_url ? (
                                         <Avatar 
-                                            src={product.ImageUrl} 
+                                            src={product.image_url} 
                                             sx={{ width: 32, height: 32 }}
                                             alt={product.ProductName}
                                         />

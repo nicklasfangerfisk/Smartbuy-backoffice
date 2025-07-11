@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Read the release log
-const releaseLogPath = path.join(__dirname, 'RELEASE_LOG.md');
+const releaseLogPath = path.join(__dirname, 'public', 'RELEASE_LOG.md');
 const releaseLog = fs.readFileSync(releaseLogPath, 'utf8');
 
 // Extract the latest version - find first version after the comment block ends
