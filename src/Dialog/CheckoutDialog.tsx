@@ -33,8 +33,8 @@ import CircularProgress from '@mui/joy/CircularProgress';
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import FullscreenIcon from '@mui/icons-material/Fullscreen';
-import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 
 // Import checkout step components
 import CustomerInfoForm from './CheckoutSteps/CustomerInfoForm';
@@ -85,7 +85,7 @@ export interface CustomerInfo {
 }
 
 export interface PaymentInfo {
-  method: 'card' | 'bank' | 'cash';
+  method: 'card' | 'mobilepay' | 'viabill' | 'international';
   cardNumber?: string;
   cardHolder?: string;
   expiryDate?: string;
@@ -95,7 +95,7 @@ export interface PaymentInfo {
 }
 
 export interface DeliveryInfo {
-  method: 'standard' | 'express' | 'overnight' | 'pickup';
+  method: 'standard' | 'express' | 'overnight';
   estimatedDays?: number;
   cost?: number;
   address?: {
@@ -107,7 +107,7 @@ export interface DeliveryInfo {
 }
 
 const steps = [
-  { label: 'Information' },
+  { label: 'Contact' },
   { label: 'Delivery' },
   { label: 'Payment' }
 ];
@@ -115,7 +115,7 @@ const steps = [
 export default function CheckoutDialog({ open, onClose, order, onSuccess }: CheckoutDialogProps) {
   const [activeStep, setActiveStep] = useState(0);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [orderSummaryExpanded, setOrderSummaryExpanded] = useState(false);
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
     name: order?.customer_name || '',
     email: order?.customer_email || '',
@@ -270,21 +270,23 @@ export default function CheckoutDialog({ open, onClose, order, onSuccess }: Chec
   const isStepValid = (step: number): boolean => {
     switch (step) {
       case 0:
-        return customerInfo.email.trim() !== '' && 
-               customerInfo.phone?.trim() !== '' &&
-               customerInfo.firstName?.trim() !== '' &&
-               customerInfo.lastName?.trim() !== '' &&
-               customerInfo.address?.trim() !== '' &&
-               customerInfo.city?.trim() !== '' &&
-               customerInfo.postalCode?.trim() !== '';
+        // Customer info step - check required fields
+        return !!(customerInfo.email?.trim() && 
+               customerInfo.phone?.trim() &&
+               customerInfo.firstName?.trim() &&
+               customerInfo.lastName?.trim() &&
+               customerInfo.address?.trim() &&
+               customerInfo.city?.trim() &&
+               customerInfo.postalCode?.trim());
       case 1:
         return true; // Delivery method is always valid as it has a default value
       case 2:
+        // Payment step - only validate card details if card is selected
         if (paymentInfo.method === 'card') {
-          return paymentInfo.cardNumber?.length === 16 && 
-                 paymentInfo.cardHolder?.trim() !== '' &&
+          return !!(paymentInfo.cardNumber?.replace(/\s/g, '').length === 16 && 
+                 paymentInfo.cardHolder?.trim() &&
                  paymentInfo.expiryDate?.length === 5 &&
-                 paymentInfo.cvv?.length === 3;
+                 paymentInfo.cvv?.length === 3);
         }
         return true; // Other payment methods are always valid for demo
       default:
@@ -308,6 +310,7 @@ export default function CheckoutDialog({ open, onClose, order, onSuccess }: Chec
           <DeliveryForm
             deliveryInfo={deliveryInfo}
             onChange={setDeliveryInfo}
+            subtotal={calculateTotal()}
           />
         );
       case 2:
@@ -333,6 +336,12 @@ export default function CheckoutDialog({ open, onClose, order, onSuccess }: Chec
     return subtotal - orderDiscount;
   };
 
+  const calculateFinalTotal = () => {
+    const subtotal = calculateTotal();
+    const shippingCost = deliveryInfo.cost || 0;
+    return subtotal + shippingCost;
+  };
+
   if (!order) return null;
 
   return (
@@ -341,48 +350,51 @@ export default function CheckoutDialog({ open, onClose, order, onSuccess }: Chec
       onClose={onClose}
       sx={{ 
         display: 'flex', 
-        justifyContent: isFullscreen ? 'flex-end' : 'center', 
+        justifyContent: 'center', 
         alignItems: 'center',
-        pr: isFullscreen ? '20px' : 0, // Add right padding in fullscreen to account for content area
-        pl: isFullscreen ? '220px' : 0, // Add left padding to account for sidebar
+        p: { xs: 0, md: 2 }, // No padding on mobile, some padding on desktop
+        zIndex: 10001, // Ensure modal is above mobile menu
       }}
     >
       <ModalDialog
         size="lg"
         sx={{
-          width: isFullscreen ? 'calc(100vw - 240px)' : '90vw', // Account for sidebar and padding
-          maxWidth: isFullscreen ? 'none' : 1000,
-          height: isFullscreen ? 'calc(100vh - 60px)' : '90vh', // Account for top/bottom padding
-          maxHeight: isFullscreen ? 'none' : 750,
+          width: { xs: '100vw', md: '90vw' },
+          maxWidth: { xs: 'none', md: 1000 },
+          height: { xs: '100vh', md: '90vh' },
+          maxHeight: { xs: 'none', md: 750 },
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
           m: 0,
-          borderRadius: isFullscreen ? '8px' : undefined,
-          transition: 'all 0.3s ease-in-out'
+          borderRadius: { xs: 0, md: 'md' }, // No border radius on mobile
+          p: 0, // Remove default padding
         }}
       >
+        {/* Header - only on desktop */}
         <Box sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
+          display: { xs: 'none', md: 'flex' },
+          justifyContent: 'flex-end', 
           alignItems: 'center',
-          pb: 1
+          p: 2,
+          borderBottom: '1px solid',
+          borderColor: 'divider'
         }}>
-          <Button
-            variant="plain"
-            size="sm"
-            onClick={() => setIsFullscreen(!isFullscreen)}
-            startDecorator={isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
-            sx={{ 
-              color: 'neutral.500',
-              '&:hover': {
-                color: 'neutral.700',
-                backgroundColor: 'neutral.50'
-              }
-            }}
-          >
-            {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
-          </Button>
+          <ModalClose />
+        </Box>
+
+        {/* Mobile Close Button */}
+        <Box sx={{ 
+          display: { xs: 'flex', md: 'none' },
+          justifyContent: 'flex-end', 
+          alignItems: 'center',
+          p: 1,
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          zIndex: 1000,
+          backgroundColor: 'background.surface'
+        }}>
           <ModalClose />
         </Box>
         
@@ -393,7 +405,8 @@ export default function CheckoutDialog({ open, onClose, order, onSuccess }: Chec
             alignItems: 'center', 
             justifyContent: 'center', 
             height: '100%',
-            gap: 2 
+            gap: 2,
+            p: 3
           }}>
             <CheckCircleIcon sx={{ fontSize: 80, color: 'success.main' }} />
             <Typography level="h2">Order Completed!</Typography>
@@ -402,12 +415,120 @@ export default function CheckoutDialog({ open, onClose, order, onSuccess }: Chec
             </Typography>
           </Box>
         ) : (
-          <Grid container sx={{ height: '100%' }}>
-            {/* Order Summary Sidebar */}
-            <Grid xs={12} md={4} sx={{ 
-              borderRight: { md: '1px solid' }, 
-              borderColor: { md: 'divider' },
-              p: 3
+          <Box sx={{ 
+            display: 'flex',
+            flexDirection: { xs: 'column', md: 'row' },
+            height: '100%',
+            overflow: 'hidden'
+          }}>
+            {/* Mobile Order Summary - Collapsible */}
+            <Box sx={{ 
+              display: { xs: 'block', md: 'none' },
+              borderBottom: '1px solid',
+              borderColor: 'divider'
+            }}>
+              {/* Header with title and collapse button */}
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between',
+                p: 2,
+                pr: 6, // Add right padding to avoid close button
+              }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Typography level="title-md">Order Summary</Typography>
+                  <Typography level="body-sm" color="primary">
+                    {formatCurrencyWithSymbol(calculateFinalTotal())}
+                  </Typography>
+                </Box>
+                <Button
+                  variant="plain"
+                  size="sm"
+                  onClick={() => setOrderSummaryExpanded(!orderSummaryExpanded)}
+                  sx={{ 
+                    minWidth: 'auto',
+                    p: 1
+                  }}
+                >
+                  {orderSummaryExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                </Button>
+              </Box>
+              
+              {orderSummaryExpanded && (
+                <Box sx={{ 
+                  p: 2, 
+                  backgroundColor: 'background.level1',
+                  animation: 'fadeIn 0.2s ease-in-out',
+                  '@keyframes fadeIn': {
+                    from: { opacity: 0, transform: 'translateY(-10px)' },
+                    to: { opacity: 1, transform: 'translateY(0)' }
+                  }
+                }}>
+                  <Typography level="body-sm" color="neutral" sx={{ mb: 2 }}>
+                    Order #{order.order_number_display}
+                  </Typography>
+                  
+                  {loading ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
+                      <CircularProgress size="sm" />
+                    </Box>
+                  ) : (
+                    <Stack spacing={1} sx={{ mb: 2 }}>
+                      {orderItems.map((item) => (
+                        <Box key={item.uuid} sx={{ py: 0.5 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                            <Typography level="body-sm" sx={{ fontWeight: 600 }}>
+                              {item.ProductName}
+                            </Typography>
+                            <Typography level="body-sm" sx={{ fontWeight: 600 }}>
+                              {formatCurrencyWithSymbol((item.unitprice || 0) * item.quantity - (item.discount || 0) * item.quantity)}
+                            </Typography>
+                          </Box>
+                          <Typography level="body-xs" color="neutral">
+                            Qty: {item.quantity} × {formatCurrencyWithSymbol(item.unitprice || 0)}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Stack>
+                  )}
+                  
+                  <Divider sx={{ my: 1 }} />
+                  
+                  <Stack spacing={0.5}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <Typography level="body-xs">Shipping</Typography>
+                      <Typography level="body-xs">
+                        {formatCurrencyWithSymbol(deliveryInfo.cost || 0)}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <Typography level="body-xs">VAT included</Typography>
+                      <Typography level="body-xs">
+                        {formatCurrencyWithSymbol(orderItems.reduce((sum, item) => sum + (item.unitprice || 0) * item.quantity, 0) * 0.2)}
+                      </Typography>
+                    </Box>
+                  </Stack>
+                  
+                  <Divider sx={{ my: 1 }} />
+                  
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Typography level="title-sm" sx={{ fontWeight: 700 }}>Total:</Typography>
+                    <Typography level="title-sm" sx={{ fontWeight: 700, color: 'primary.main' }}>
+                      {formatCurrencyWithSymbol(calculateFinalTotal())}
+                    </Typography>
+                  </Box>
+                </Box>
+              )}
+            </Box>
+
+            {/* Desktop Order Summary Sidebar */}
+            <Box sx={{ 
+              display: { xs: 'none', md: 'block' },
+              width: { md: '350px' },
+              borderRight: '1px solid',
+              borderColor: 'divider',
+              p: 3,
+              overflow: 'auto'
             }}>
               <Typography level="h4" sx={{ mb: 2 }}>
                 Summary
@@ -452,15 +573,10 @@ export default function CheckoutDialog({ open, onClose, order, onSuccess }: Chec
               <Stack spacing={0.5}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                   <Typography level="body-sm">
-                    {deliveryInfo.method === 'pickup' ? 'Shipping: Store pickup' : 'Shipping: Delivery to your door'}
+                    Shipping: Delivery to your door
                   </Typography>
                   <Typography level="body-sm">
-                    {(() => {
-                      const orderTotal = calculateTotal();
-                      if (deliveryInfo.method === 'pickup') return 'Free';
-                      if (orderTotal >= 1000) return 'Free';
-                      return formatCurrencyWithSymbol(deliveryInfo.cost || 99);
-                    })()}
+                    {formatCurrencyWithSymbol(deliveryInfo.cost || 0)}
                   </Typography>
                 </Box>
                 
@@ -481,117 +597,75 @@ export default function CheckoutDialog({ open, onClose, order, onSuccess }: Chec
               
               <Divider sx={{ my: 1 }} />
               
-              {/* Free shipping tracker */}
-              {(() => {
-                const currentTotal = calculateTotal();
-                const freeShippingThreshold = 1000;
-                const remaining = Math.max(0, freeShippingThreshold - currentTotal);
-                const progress = Math.min(100, (currentTotal / freeShippingThreshold) * 100);
-                
-                return currentTotal < freeShippingThreshold ? (
-                  <Box sx={{ mb: 2 }}>
-                    <Typography level="body-xs" color="neutral" sx={{ mb: 0.5 }}>
-                      Spend {formatCurrencyWithSymbol(remaining)} more for free shipping
-                    </Typography>
-                    <Box sx={{ 
-                      width: '100%', 
-                      height: 4, 
-                      backgroundColor: 'neutral.200', 
-                      borderRadius: 2,
-                      overflow: 'hidden'
-                    }}>
-                      <Box sx={{ 
-                        width: `${progress}%`, 
-                        height: '100%', 
-                        backgroundColor: 'success.main',
-                        transition: 'width 0.3s ease'
-                      }} />
-                    </Box>
-                  </Box>
-                ) : (
-                  <Typography level="body-xs" color="success" sx={{ mb: 2 }}>
-                    🎉 You qualify for free shipping!
-                  </Typography>
-                );
-              })()}
-              
               <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <Typography level="title-md" sx={{ fontWeight: 700 }}>Total:</Typography>
                 <Typography level="title-md" sx={{ fontWeight: 700, color: 'primary.main' }}>
-                  {(() => {
-                    const orderTotal = calculateTotal();
-                    const shippingCost = deliveryInfo.method === 'pickup' ? 0 : (deliveryInfo.cost || 99);
-                    const finalTotal = orderTotal >= 1000 ? orderTotal : orderTotal + shippingCost;
-                    return formatCurrencyWithSymbol(finalTotal);
-                  })()}
+                  {formatCurrencyWithSymbol(calculateFinalTotal())}
                 </Typography>
               </Box>
-            </Grid>
+            </Box>
 
-            {/* Main Content */}
-            <Grid xs={12} md={8} sx={{ 
+            {/* Main Content - Form Area */}
+            <Box sx={{ 
+              flex: 1,
               display: 'flex', 
               flexDirection: 'column',
-              p: 3,
-              pr: 4,
-              minHeight: 0, // Allow flex child to shrink
+              minHeight: 0,
               overflow: 'hidden'
             }}>
               {/* Stepper */}
-              <Stepper sx={{ mb: 2 }}>
-                {steps.map((step, index) => (
-                  <Step
-                    key={step.label}
-                    indicator={
-                      <StepIndicator
-                        variant={activeStep === index ? 'solid' : activeStep > index ? 'solid' : 'outlined'}
-                        color={activeStep > index ? 'success' : 'primary'}
-                        sx={{
-                          width: 12,
-                          height: 12,
-                          minWidth: 12,
-                          fontSize: 0,
-                          '--StepIndicator-size': '12px'
-                        }}
-                      >
-                      </StepIndicator>
-                    }
-                  >
-                    <StepButton onClick={() => setActiveStep(index)}>
-                      {step.label}
-                    </StepButton>
-                  </Step>
-                ))}
-              </Stepper>
+              <Box sx={{ 
+                p: { xs: 1, md: 3 },
+                pb: { xs: 1, md: 2 },
+                borderBottom: '1px solid',
+                borderColor: 'divider',
+                flexShrink: 0 // Prevent shrinking
+              }}>
+                <Stepper sx={{ mb: 0 }}>
+                  {steps.map((step, index) => (
+                    <Step
+                      key={step.label}
+                      indicator={
+                        <StepIndicator
+                          variant={activeStep === index ? 'solid' : activeStep > index ? 'solid' : 'outlined'}
+                          color={activeStep > index ? 'success' : 'primary'}
+                          sx={{
+                            width: { xs: 8, md: 12 },
+                            height: { xs: 8, md: 12 },
+                            minWidth: { xs: 8, md: 12 },
+                            fontSize: 0,
+                            '--StepIndicator-size': { xs: '8px', md: '12px' }
+                          }}
+                        >
+                        </StepIndicator>
+                      }
+                    >
+                      <StepButton onClick={() => setActiveStep(index)}>
+                        <Typography level="body-sm" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
+                          {step.label}
+                        </Typography>
+                      </StepButton>
+                    </Step>
+                  ))}
+                </Stepper>
+              </Box>
 
               {/* Error Alert */}
               {error && (
-                <Alert color="danger" sx={{ mb: 2 }}>
-                  {error}
-                </Alert>
+                <Box sx={{ p: { xs: 1, md: 3 }, pt: 0, flexShrink: 0 }}>
+                  <Alert color="danger">
+                    {error}
+                  </Alert>
+                </Box>
               )}
 
               {/* Step Content */}
               <Box sx={{ 
-                flexGrow: 1, 
-                overflow: 'auto', 
-                mb: 2, 
-                width: '100%',
-                minHeight: 0, // Allow content to shrink
-                pr: 1, // Add padding for scrollbar
-                '&::-webkit-scrollbar': {
-                  width: '6px',
-                },
-                '&::-webkit-scrollbar-track': {
-                  background: 'transparent',
-                },
-                '&::-webkit-scrollbar-thumb': {
-                  background: 'rgba(0,0,0,0.2)',
-                  borderRadius: '3px',
-                },
-                '&::-webkit-scrollbar-thumb:hover': {
-                  background: 'rgba(0,0,0,0.3)',
-                }
+                flex: 1,
+                overflow: 'auto',
+                p: { xs: 1, md: 3 },
+                pt: { xs: 2, md: 3 },
+                minHeight: 0 // Allow content to shrink
               }}>
                 {getStepContent(activeStep)}
               </Box>
@@ -599,35 +673,55 @@ export default function CheckoutDialog({ open, onClose, order, onSuccess }: Chec
               {/* Navigation Buttons - Always Visible */}
               <Box sx={{ 
                 display: 'flex', 
-                justifyContent: activeStep === 0 ? 'flex-end' : 'space-between',
-                pt: 2,
-                mt: 'auto', // Push to bottom
+                flexDirection: { xs: 'column', md: 'row' },
+                justifyContent: { xs: 'stretch', md: activeStep === 0 ? 'flex-end' : 'space-between' },
+                p: { xs: 1, md: 3 },
                 borderTop: '1px solid',
                 borderColor: 'divider',
-                flexShrink: 0 // Don't shrink this section
+                gap: { xs: 1, md: 2 },
+                backgroundColor: 'background.surface',
+                flexShrink: 0, // Never shrink this section
+                position: { xs: 'sticky', md: 'static' }, // Sticky on mobile
+                bottom: 0,
+                zIndex: 10000 // Higher than mobile menu (9999)
               }}>
-                {activeStep > 0 && (
-                  <Button
-                    variant="outlined"
-                    startDecorator={<ChevronLeftRoundedIcon />}
-                    onClick={handleBack}
-                  >
-                    Back
-                  </Button>
-                )}
-                
+                {/* Next Button - Always visible, full width on mobile */}
                 <Button
                   variant="solid"
                   endDecorator={<ChevronRightRoundedIcon />}
                   onClick={handleNext}
                   loading={loading}
-                  disabled={!isStepValid(activeStep)}
+                  disabled={!isStepValid(activeStep) || loading}
+                  size="lg"
+                  sx={{ 
+                    width: { xs: '100%', md: 'auto' },
+                    minHeight: '48px', // Ensure minimum touch target
+                    order: { xs: 1, md: 2 },
+                    fontWeight: 600 // Make text more prominent
+                  }}
                 >
-                  {activeStep === steps.length - 1 ? 'Complete Order' : 'Next'}
+                  {activeStep === steps.length - 1 ? 'Approve and pay' : 'Next'}
                 </Button>
+
+                {/* Back Button - Always visible when not on first step, full width on mobile */}
+                {activeStep > 0 && (
+                  <Button
+                    variant="outlined"
+                    startDecorator={<ChevronLeftRoundedIcon />}
+                    onClick={handleBack}
+                    size="lg"
+                    sx={{ 
+                      width: { xs: '100%', md: 'auto' },
+                      minHeight: '48px', // Ensure minimum touch target
+                      order: { xs: 2, md: 1 }
+                    }}
+                  >
+                    Back
+                  </Button>
+                )}
               </Box>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         )}
       </ModalDialog>
     </Modal>

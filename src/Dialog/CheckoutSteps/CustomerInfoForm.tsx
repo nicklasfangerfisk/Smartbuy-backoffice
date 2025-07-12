@@ -86,136 +86,140 @@ export default function CustomerInfoForm({ customerInfo, onChange, onLogin }: Cu
         </Divider>
 
         {/* Contact Information Section */}
-        <Card variant="outlined">
-          <CardContent>
-            <Typography level="h4" sx={{ mb: 3 }}>
-              Contact
-            </Typography>
-            
-            <Stack spacing={2}>
-              <FormControl required>
-                <FormLabel>Email *</FormLabel>
-                <Input
-                  type="email"
-                  value={customerInfo.email}
-                  onChange={handleChange('email')}
-                  placeholder="Enter email"
-                />
-              </FormControl>
-
-              <FormControl>
-                <FormLabel>Phone Number *</FormLabel>
-                <Input
-                  value={customerInfo.phone || ''}
-                  onChange={handleChange('phone')}
-                  placeholder="Enter phone number"
-                />
-              </FormControl>
-
-              <Checkbox
-                checked={customerInfo.newsletter || false}
-                onChange={(event) => onChange({
-                  ...customerInfo,
-                  newsletter: event.target.checked,
-                })}
-                label="I would like to receive newsletters"
-                sx={{ mt: 1 }}
+        <Box>
+          <Typography level="h4" sx={{ mb: 3 }}>
+            Contact
+          </Typography>
+          
+          <Stack spacing={2}>
+            <FormControl required>
+              <FormLabel>Email *</FormLabel>
+              <Input
+                type="email"
+                value={customerInfo.email}
+                onChange={handleChange('email')}
+                placeholder="Enter email"
+                variant="outlined"
               />
-            </Stack>
-          </CardContent>
-        </Card>
+            </FormControl>
+
+            <FormControl>
+              <FormLabel>Phone Number *</FormLabel>
+              <Input
+                value={customerInfo.phone || ''}
+                onChange={handleChange('phone')}
+                placeholder="Enter phone number"
+                variant="outlined"
+              />
+            </FormControl>
+
+            <Checkbox
+              checked={customerInfo.newsletter || false}
+              onChange={(event) => onChange({
+                ...customerInfo,
+                newsletter: event.target.checked,
+              })}
+              label="I would like to receive newsletters"
+              sx={{ mt: 1 }}
+            />
+          </Stack>
+        </Box>
 
         {/* Delivery Address Section */}
-        <Card variant="outlined">
-          <CardContent>
-            <Typography level="h4" sx={{ mb: 3 }}>
-              Address
-            </Typography>
-            
-            <Stack spacing={2}>
-              <Grid container spacing={2} sx={{ width: '100%', m: 0 }}>
-                <Grid xs={12} md={6}>
-                  <FormControl required>
-                    <FormLabel>First Name *</FormLabel>
-                    <Input
-                      value={customerInfo.firstName || ''}
-                      onChange={handleChange('firstName')}
-                      placeholder="Enter first name"
-                    />
-                  </FormControl>
-                </Grid>
-                
-                <Grid xs={12} md={6}>
-                  <FormControl required>
-                    <FormLabel>Last Name *</FormLabel>
-                    <Input
-                      value={customerInfo.lastName || ''}
-                      onChange={handleChange('lastName')}
-                      placeholder="Enter last name"
-                    />
-                  </FormControl>
-                </Grid>
+        <Box>
+          <Typography level="h4" sx={{ mb: 3 }}>
+            Address
+          </Typography>
+          
+          <Stack spacing={2}>
+            <Grid container spacing={2} sx={{ width: '100%', m: 0 }}>
+              <Grid xs={12} md={6}>
+                <FormControl required>
+                  <FormLabel>First Name *</FormLabel>
+                  <Input
+                    value={customerInfo.firstName || ''}
+                    onChange={handleChange('firstName')}
+                    placeholder="Enter first name"
+                    variant="outlined"
+                  />
+                </FormControl>
               </Grid>
-
-              <Grid container spacing={2} sx={{ width: '100%', m: 0 }}>
-                <Grid xs={12}>
-                  <FormControl required>
-                    <FormLabel>Address*</FormLabel>
-                    <Input
-                      value={customerInfo.address || ''}
-                      onChange={handleChange('address')}
-                      placeholder="Enter address and house number"
-                    />
-                  </FormControl>
-                </Grid>
+              
+              <Grid xs={12} md={6}>
+                <FormControl required>
+                  <FormLabel>Last Name *</FormLabel>
+                  <Input
+                    value={customerInfo.lastName || ''}
+                    onChange={handleChange('lastName')}
+                    placeholder="Enter last name"
+                    variant="outlined"
+                  />
+                </FormControl>
               </Grid>
+            </Grid>
 
-              <Grid container spacing={2} sx={{ width: '100%', m: 0 }}>
-                <Grid xs={12} md={4}>
-                  <FormControl required>
-                    <FormLabel>Postal Code *</FormLabel>
-                    <Input
-                      value={customerInfo.postalCode || ''}
-                      onChange={handleChange('postalCode')}
-                      placeholder="Enter postal code"
-                    />
-                  </FormControl>
-                </Grid>
-                
-                <Grid xs={12} md={8}>
-                  <FormControl required>
-                    <FormLabel>City *</FormLabel>
-                    <Input
-                      value={customerInfo.city || ''}
-                      onChange={handleChange('city')}
-                      placeholder="Enter city"
-                    />
-                  </FormControl>
-                </Grid>
+            <Grid container spacing={2} sx={{ width: '100%', m: 0 }}>
+              <Grid xs={12}>
+                <FormControl required>
+                  <FormLabel>Address*</FormLabel>
+                  <Input
+                    value={customerInfo.address || ''}
+                    onChange={handleChange('address')}
+                    placeholder="Enter address and house number"
+                    variant="outlined"
+                  />
+                </FormControl>
               </Grid>
+            </Grid>
 
-              <FormControl>
-                <FormLabel>Reference</FormLabel>
-                <Input
-                  value={customerInfo.reference || ''}
-                  onChange={handleChange('reference')}
-                  placeholder="Reference/employee number"
-                />
-              </FormControl>
+            <Grid container spacing={2} sx={{ width: '100%', m: 0 }}>
+              <Grid xs={12} md={4}>
+                <FormControl required>
+                  <FormLabel>Postal Code *</FormLabel>
+                  <Input
+                    value={customerInfo.postalCode || ''}
+                    onChange={handleChange('postalCode')}
+                    placeholder="Enter postal code"
+                    variant="outlined"
+                  />
+                </FormControl>
+              </Grid>
+              
+              <Grid xs={12} md={8}>
+                <FormControl required>
+                  <FormLabel>City *</FormLabel>
+                  <Input
+                    value={customerInfo.city || ''}
+                    onChange={handleChange('city')}
+                    placeholder="Enter city"
+                    variant="outlined"
+                  />
+                </FormControl>
+              </Grid>
+            </Grid>
 
-              <Stack spacing={1} sx={{ mt: 2 }}>
-                <Checkbox
-                  label="Log me in so I can easily shop again"
-                  sx={{ fontSize: 'sm' }}
-                />
-                <Checkbox
-                  label="The addess is not my home address"
-                  sx={{ fontSize: 'sm' }}
-                />
-              </Stack>
+            <FormControl>
+              <FormLabel>Reference</FormLabel>
+              <Input
+                value={customerInfo.reference || ''}
+                onChange={handleChange('reference')}
+                placeholder="Reference/employee number"
+                variant="outlined"
+              />
+            </FormControl>
+
+            <Stack spacing={1} sx={{ mt: 2 }}>
+              <Checkbox
+                label="Log me in so I can easily shop again"
+                sx={{ fontSize: 'sm' }}
+              />
+              <Checkbox
+                label="The addess is not my home address"
+                sx={{ fontSize: 'sm' }}
+              />
             </Stack>
-          </CardContent>
-        </Card>
+          </Stack>
+        </Box>
       </Stack>
     </Box>
   );

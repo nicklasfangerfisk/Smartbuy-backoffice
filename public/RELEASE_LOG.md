@@ -10,6 +10,17 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
+## [3.0.4] - 2025-07-12 15:30:00
+**Checkout Dialog UI Improvements**
+### Added
+- Total amount display in both collapsed and expanded mobile order summary
+### Changed
+- Removed card borders around Contact and Address sections for cleaner UI
+- Improved mobile order summary layout with better button positioning
+### Fixed
+- Fixed checkout navigation buttons visibility on mobile by adjusting z-index layering
+- Resolved collapse button overlap with close button in mobile checkout dialog
+
 ## [3.0.3] - 2025-07-11 21:25:00
 **Sidebar Viewport Overflow Fix**
 ### Fixed

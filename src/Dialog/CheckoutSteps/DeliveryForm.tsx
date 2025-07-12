@@ -9,12 +9,11 @@ import Chip from '@mui/joy/Chip';
 import Box from '@mui/joy/Box';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
-import Inventory2Icon from '@mui/icons-material/Inventory2';
 import SpeedIcon from '@mui/icons-material/Speed';
-import { formatCurrency } from '../../utils/currencyUtils';
+import { formatCurrency, formatCurrencyWithSymbol } from '../../utils/currencyUtils';
 
 export interface DeliveryInfo {
-  method: 'standard' | 'express' | 'overnight' | 'pickup';
+  method: 'standard' | 'express' | 'overnight';
   estimatedDays?: number;
   cost?: number;
   address?: {
@@ -28,6 +27,7 @@ export interface DeliveryInfo {
 interface DeliveryFormProps {
   deliveryInfo: DeliveryInfo;
   onChange: (deliveryInfo: DeliveryInfo) => void;
+  subtotal?: number; // Add subtotal prop for free shipping calculation
 }
 
 const deliveryOptions = [
@@ -35,7 +35,7 @@ const deliveryOptions = [
     value: 'standard',
     label: 'Standard Delivery',
     description: '5-7 business days',
-    cost: 0,
+    cost: 99, // Changed from 0 to 99 - free with qualifying orders
     icon: <LocalShippingIcon />
   },
   {
@@ -51,24 +51,27 @@ const deliveryOptions = [
     description: 'Next business day',
     cost: 349,
     icon: <FlightTakeoffIcon />
-  },
-  {
-    value: 'pickup',
-    label: 'Store Pickup',
-    description: 'Ready in 2 hours',
-    cost: 0,
-    icon: <Inventory2Icon />
   }
 ];
 
-export default function DeliveryForm({ deliveryInfo, onChange }: DeliveryFormProps) {
+export default function DeliveryForm({ deliveryInfo, onChange, subtotal = 0 }: DeliveryFormProps) {
+  const freeShippingThreshold = 1000;
+  const qualifiesForFreeShipping = subtotal >= freeShippingThreshold;
+  
+  const getActualCost = (baseCost: number, method: string) => {
+    if (method === 'standard' && qualifiesForFreeShipping) return 0;
+    return baseCost;
+  };
+
   const handleMethodChange = (method: DeliveryInfo['method']) => {
     const option = deliveryOptions.find(opt => opt.value === method);
+    const actualCost = getActualCost(option?.cost || 0, method);
+    
     onChange({
       ...deliveryInfo,
       method,
-      cost: option?.cost || 0,
-      estimatedDays: method === 'overnight' ? 1 : method === 'express' ? 3 : method === 'pickup' ? 0 : 6
+      cost: actualCost,
+      estimatedDays: method === 'overnight' ? 1 : method === 'express' ? 3 : 6
     });
   };
 
@@ -78,6 +81,49 @@ export default function DeliveryForm({ deliveryInfo, onChange }: DeliveryFormPro
         <Typography level="h4" sx={{ mb: 2 }}>
           Delivery Method
         </Typography>
+        
+        {/* Free shipping tracker */}
+        {(() => {
+          const remaining = Math.max(0, freeShippingThreshold - subtotal);
+          const progress = Math.min(100, (subtotal / freeShippingThreshold) * 100);
+          
+          return subtotal < freeShippingThreshold ? (
+            <Box sx={{ mb: 3, p: 2, backgroundColor: 'neutral.50', borderRadius: 'sm' }}>
+              <Typography level="body-sm" sx={{ mb: 1, fontWeight: 600 }}>
+                🚚 Spend {formatCurrencyWithSymbol(remaining)} more for free standard shipping
+              </Typography>
+              <Box sx={{ 
+                position: 'relative',
+                width: '100%', 
+                height: 8, 
+                backgroundColor: '#e5e5e5', 
+                borderRadius: 4,
+                overflow: 'hidden',
+                border: '1px solid #d4d4d8'
+              }}>
+                <Box sx={{ 
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: `${progress}%`, 
+                  height: '100%', 
+                  backgroundColor: '#22c55e',
+                  borderRadius: 3,
+                  transition: 'width 0.3s ease-in-out'
+                }} />
+              </Box>
+              <Typography level="body-xs" color="neutral" sx={{ mt: 0.5 }}>
+                {formatCurrencyWithSymbol(subtotal)} of {formatCurrencyWithSymbol(freeShippingThreshold)}
+              </Typography>
+            </Box>
+          ) : (
+            <Box sx={{ mb: 3, p: 2, backgroundColor: 'success.50', borderRadius: 'sm' }}>
+              <Typography level="body-sm" color="success" sx={{ fontWeight: 600 }}>
+                🎉 You qualify for free standard shipping!
+              </Typography>
+            </Box>
+          );
+        })()}
         
         <RadioGroup
           value={deliveryInfo.method}
@@ -115,15 +161,36 @@ export default function DeliveryForm({ deliveryInfo, onChange }: DeliveryFormPro
                       </Typography>
                     </Box>
                     <Box>
-                      {option.cost > 0 ? (
-                        <Chip variant="soft" color="primary">
-                          {formatCurrency(option.cost)}
-                        </Chip>
-                      ) : (
-                        <Chip variant="soft" color="success">
-                          Free
-                        </Chip>
-                      )}
+                      {(() => {
+                        const actualCost = getActualCost(option.cost, option.value);
+                        const originalCost = option.cost;
+                        
+                        if (actualCost === 0 && originalCost > 0) {
+                          // Free due to qualifying order
+                          return (
+                            <Stack direction="row" spacing={1} alignItems="center">
+                              <Chip variant="soft" color="success">
+                                Free
+                              </Chip>
+                              <Typography level="body-xs" sx={{ textDecoration: 'line-through', color: 'text.secondary' }}>
+                                {formatCurrency(originalCost)}
+                              </Typography>
+                            </Stack>
+                          );
+                        } else if (actualCost > 0) {
+                          return (
+                            <Chip variant="soft" color="primary">
+                              {formatCurrency(actualCost)}
+                            </Chip>
+                          );
+                        } else {
+                          return (
+                            <Chip variant="soft" color="success">
+                              Free
+                            </Chip>
+                          );
+                        }
+                      })()}
                     </Box>
                   </Stack>
                 </CardContent>
@@ -131,22 +198,6 @@ export default function DeliveryForm({ deliveryInfo, onChange }: DeliveryFormPro
             ))}
           </Stack>
         </RadioGroup>
-
-        {deliveryInfo.method === 'pickup' && (
-          <Card variant="soft" color="neutral" sx={{ mt: 2 }}>
-            <CardContent>
-              <Typography level="title-sm" sx={{ mb: 1 }}>
-                Pickup Location
-              </Typography>
-              <Typography level="body-sm">
-                Main Store<br />
-                123 Business Street<br />
-                Copenhagen, Denmark 2100<br />
-                <strong>Hours:</strong> Mon-Fri 9:00-18:00, Sat 10:00-16:00
-              </Typography>
-            </CardContent>
-          </Card>
-        )}
       </CardContent>
     </Card>
   );

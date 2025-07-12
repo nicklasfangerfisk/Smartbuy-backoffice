@@ -21,11 +21,30 @@ import Alert from '@mui/joy/Alert';
 
 // Icons
 import CreditCardIcon from '@mui/icons-material/CreditCard';
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import MoneyIcon from '@mui/icons-material/Money';
 import InfoIcon from '@mui/icons-material/Info';
 
-import type { PaymentInfo } from '../CheckoutDialog';
+// Custom MobilePay Icon Component
+const MobilePayIcon = ({ sx }: { sx?: any }) => (
+  <Box
+    component="img"
+    src="/mobilepay-icon.svg"
+    alt="MobilePay"
+    sx={{
+      width: 24,
+      height: 24,
+      ...sx
+    }}
+  />
+);
+
+import type { PaymentInfo as BasePaymentInfo } from '../CheckoutDialog';
+
+type PaymentMethod = 'card' | 'mobilepay' | 'viabill' | 'international';
+
+interface PaymentInfo extends BasePaymentInfo {
+  method: PaymentMethod;
+}
 
 interface PaymentFormProps {
   paymentInfo: PaymentInfo;
@@ -33,7 +52,7 @@ interface PaymentFormProps {
 }
 
 export default function PaymentForm({ paymentInfo, onChange }: PaymentFormProps) {
-  const handleMethodChange = (method: 'card' | 'bank' | 'cash') => {
+  const handleMethodChange = (method: PaymentMethod) => {
     onChange({
       ...paymentInfo,
       method,
@@ -42,8 +61,8 @@ export default function PaymentForm({ paymentInfo, onChange }: PaymentFormProps)
       cardHolder: method === 'card' ? paymentInfo.cardHolder : '',
       expiryDate: method === 'card' ? paymentInfo.expiryDate : '',
       cvv: method === 'card' ? paymentInfo.cvv : '',
-      bankAccount: method === 'bank' ? paymentInfo.bankAccount : '',
-      routingNumber: method === 'bank' ? paymentInfo.routingNumber : '',
+      bankAccount: '',
+      routingNumber: '',
     });
   };
 
@@ -80,14 +99,7 @@ export default function PaymentForm({ paymentInfo, onChange }: PaymentFormProps)
 
   return (
     <Box sx={{ width: '100%' }}>
-      <Typography level="h4" sx={{ mb: 3 }}>
-        Payment Method
-      </Typography>
 
-      <Alert color="warning" startDecorator={<InfoIcon />} sx={{ mb: 3, width: '100%' }}>
-        This is a demo checkout. No real payments will be processed.
-      </Alert>
-      
       <Stack spacing={3} sx={{ width: '100%' }}>
         {/* Payment Method Selection */}
         <FormControl>
@@ -97,6 +109,7 @@ export default function PaymentForm({ paymentInfo, onChange }: PaymentFormProps)
             onChange={(event) => handleMethodChange(event.target.value as any)}
           >
             <Stack spacing={2}>
+              {/* Cards */}
               <Card 
                 variant={paymentInfo.method === 'card' ? 'solid' : 'outlined'}
                 color={paymentInfo.method === 'card' ? 'primary' : 'neutral'}
@@ -106,52 +119,73 @@ export default function PaymentForm({ paymentInfo, onChange }: PaymentFormProps)
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Radio value="card" />
-                    <CreditCardIcon />
                     <Box>
-                      <Typography level="title-sm">Credit/Debit Card</Typography>
-                      <Typography level="body-xs" color="neutral">
-                        Pay securely with your card
-                      </Typography>
+                      <Typography level="title-sm">Cards</Typography>
+                      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
+                        <CreditCardIcon sx={{ fontSize: 32 }} />
+                      </Box>
                     </Box>
                   </Box>
                 </CardContent>
               </Card>
 
+              {/* MobilePay */}
               <Card 
-                variant={paymentInfo.method === 'bank' ? 'solid' : 'outlined'}
-                color={paymentInfo.method === 'bank' ? 'primary' : 'neutral'}
+                variant={paymentInfo.method === 'mobilepay' ? 'solid' : 'outlined'}
+                color={paymentInfo.method === 'mobilepay' ? 'primary' : 'neutral'}
                 sx={{ cursor: 'pointer' }}
-                onClick={() => handleMethodChange('bank')}
+                onClick={() => handleMethodChange('mobilepay')}
               >
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Radio value="bank" />
-                    <AccountBalanceIcon />
+                    <Radio value="mobilepay" />
                     <Box>
-                      <Typography level="title-sm">Bank Transfer</Typography>
-                      <Typography level="body-xs" color="neutral">
-                        Direct bank transfer
-                      </Typography>
+                      <Typography level="title-sm">MobilePay</Typography>
+                      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
+                        <MobilePayIcon sx={{ width: 32, height: 32 }} />
+                      </Box>
                     </Box>
                   </Box>
                 </CardContent>
               </Card>
 
+              {/* Apple Pay / Google Pay (Viabill) */}
               <Card 
-                variant={paymentInfo.method === 'cash' ? 'solid' : 'outlined'}
-                color={paymentInfo.method === 'cash' ? 'primary' : 'neutral'}
+                variant={paymentInfo.method === 'viabill' ? 'solid' : 'outlined'}
+                color={paymentInfo.method === 'viabill' ? 'primary' : 'neutral'}
                 sx={{ cursor: 'pointer' }}
-                onClick={() => handleMethodChange('cash')}
+                onClick={() => handleMethodChange('viabill')}
               >
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Radio value="cash" />
-                    <MoneyIcon />
+                    <Radio value="viabill" />
                     <Box>
-                      <Typography level="title-sm">Cash Payment</Typography>
-                      <Typography level="body-xs" color="neutral">
-                        Pay with cash on delivery
-                      </Typography>
+                      <Typography level="title-sm">Apple Pay / Google Pay</Typography>
+                      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 1 }}>
+                        {/* Placeholder SVGs for Apple Pay & Google Pay */}
+                        <Box component="span" sx={{ fontWeight: 700, fontSize: 18, color: '#000', px: 1, borderRadius: 1, background: '#fff', border: '1px solid #eee' }}> Pay</Box>
+                        <Box component="span" sx={{ fontWeight: 700, fontSize: 18, color: '#4285F4', px: 1, borderRadius: 1, background: '#fff', border: '1px solid #eee' }}>G Pay</Box>
+                      </Box>
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
+
+              {/* International Credit Cards */}
+              <Card 
+                variant={paymentInfo.method === 'international' ? 'solid' : 'outlined'}
+                color={paymentInfo.method === 'international' ? 'primary' : 'neutral'}
+                sx={{ cursor: 'pointer' }}
+                onClick={() => handleMethodChange('international')}
+              >
+                <CardContent>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Radio value="international" />
+                    <Box>
+                      <Typography level="title-sm">International Credit Cards</Typography>
+                      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
+                        <CreditCardIcon sx={{ fontSize: 32 }} />
+                      </Box>
                     </Box>
                   </Box>
                 </CardContent>
@@ -164,9 +198,6 @@ export default function PaymentForm({ paymentInfo, onChange }: PaymentFormProps)
         {paymentInfo.method === 'card' && (
           <Card variant="outlined">
             <CardContent>
-              <Typography level="title-md" sx={{ mb: 2 }}>
-                Card Information
-              </Typography>
               
               <Stack spacing={2}>
                 <FormControl required>
@@ -213,52 +244,6 @@ export default function PaymentForm({ paymentInfo, onChange }: PaymentFormProps)
                   </Grid>
                 </Grid>
               </Stack>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Bank Transfer Form */}
-        {paymentInfo.method === 'bank' && (
-          <Card variant="outlined">
-            <CardContent>
-              <Typography level="title-md" sx={{ mb: 2 }}>
-                Bank Information
-              </Typography>
-              
-              <Stack spacing={2}>
-                <FormControl>
-                  <FormLabel>Account Number</FormLabel>
-                  <Input
-                    value={paymentInfo.bankAccount || ''}
-                    onChange={handleChange('bankAccount')}
-                    placeholder="123456789"
-                  />
-                </FormControl>
-
-                <FormControl>
-                  <FormLabel>Routing Number</FormLabel>
-                  <Input
-                    value={paymentInfo.routingNumber || ''}
-                    onChange={handleChange('routingNumber')}
-                    placeholder="987654321"
-                  />
-                </FormControl>
-              </Stack>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Cash Payment Info */}
-        {paymentInfo.method === 'cash' && (
-          <Card variant="outlined">
-            <CardContent>
-              <Typography level="title-md" sx={{ mb: 2 }}>
-                Cash Payment
-              </Typography>
-              
-              <Typography level="body-sm" color="neutral">
-                Payment will be collected upon delivery. Please have the exact amount ready.
-              </Typography>
             </CardContent>
           </Card>
         )}
