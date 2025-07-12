@@ -7,7 +7,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { supabase } from '../utils/supabaseClient';
 import Autocomplete from '@mui/joy/Autocomplete';
 
-type OrderStatus = 'Paid' | 'Refunded' | 'Cancelled';
+type OrderStatus = 'Draft' | 'Paid' | 'Refunded' | 'Cancelled';
 
 interface Product {
   id: string;
@@ -159,8 +159,9 @@ const OrderTableCreate: React.FC<OrderTableCreateProps> = ({
             <FormLabel>Status</FormLabel>
             <Select
               value={newOrder.status}
-              onChange={(_event: React.SyntheticEvent | null, v: OrderStatus | null) => setNewOrder(o => ({ ...o, status: v || 'Paid' }))}
+              onChange={(_event: React.SyntheticEvent | null, v: OrderStatus | null) => setNewOrder(o => ({ ...o, status: v || 'Draft' }))}
             >
+              <Option value="Draft">Draft</Option>
               <Option value="Paid">Paid</Option>
               <Option value="Refunded">Refunded</Option>
               <Option value="Cancelled">Cancelled</Option>
@@ -230,9 +231,15 @@ const OrderTableCreate: React.FC<OrderTableCreateProps> = ({
                 sx={{ minWidth: 220 }}
                 disabled={products.length === 0}
                 required
-                renderOption={(props, option) => (
-                  <li {...props}>{option.ProductName}</li>
-                )}
+                renderOption={(props, option) => {
+                  // Extract key to avoid spreading it
+                  const { key, ...restProps } = props as any;
+                  return (
+                    <li key={option.id} {...restProps}>
+                      {option.ProductName}
+                    </li>
+                  );
+                }}
               />
               <Input
                 type="number"

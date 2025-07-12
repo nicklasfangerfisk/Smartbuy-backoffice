@@ -3,7 +3,23 @@
  * 
  * HOCs: ProtectedRoute (route-level auth guard)
  * Layout: PageLayout + ResponsiveContainer(table-page) - 16px padding
- * Responsive: Mobile/Desktop views, useResponsive() hook
+ * Responsive: Mobile/Desktop views, useRespo    // Event handlers
+    const handleOrderClick = (uuid: string) => {
+        const order = orders.find(o => o.uuid === uuid);
+        if (order) {
+            setSelectedOrder(order);
+            setOrderDetailsOpen(true);
+        }
+    };
+
+    const handleCheckoutClick = (order: OrderRow) => {
+        setSelectedOrder(order);
+        setCheckoutDialogOpen(true);
+    };
+
+    const handleCreateOrder = () => {
+        setCreateOrderDialogOpen(true);
+    };
  * Dialogs: OrderTableCreate, OrderTableDetails, ResponsiveModal
  * Data: Supabase Orders table with real-time updates
  */
@@ -33,6 +49,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import PaymentIcon from '@mui/icons-material/Payment';
 
 // Local imports
 import { useResponsive } from '../hooks/useResponsive';
@@ -41,6 +58,7 @@ import ResponsiveModal from '../components/ResponsiveModal';
 import PageLayout from '../layouts/PageLayout';
 import OrderTableCreate from '../Dialog/OrderTableCreate';
 import OrderTableDetails from '../Dialog/OrderTableDetails';
+import CheckoutDialog from '../Dialog/CheckoutDialog';
 import fonts from '../theme/fonts';
 import { formatCurrency } from '../utils/currencyUtils';
 import { prepareOrderCurrencyData, prepareOrderItemCurrencyData } from '../utils/currencyUtils';
@@ -49,7 +67,7 @@ import { prepareOrderCurrencyData, prepareOrderItemCurrencyData } from '../utils
 const typographyStyles = { fontSize: fonts.sizes.small };
 
 // Types
-export type OrderStatus = 'Paid' | 'Refunded' | 'Cancelled';
+export type OrderStatus = 'Draft' | 'Paid' | 'Refunded' | 'Cancelled';
 
 type Customer = {
   initial: string;
@@ -85,11 +103,12 @@ const PageOrders = () => {
     const [filterDialogOpen, setFilterDialogOpen] = useState(false);
     const [createOrderDialogOpen, setCreateOrderDialogOpen] = useState(false);
     const [orderDetailsOpen, setOrderDetailsOpen] = useState(false);
+    const [checkoutDialogOpen, setCheckoutDialogOpen] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<OrderRow | null>(null);
     const [creatingOrder, setCreatingOrder] = useState(false);
     const [newOrder, setNewOrder] = useState({
         date: new Date().toISOString().split('T')[0],
-        status: 'Paid' as OrderStatus,
+        status: 'Draft' as OrderStatus,
         customer_name: '',
         customer_email: '',
     });
@@ -108,6 +127,8 @@ const PageOrders = () => {
 
     const getStatusColor = (status: OrderStatus) => {
         switch (status) {
+            case 'Draft':
+                return 'neutral';
             case 'Paid':
                 return 'success';
             case 'Refunded':
@@ -121,6 +142,8 @@ const PageOrders = () => {
 
     const getStatusIcon = (status: OrderStatus) => {
         switch (status) {
+            case 'Draft':
+                return <ShoppingCartIcon />;
             case 'Paid':
                 return <AttachMoneyIcon />;
             case 'Refunded':
@@ -233,6 +256,11 @@ const PageOrders = () => {
         }
     };
 
+    const handleCheckoutClick = (order: OrderRow) => {
+        setSelectedOrder(order);
+        setCheckoutDialogOpen(true);
+    };
+
     const handleCreateOrder = () => {
         setCreateOrderDialogOpen(true);
     };
@@ -273,9 +301,12 @@ const PageOrders = () => {
                         product_uuid: item.product_uuid,
                         quantity: item.quantity,
                         unitprice: item.unitprice,
-                        discount_percent: item.discount,
+                        discount: item.discount,
+                        price: 0, // Will be calculated by database trigger
                     })
                 );
+
+                console.log('Inserting order items:', orderItemsData);
 
                 const { error: itemsError } = await supabase
                     .from('OrderItems')
@@ -283,7 +314,10 @@ const PageOrders = () => {
 
                 if (itemsError) {
                     console.error('Error creating order items:', itemsError);
+                    console.error('Order items data that failed:', orderItemsData);
                     showToast('Order created but failed to add items', 'warning');
+                } else {
+                    console.log('Order items created successfully');
                 }
             }
 
@@ -376,15 +410,10 @@ const PageOrders = () => {
                             sx={{ 
                                 p: 2, 
                                 borderBottom: '1px solid', 
-                                borderColor: 'divider',
-                                cursor: 'pointer',
-                                '&:hover': {
-                                    bgcolor: 'background.level1'
-                                }
+                                borderColor: 'divider'
                             }}
-                            onClick={() => handleOrderClick(order.uuid)}
                         >
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
                                 {/* Status Icon */}
                                 <Box 
                                     sx={{ 
@@ -447,6 +476,28 @@ const PageOrders = () => {
                                         </Typography>
                                     )}
                                 </Box>
+                            </Box>
+
+                            {/* Action Buttons */}
+                            <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                                <Button
+                                    size="sm"
+                                    variant="soft"
+                                    onClick={() => handleOrderClick(order.uuid)}
+                                >
+                                    View
+                                </Button>
+                                {order.status === 'Draft' && (
+                                    <Button
+                                        size="sm"
+                                        variant="solid"
+                                        color="primary"
+                                        onClick={() => handleCheckoutClick(order)}
+                                        startDecorator={<PaymentIcon />}
+                                    >
+                                        Checkout
+                                    </Button>
+                                )}
                             </Box>
                         </Box>
                     ))
@@ -588,13 +639,26 @@ const PageOrders = () => {
                                     </Typography>
                                 </td>
                                 <td style={typographyStyles}>
-                                    <Button
-                                        size="sm"
-                                        variant="soft"
-                                        onClick={() => handleOrderClick(order.uuid)}
-                                    >
-                                        View
-                                    </Button>
+                                    <Box sx={{ display: 'flex', gap: 1 }}>
+                                        <Button
+                                            size="sm"
+                                            variant="soft"
+                                            onClick={() => handleOrderClick(order.uuid)}
+                                        >
+                                            View
+                                        </Button>
+                                        {order.status === 'Draft' && (
+                                            <Button
+                                                size="sm"
+                                                variant="solid"
+                                                color="primary"
+                                                onClick={() => handleCheckoutClick(order)}
+                                                startDecorator={<PaymentIcon />}
+                                            >
+                                                Checkout
+                                            </Button>
+                                        )}
+                                    </Box>
                                 </td>
                             </tr>
                         ))}
@@ -624,6 +688,24 @@ const PageOrders = () => {
                 onClose={() => setOrderDetailsOpen(false)}
                 selectedOrder={selectedOrder}
                 fetchOrderItems={fetchOrderItems}
+            />
+
+            {/* Checkout Dialog */}
+            <CheckoutDialog
+                open={checkoutDialogOpen}
+                onClose={() => setCheckoutDialogOpen(false)}
+                order={selectedOrder ? {
+                    uuid: selectedOrder.uuid,
+                    order_number_display: selectedOrder.order_number_display,
+                    order_total: selectedOrder.order_total,
+                    customer_name: selectedOrder.customer.name,
+                    customer_email: selectedOrder.customer.email,
+                } : null}
+                onSuccess={() => {
+                    setCheckoutDialogOpen(false);
+                    fetchOrders(); // Refresh orders after successful checkout
+                    showToast('Order completed successfully!', 'success');
+                }}
             />
             
             {/* Filter Dialog (Mobile) */}

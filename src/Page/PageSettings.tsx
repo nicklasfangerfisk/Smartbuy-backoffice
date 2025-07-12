@@ -43,7 +43,7 @@ import { useResponsive } from '../hooks/useResponsive';
 import ResponsiveContainer from '../components/ResponsiveContainer';
 import PageLayout from '../layouts/PageLayout';
 import fonts from '../theme/fonts';
-import { CURRENCY_CONFIG } from '../utils/currencyUtils';
+import { CURRENCY_CONFIG, formatCurrency, formatCurrencyWithSymbol } from '../utils/currencyUtils';
 import { marked } from 'marked';
 import { supabase } from '../utils/supabaseClient';
 
@@ -610,10 +610,31 @@ function AppInfo() {
               <strong>Platform:</strong> Web Application
             </Typography>
             <Typography level="body-sm" color="neutral">
+              <strong>Language:</strong> English (US)
+            </Typography>
+            <Typography level="body-sm" color="neutral">
               <strong>Currency:</strong> {CURRENCY_CONFIG.currency} ({CURRENCY_CONFIG.symbol}) - {CURRENCY_CONFIG.locale}
+            </Typography>
+            <Typography level="body-sm" color="neutral">
+              <strong>Currency Precision:</strong> Smart formatting (0-2 decimal places)
             </Typography>
           </Stack>
         </Stack>
+        
+        {/* Currency Formatting Examples */}
+        <Box sx={{ mt: 3, p: 2, backgroundColor: 'neutral.50', borderRadius: 'md' }}>
+          <Typography level="title-sm" sx={{ mb: 1 }}>
+            Currency Formatting Examples
+          </Typography>
+          <Stack spacing={0.5}>
+            <Typography level="body-xs" color="neutral">
+              <strong>Whole numbers:</strong> {formatCurrency(100)} • {formatCurrency(1500)} • {formatCurrency(25000)}
+            </Typography>
+            <Typography level="body-xs" color="neutral">
+              <strong>With decimals:</strong> {formatCurrency(99.50)} • {formatCurrency(1234.56)} • {formatCurrency(15.25)}
+            </Typography>
+          </Stack>
+        </Box>
         
         <Button
           component="a"

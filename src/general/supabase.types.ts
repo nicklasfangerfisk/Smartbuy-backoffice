@@ -7,48 +7,27 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instanciate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "12.2.3 (519615d)"
+  }
   public: {
     Tables: {
-      jest_results: {
-        Row: {
-          failed_tests: number
-          id: number
-          passed_tests: number
-          results: Json
-          skipped_tests: number
-          timestamp: string | null
-          total_tests: number
-        }
-        Insert: {
-          failed_tests: number
-          id?: number
-          passed_tests: number
-          results: Json
-          skipped_tests: number
-          timestamp?: string | null
-          total_tests: number
-        }
-        Update: {
-          failed_tests?: number
-          id?: number
-          passed_tests?: number
-          results?: Json
-          skipped_tests?: number
-          timestamp?: string | null
-          total_tests?: number
-        }
-        Relationships: []
-      }
       OrderItems: {
         Row: {
           "Created at": string
           discount: number | null
           order_uuid: string | null
           price: number
+          price_currency: string
+          price_exchrate: number
           "Product ID": number | null
           product_uuid: string | null
           quantity: number
           unitprice: number | null
+          unitprice_currency: string
+          unitprice_exchrate: number
           uuid: string
         }
         Insert: {
@@ -56,10 +35,14 @@ export type Database = {
           discount?: number | null
           order_uuid?: string | null
           price?: number
+          price_currency?: string
+          price_exchrate?: number
           "Product ID"?: number | null
           product_uuid?: string | null
           quantity?: number
           unitprice?: number | null
+          unitprice_currency?: string
+          unitprice_exchrate?: number
           uuid?: string
         }
         Update: {
@@ -67,10 +50,14 @@ export type Database = {
           discount?: number | null
           order_uuid?: string | null
           price?: number
+          price_currency?: string
+          price_exchrate?: number
           "Product ID"?: number | null
           product_uuid?: string | null
           quantity?: number
           unitprice?: number | null
+          unitprice_currency?: string
+          unitprice_exchrate?: number
           uuid?: string
         }
         Relationships: [
@@ -111,6 +98,8 @@ export type Database = {
           order_number: number
           order_number_display: string | null
           order_total: number | null
+          order_total_currency: string
+          order_total_exchrate: number
           Origin: string | null
           status: Database["public"]["Enums"]["order_status"] | null
           uuid: string
@@ -128,6 +117,8 @@ export type Database = {
           order_number?: never
           order_number_display?: string | null
           order_total?: number | null
+          order_total_currency?: string
+          order_total_exchrate?: number
           Origin?: string | null
           status?: Database["public"]["Enums"]["order_status"] | null
           uuid?: string
@@ -145,6 +136,8 @@ export type Database = {
           order_number?: never
           order_number_display?: string | null
           order_total?: number | null
+          order_total_currency?: string
+          order_total_exchrate?: number
           Origin?: string | null
           status?: Database["public"]["Enums"]["order_status"] | null
           uuid?: string
@@ -154,6 +147,8 @@ export type Database = {
       Products: {
         Row: {
           CostPrice: number | null
+          costprice_currency: string
+          costprice_exchrate: number
           CreatedAt: string
           image_url: string | null
           max_stock: number | null
@@ -163,10 +158,14 @@ export type Database = {
           ProductType: Database["public"]["Enums"]["ProductCategory"] | null
           reorder_amount: number | null
           SalesPrice: number | null
+          salesprice_currency: string
+          salesprice_exchrate: number
           uuid: string
         }
         Insert: {
           CostPrice?: number | null
+          costprice_currency?: string
+          costprice_exchrate?: number
           CreatedAt?: string
           image_url?: string | null
           max_stock?: number | null
@@ -176,10 +175,14 @@ export type Database = {
           ProductType?: Database["public"]["Enums"]["ProductCategory"] | null
           reorder_amount?: number | null
           SalesPrice?: number | null
+          salesprice_currency?: string
+          salesprice_exchrate?: number
           uuid?: string
         }
         Update: {
           CostPrice?: number | null
+          costprice_currency?: string
+          costprice_exchrate?: number
           CreatedAt?: string
           image_url?: string | null
           max_stock?: number | null
@@ -189,6 +192,8 @@ export type Database = {
           ProductType?: Database["public"]["Enums"]["ProductCategory"] | null
           reorder_amount?: number | null
           SalesPrice?: number | null
+          salesprice_currency?: string
+          salesprice_exchrate?: number
           uuid?: string
         }
         Relationships: []
@@ -204,6 +209,8 @@ export type Database = {
           quantity_received: number | null
           total: number | null
           unit_price: number
+          unit_price_currency: string
+          unit_price_exchrate: number
         }
         Insert: {
           created_at?: string | null
@@ -215,6 +222,8 @@ export type Database = {
           quantity_received?: number | null
           total?: number | null
           unit_price: number
+          unit_price_currency?: string
+          unit_price_exchrate?: number
         }
         Update: {
           created_at?: string | null
@@ -226,6 +235,8 @@ export type Database = {
           quantity_received?: number | null
           total?: number | null
           unit_price?: number
+          unit_price_currency?: string
+          unit_price_exchrate?: number
         }
         Relationships: [
           {
@@ -339,26 +350,29 @@ export type Database = {
         Row: {
           date: string
           id: string
-          movement_type: "incoming" | "outgoing" | "adjustment"
+          movement_type: string
           product_id: string
-          quantity: number // Can be negative for adjustments (signed integer)
+          quantity: number
           reason: string | null
+          referenceuuid: string | null
         }
         Insert: {
           date?: string
           id?: string
-          movement_type: "incoming" | "outgoing" | "adjustment"
+          movement_type: string
           product_id: string
-          quantity: number // Can be negative for adjustments (signed integer)
+          quantity: number
           reason?: string | null
+          referenceuuid?: string | null
         }
         Update: {
           date?: string
           id?: string
-          movement_type?: "incoming" | "outgoing" | "adjustment"
+          movement_type?: string
           product_id?: string
-          quantity?: number // Can be negative for adjustments (signed integer)
+          quantity?: number
           reason?: string | null
+          referenceuuid?: string | null
         }
         Relationships: [
           {
@@ -397,6 +411,36 @@ export type Database = {
           image_url?: string | null
           name?: string
           phone?: string | null
+        }
+        Relationships: []
+      }
+      testresults: {
+        Row: {
+          failed_tests: number
+          id: number
+          passed_tests: number
+          results: Json
+          skipped_tests: number
+          timestamp: string | null
+          total_tests: number
+        }
+        Insert: {
+          failed_tests: number
+          id?: number
+          passed_tests: number
+          results: Json
+          skipped_tests: number
+          timestamp?: string | null
+          total_tests: number
+        }
+        Update: {
+          failed_tests?: number
+          id?: number
+          passed_tests?: number
+          results?: Json
+          skipped_tests?: number
+          timestamp?: string | null
+          total_tests?: number
         }
         Relationships: []
       }
@@ -555,21 +599,25 @@ export type Database = {
   }
 }
 
-type DefaultSchema = Database[Extract<keyof Database, "public">]
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
@@ -587,14 +635,16 @@ export type Tables<
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
@@ -610,14 +660,16 @@ export type TablesInsert<
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
@@ -633,14 +685,16 @@ export type TablesUpdate<
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
@@ -648,14 +702,16 @@ export type Enums<
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
-> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
@@ -668,24 +724,3 @@ export const Constants = {
     },
   },
 } as const
-
-// Type definitions for improved Manual Stock Adjustment feature
-export type StockMovementType = "incoming" | "outgoing" | "adjustment";
-
-// Helper type for stock movements with product information (for joins)
-export type StockMovementWithProduct = Database['public']['Tables']['stock_movements']['Row'] & {
-  Products?: {
-    ProductName: string | null;
-    ProductID: number | null;
-    uuid: string;
-  } | null;
-};
-
-// Stock movement quantity rules:
-// - 'incoming': always positive (stock received)
-// - 'outgoing': always positive (stock shipped, stored as positive but calculated as negative)
-// - 'adjustment': can be positive (increase) or negative (decrease) - SIGNED QUANTITY
-export type StockMovementInsert = Database['public']['Tables']['stock_movements']['Insert'] & {
-  // Ensures type safety for manual adjustments
-  quantity: number; // For adjustments: positive = increase, negative = decrease
-};

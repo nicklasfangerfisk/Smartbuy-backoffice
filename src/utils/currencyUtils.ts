@@ -19,17 +19,20 @@ export interface CurrencyAmount {
 /**
  * Format a number as Danish kroner currency
  * @param amount - The amount to format
- * @returns Formatted currency string (e.g., "123,45 kr")
+ * @returns Formatted currency string (e.g., "123 kr" or "123,45 kr")
  */
 export function formatCurrency(amount: number | null | undefined): string {
   if (amount == null || isNaN(amount)) {
-    return '0,00 kr';
+    return '0 kr';
   }
+
+  // Check if the amount has decimal places
+  const hasDecimals = amount % 1 !== 0;
 
   return new Intl.NumberFormat(CURRENCY_CONFIG.locale, {
     style: 'currency',
     currency: CURRENCY_CONFIG.currency,
-    minimumFractionDigits: 2,
+    minimumFractionDigits: hasDecimals ? 2 : 0,
     maximumFractionDigits: 2
   }).format(amount);
 }
@@ -42,11 +45,14 @@ export function formatCurrency(amount: number | null | undefined): string {
  */
 export function formatCurrencyWithSymbol(amount: number | null | undefined, symbolAfter: boolean = true): string {
   if (amount == null || isNaN(amount)) {
-    return symbolAfter ? '0,00 kr' : 'kr 0,00';
+    return symbolAfter ? '0 kr' : 'kr 0';
   }
 
+  // Check if the amount has decimal places
+  const hasDecimals = amount % 1 !== 0;
+
   const formatted = new Intl.NumberFormat(CURRENCY_CONFIG.locale, {
-    minimumFractionDigits: 2,
+    minimumFractionDigits: hasDecimals ? 2 : 0,
     maximumFractionDigits: 2
   }).format(amount);
 
