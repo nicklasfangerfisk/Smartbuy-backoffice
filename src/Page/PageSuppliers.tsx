@@ -18,26 +18,16 @@ import LinearProgress from '@mui/joy/LinearProgress';
 import Button from '@mui/joy/Button';
 import Input from '@mui/joy/Input';
 import Avatar from '@mui/joy/Avatar';
-import Chip from '@mui/joy/Chip';
 import Stack from '@mui/joy/Stack';
 import Grid from '@mui/joy/Grid';
-import IconButton from '@mui/joy/IconButton';
-import Menu from '@mui/joy/Menu';
-import MenuButton from '@mui/joy/MenuButton';
-import MenuItem from '@mui/joy/MenuItem';
-import Dropdown from '@mui/joy/Dropdown';
 
 // Icons
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
-import BusinessIcon from '@mui/icons-material/Business';
 import PersonIcon from '@mui/icons-material/Person';
 import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
 
 // Local imports
 import { useResponsive } from '../hooks/useResponsive';
@@ -78,33 +68,7 @@ const getSupplierInitials = (name: string) => {
   return name.substring(0, 2).toUpperCase();
 };
 
-// Mobile Menu Component
-function SupplierMobileMenu({ supplier, onEdit, onDelete }: { 
-  supplier: SupplierItem; 
-  onEdit: (supplier: SupplierItem) => void;
-  onDelete: (id: string | number) => void;
-}) {
-  return (
-    <Dropdown>
-      <MenuButton
-        slots={{ root: IconButton }}
-        slotProps={{ root: { variant: 'plain', color: 'neutral', size: 'sm' } }}
-      >
-        <MoreVertIcon />
-      </MenuButton>
-      <Menu size="sm" sx={{ minWidth: 120 }}>
-        <MenuItem onClick={() => onEdit(supplier)}>
-          <EditIcon sx={{ mr: 1 }} fontSize="small" />
-          Edit
-        </MenuItem>
-        <MenuItem color="danger" onClick={() => onDelete(supplier.id)}>
-          <DeleteIcon sx={{ mr: 1 }} fontSize="small" />
-          Delete
-        </MenuItem>
-      </Menu>
-    </Dropdown>
-  );
-}
+// Mobile Menu Component - Removed since cards are now clickable
 
 const PageSuppliers = () => {
   const { isMobile } = useResponsive();
@@ -151,16 +115,8 @@ const PageSuppliers = () => {
   };
 
   const handleDelete = async (id: string | number) => {
-    if (!confirm('Are you sure you want to delete this supplier?')) return;
-    
-    try {
-      const { error } = await supabase.from('Suppliers').delete().eq('id', id);
-      if (error) throw error;
-      await fetchSuppliers();
-    } catch (err: any) {
-      console.error('Error deleting supplier:', err);
-      setError(err.message || 'Failed to delete supplier');
-    }
+    // This will be called from the form dialog
+    await fetchSuppliers();
   };
 
   const handleSave = async () => {
@@ -244,10 +200,14 @@ const PageSuppliers = () => {
               variant="outlined"
               sx={{ 
                 mb: 2,
+                cursor: 'pointer',
                 '&:hover': {
-                  boxShadow: 'sm'
+                  boxShadow: 'md',
+                  transform: 'translateY(-2px)',
+                  transition: 'all 0.2s ease-in-out'
                 }
               }}
+              onClick={() => handleEdit(supplier)}
             >
               <CardContent sx={{ p: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
@@ -266,26 +226,19 @@ const PageSuppliers = () => {
 
                   {/* Main Content */}
                   <Box sx={{ flex: 1, minWidth: 0 }}>
-                    {/* Header with name and menu */}
-                    <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
+                    {/* Header with name */}
+                    <Box sx={{ mb: 1 }}>
                       <Typography 
                         level="title-md" 
                         sx={{ 
                           fontWeight: 'bold',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                          maxWidth: 'calc(100% - 40px)'
+                          whiteSpace: 'nowrap'
                         }}
                       >
                         {supplier.name}
                       </Typography>
-                      
-                      <SupplierMobileMenu 
-                        supplier={supplier}
-                        onEdit={handleEdit}
-                        onDelete={handleDelete}
-                      />
                     </Box>
                     
                     {/* Contact Information */}
@@ -358,17 +311,17 @@ const PageSuppliers = () => {
   // Desktop View Component
   const DesktopView = () => (
     <ResponsiveContainer variant="table-page">
-      <Typography level="h2" sx={{ mb: 2, fontSize: fonts.sizes.xlarge }}>
+      <Typography level="h2" sx={{ mb: 3, fontSize: fonts.sizes.xlarge }}>
         Suppliers
       </Typography>
       
-      <Box sx={{ display: 'flex', gap: 2, mb: 3, alignItems: 'center' }}>
+      <Box sx={{ display: 'flex', gap: 2, mb: 4, alignItems: 'center' }}>
         <Input
           placeholder="Search suppliers..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           startDecorator={<SearchIcon />}
-          sx={{ flex: 1 }}
+          sx={{ flex: 1, maxWidth: '400px' }}
         />
         <Button
           variant="solid"
@@ -378,7 +331,7 @@ const PageSuppliers = () => {
             setMode('add');
             setIsOpen(true);
           }}
-          sx={{ minWidth: 140 }}
+          sx={{ minWidth: 140, flexShrink: 0 }}
         >
           Add Supplier
         </Button>
@@ -393,76 +346,176 @@ const PageSuppliers = () => {
       )}
 
       {/* Suppliers Grid */}
-      <Grid container spacing={2}>
-        {sortedSuppliers.length === 0 ? (
-          <Grid xs={12}>
-            <Box sx={{ textAlign: 'center', py: 6 }}>
-              <Typography color="neutral">
-                No suppliers found
-              </Typography>
-            </Box>
-          </Grid>
-        ) : (
-          sortedSuppliers.map((supplier) => (
-            <Grid key={supplier.id} xs={12} md={6} lg={4}>
-              <Card variant="outlined" sx={{ height: '100%' }}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                    <Avatar
-                      size="sm"
-                      color={getSupplierColor(supplier.name)}
-                    >
-                      {supplier.image_url ? (
-                        <img src={supplier.image_url} alt={supplier.name} />
-                      ) : (
-                        getSupplierInitials(supplier.name)
-                      )}
-                    </Avatar>
-                    <Typography level="title-md" fontWeight="bold">
-                      {supplier.name}
-                    </Typography>
-                  </Box>
-
-                  <Stack spacing={1}>
-                    <Typography level="body-sm">
-                      <strong>Contact:</strong> {supplier.contact_name || 'N/A'}
-                    </Typography>
-                    <Typography level="body-sm">
-                      <strong>Email:</strong> {supplier.email || 'N/A'}
-                    </Typography>
-                    <Typography level="body-sm">
-                      <strong>Phone:</strong> {supplier.phone || 'N/A'}
-                    </Typography>
-                    <Typography level="body-sm">
-                      <strong>Address:</strong> {supplier.address || 'N/A'}
-                    </Typography>
-                  </Stack>
-
-                  <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
-                    <Button
-                      size="sm"
-                      variant="outlined"
-                      startDecorator={<EditIcon />}
-                      onClick={() => handleEdit(supplier)}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outlined"
-                      color="danger"
-                      startDecorator={<DeleteIcon />}
-                      onClick={() => handleDelete(supplier.id)}
-                    >
-                      Delete
-                    </Button>
-                  </Box>
-                </CardContent>
-              </Card>
+      <Box sx={{ width: '100%' }}>
+        <Grid 
+          container 
+          spacing={2} 
+          sx={{ 
+            width: '100%', 
+            m: 0,
+            '& .MuiGrid-item': {
+              paddingLeft: '8px !important',
+              paddingTop: '8px !important'
+            }
+          }}
+        >
+          {sortedSuppliers.length === 0 ? (
+            <Grid xs={12} sx={{ width: '100%' }}>
+              <Box sx={{ textAlign: 'center', py: 6 }}>
+                <Typography color="neutral">
+                  No suppliers found
+                </Typography>
+              </Box>
             </Grid>
-          ))
-        )}
-      </Grid>
+          ) : (
+            sortedSuppliers.map((supplier) => (
+              <Grid 
+                key={supplier.id} 
+                xs={12} 
+                sm={6} 
+                lg={4} 
+                xl={3}
+                sx={{ 
+                  display: 'flex',
+                  width: '100%'
+                }}
+              >
+                <Card 
+                  variant="outlined" 
+                  sx={{ 
+                    width: '100%',
+                    minHeight: '200px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    '&:hover': {
+                      boxShadow: 'md',
+                      transform: 'translateY(-2px)',
+                      transition: 'all 0.2s ease-in-out'
+                    }
+                  }}
+                  onClick={() => handleEdit(supplier)}
+                >
+                  <CardContent sx={{ 
+                    flex: 1, 
+                    display: 'flex', 
+                    flexDirection: 'column',
+                    p: 2
+                  }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                      <Avatar
+                        size="md"
+                        color={getSupplierColor(supplier.name)}
+                        sx={{ flexShrink: 0 }}
+                      >
+                        {supplier.image_url ? (
+                          <img src={supplier.image_url} alt={supplier.name} />
+                        ) : (
+                          getSupplierInitials(supplier.name)
+                        )}
+                      </Avatar>
+                      <Typography 
+                        level="title-md" 
+                        fontWeight="bold"
+                        sx={{
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          flex: 1,
+                          minWidth: 0
+                        }}
+                      >
+                        {supplier.name}
+                      </Typography>
+                    </Box>
+
+                    <Stack spacing={1.5} sx={{ flex: 1 }}>
+                      {supplier.contact_name && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                          <PersonIcon sx={{ fontSize: 16, color: 'text.tertiary', flexShrink: 0 }} />
+                          <Typography 
+                            level="body-sm" 
+                            color="neutral"
+                            sx={{
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              flex: 1,
+                              minWidth: 0
+                            }}
+                          >
+                            {supplier.contact_name}
+                          </Typography>
+                        </Box>
+                      )}
+                      
+                      {supplier.email && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                          <EmailIcon sx={{ fontSize: 16, color: 'text.tertiary', flexShrink: 0 }} />
+                          <Typography 
+                            level="body-sm" 
+                            color="neutral"
+                            sx={{
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              flex: 1,
+                              minWidth: 0
+                            }}
+                          >
+                            {supplier.email}
+                          </Typography>
+                        </Box>
+                      )}
+                      
+                      {supplier.phone && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                          <PhoneIcon sx={{ fontSize: 16, color: 'text.tertiary', flexShrink: 0 }} />
+                          <Typography 
+                            level="body-sm" 
+                            color="neutral"
+                            sx={{
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              flex: 1,
+                              minWidth: 0
+                            }}
+                          >
+                            {supplier.phone}
+                          </Typography>
+                        </Box>
+                      )}
+                      
+                      {supplier.address && (
+                        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                          <LocationOnIcon sx={{ fontSize: 16, color: 'text.tertiary', flexShrink: 0, mt: 0.25 }} />
+                          <Typography 
+                            level="body-sm" 
+                            color="neutral"
+                            sx={{
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              lineHeight: 1.3,
+                              flex: 1,
+                              minWidth: 0
+                            }}
+                          >
+                            {supplier.address}
+                          </Typography>
+                        </Box>
+                      )}
+                    </Stack>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))
+          )}
+        </Grid>
+      </Box>
     </ResponsiveContainer>
   );
 
@@ -477,6 +530,7 @@ const PageSuppliers = () => {
         supplier={editedSupplier as any}
         onSaved={handleSave}
         mode={mode === 'edit' || mode === 'add' ? mode : undefined}
+        onDelete={mode === 'edit' ? handleDelete : undefined}
       />
     </PageLayout>
   );

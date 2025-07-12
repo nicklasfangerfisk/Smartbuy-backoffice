@@ -6,6 +6,8 @@ import ModalClose from '@mui/joy/ModalClose';
 import Typography from '@mui/joy/Typography';
 import Input from '@mui/joy/Input';
 import Button from '@mui/joy/Button';
+import Box from '@mui/joy/Box';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 // Define TypeScript interface for supplier
 interface Supplier {
@@ -24,6 +26,7 @@ interface SupplierFormProps {
   onSaved: (newSupplierId?: number) => void;
   mode?: 'add' | 'edit';
   supplier?: Supplier; // for edit mode
+  onDelete?: (id: number) => void; // optional delete handler
 }
 
 /**
@@ -38,7 +41,7 @@ interface SupplierFormProps {
  * - mode: 'add' or 'edit' mode for the form.
  * - supplier: Supplier object for edit mode.
  */
-export default function SupplierForm({ open, onClose, onSaved, mode = 'add', supplier }: SupplierFormProps) {
+export default function SupplierForm({ open, onClose, onSaved, mode = 'add', supplier, onDelete }: SupplierFormProps) {
   const [name, setName] = React.useState(supplier?.name || '');
   const [contactName, setContactName] = React.useState(supplier?.contact_name || '');
   const [email, setEmail] = React.useState(supplier?.email || '');
@@ -96,6 +99,21 @@ export default function SupplierForm({ open, onClose, onSaved, mode = 'add', sup
     }
   };
 
+  const handleDelete = async () => {
+    if (!supplier?.id || !onDelete) return;
+    
+    if (!confirm('Are you sure you want to delete this supplier?')) return;
+    
+    try {
+      const { error } = await supabase.from('Suppliers').delete().eq('id', supplier.id);
+      if (error) throw error;
+      onDelete(supplier.id);
+      onClose();
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete supplier');
+    }
+  };
+
   return (
     <Modal open={open} onClose={onClose}>
       <ModalDialog sx={{ minWidth: 400 }}>
@@ -137,9 +155,30 @@ export default function SupplierForm({ open, onClose, onSaved, mode = 'add', sup
             sx={{ mb: 2 }}
           />
           {error && <Typography color="danger" sx={{ mb: 1 }}>{error}</Typography>}
-          <Button type="submit" loading={saving} disabled={saving} variant="solid">
-            Save
-          </Button>
+          
+          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'space-between' }}>
+            <Button 
+              type="submit" 
+              loading={saving} 
+              disabled={saving} 
+              variant="solid"
+              sx={{ flex: 1 }}
+            >
+              {mode === 'edit' ? 'Update' : 'Save'}
+            </Button>
+            
+            {mode === 'edit' && supplier?.id && onDelete && (
+              <Button
+                variant="outlined"
+                color="danger"
+                startDecorator={<DeleteIcon />}
+                onClick={handleDelete}
+                disabled={saving}
+              >
+                Delete
+              </Button>
+            )}
+          </Box>
         </form>
       </ModalDialog>
     </Modal>

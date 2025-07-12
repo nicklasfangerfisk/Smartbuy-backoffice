@@ -10,7 +10,14 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
-## [3.0.4] - 2025-07-12 15:30:00
+## [3.1.1] - 2025-07-12 16:45:00
+**Suppliers Page Grid Layout Fix**
+### Fixed
+- Fixed responsive grid layout preventing card overlapping
+- Improved card sizing and spacing across all screen sizes
+- Enhanced clickable card interaction with delete functionality moved to edit form
+
+## [3.1.0] - 2025-07-12 15:30:00
 **Checkout Dialog UI Improvements**
 ### Added
 - Total amount display in both collapsed and expanded mobile order summary
