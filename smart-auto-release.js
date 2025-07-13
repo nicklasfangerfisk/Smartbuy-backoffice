@@ -240,16 +240,23 @@ function generateReleaseContent(versionType, recentFiles, commitMessages = []) {
     
     processedCommits.add(commit);
     
-    // Categorize based on commit message keywords
-    if (lowerCommit.includes('add') || lowerCommit.includes('implement') || lowerCommit.includes('create') || lowerCommit.includes('new')) {
+    // Categorize based on commit message keywords or content
+    if (lowerCommit.includes('add') || lowerCommit.includes('implement') || lowerCommit.includes('create') || lowerCommit.includes('new') || lowerCommit.includes('enhanced')) {
       content.Added.push(commit.charAt(0).toUpperCase() + commit.slice(1));
-    } else if (lowerCommit.includes('fix') || lowerCommit.includes('resolve') || lowerCommit.includes('correct') || lowerCommit.includes('bug')) {
+    } else if (lowerCommit.includes('fix') || lowerCommit.includes('resolve') || lowerCommit.includes('correct') || lowerCommit.includes('bug') || lowerCommit.includes('fixed')) {
       content.Fixed.push(commit.charAt(0).toUpperCase() + commit.slice(1));
-    } else if (lowerCommit.includes('update') || lowerCommit.includes('enhance') || lowerCommit.includes('improve') || lowerCommit.includes('change')) {
+    } else if (lowerCommit.includes('update') || lowerCommit.includes('enhance') || lowerCommit.includes('improve') || lowerCommit.includes('change') || lowerCommit.includes('modified')) {
       content.Changed.push(commit.charAt(0).toUpperCase() + commit.slice(1));
     } else {
-      // Default to Fixed for other changes
-      content.Fixed.push(commit.charAt(0).toUpperCase() + commit.slice(1));
+      // For our analyzed descriptions, use smart categorization
+      if (lowerCommit.includes('timezone') || lowerCommit.includes('time') || lowerCommit.includes('automation') || lowerCommit.includes('detection')) {
+        content.Fixed.push(commit.charAt(0).toUpperCase() + commit.slice(1));
+      } else if (lowerCommit.includes('component') || lowerCommit.includes('page') || lowerCommit.includes('form')) {
+        content.Changed.push(commit.charAt(0).toUpperCase() + commit.slice(1));
+      } else {
+        // Default to Changed for other analyzed content
+        content.Changed.push(commit.charAt(0).toUpperCase() + commit.slice(1));
+      }
     }
   }
   
