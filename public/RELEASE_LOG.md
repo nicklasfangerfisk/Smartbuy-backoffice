@@ -11,10 +11,12 @@ DEVELOPER INSTRUCTION: How to write release notes
 -->
 
 ## [3.2.2] - 2025-07-13 09:35:32
-**Stability and Performance Fixes**
+**Release Automation Timezone Fixes**
 ### Fixed
-- Bug fixes and stability improvements
-- Performance optimizations
+- Fixed incorrect timezone calculation in release automation scripts using proper Europe/Copenhagen timezone API
+- Corrected function name typo from getCurrentCopenhageTime to getCurrentCopenhagenTime
+- Replaced manual DST offset calculation with automatic timezone handling
+- Fixed release log file paths in automation scripts to use public/RELEASE_LOG.md
 
 
 ## [3.2.1] - 2025-07-13 09:25:00

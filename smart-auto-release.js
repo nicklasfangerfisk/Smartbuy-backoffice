@@ -85,13 +85,63 @@ function getGitChanges() {
   try {
     const status = execSync('git status --porcelain', { encoding: 'utf8' });
     const diff = execSync('git diff --name-only HEAD~1', { encoding: 'utf8' }).trim();
-    return { hasChanges: status.length > 0, recentFiles: diff.split('\n').filter(f => f) };
+    
+    // Get recent commit messages since last release
+    let commitMessages = [];
+    try {
+      const commits = execSync('git log --oneline --since="1 day ago" --format="%s"', { encoding: 'utf8' }).trim();
+      commitMessages = commits ? commits.split('\n').filter(msg => msg.trim()) : [];
+    } catch (error) {
+      // Fallback to last few commits if time-based fails
+      try {
+        const commits = execSync('git log --oneline -5 --format="%s"', { encoding: 'utf8' }).trim();
+        commitMessages = commits ? commits.split('\n').filter(msg => msg.trim()) : [];
+      } catch (fallbackError) {
+        commitMessages = [];
+      }
+    }
+    
+    return { 
+      hasChanges: status.length > 0, 
+      recentFiles: diff.split('\n').filter(f => f),
+      commitMessages 
+    };
   } catch (error) {
-    return { hasChanges: false, recentFiles: [] };
+    return { hasChanges: false, recentFiles: [], commitMessages: [] };
   }
 }
 
-function generateReleaseTitle(versionType, recentFiles) {
+function generateReleaseTitle(versionType, recentFiles, commitMessages = []) {
+  // Try to generate title from commit messages first
+  if (commitMessages.length > 0) {
+    const commitText = commitMessages.join(' ').toLowerCase();
+    
+    // Look for specific patterns in commits
+    if (commitText.includes('timezone') || commitText.includes('time')) {
+      return 'Timezone and Time Handling Fixes';
+    }
+    if (commitText.includes('purchase order') || commitText.includes('po ')) {
+      return versionType === 'major' ? 'Purchase Order System Overhaul' : 
+             versionType === 'minor' ? 'Purchase Order Enhancements' : 'Purchase Order Bug Fixes';
+    }
+    if (commitText.includes('supplier')) {
+      return versionType === 'major' ? 'Supplier Management Redesign' : 
+             versionType === 'minor' ? 'Supplier Feature Enhancements' : 'Supplier Bug Fixes';
+    }
+    if (commitText.includes('form') || commitText.includes('dialog')) {
+      return versionType === 'major' ? 'Form System Redesign' : 
+             versionType === 'minor' ? 'Form Improvements' : 'Form Bug Fixes';
+    }
+    if (commitText.includes('mobile') || commitText.includes('responsive')) {
+      return versionType === 'major' ? 'Mobile Experience Overhaul' : 
+             versionType === 'minor' ? 'Mobile Enhancements' : 'Mobile Bug Fixes';
+    }
+    if (commitText.includes('release') || commitText.includes('automation')) {
+      return 'Release Automation Improvements';
+    }
+  }
+
+  // Fallback to file-based detection
   const titles = {
     major: [
       'Major System Upgrade',
@@ -134,32 +184,63 @@ function generateReleaseTitle(versionType, recentFiles) {
   return categoryTitles[Math.floor(Math.random() * categoryTitles.length)];
 }
 
-function generateReleaseContent(versionType, recentFiles) {
+function generateReleaseContent(versionType, recentFiles, commitMessages = []) {
   const content = { Added: [], Changed: [], Fixed: [] };
   
-  // Generate content based on version type and files changed
-  if (versionType === 'major') {
-    content.Added.push('Major system architecture improvements');
-    content.Changed.push('Complete redesign of core components');
-    content.Changed.push('Updated user interface and experience');
-    if (recentFiles.some(f => f.includes('src/'))) {
-      content.Added.push('New application features and capabilities');
+  // Parse commit messages for meaningful content
+  const processedCommits = new Set(); // Avoid duplicates
+  
+  for (const commit of commitMessages) {
+    const lowerCommit = commit.toLowerCase();
+    
+    // Skip generic or automated commits
+    if (lowerCommit.includes('merge') || 
+        lowerCommit.includes('bump version') || 
+        lowerCommit.includes('release') ||
+        processedCommits.has(commit)) {
+      continue;
     }
-  } else if (versionType === 'minor') {
-    content.Added.push('New feature implementations');
-    content.Changed.push('Enhanced existing functionality');
-    content.Changed.push('Improved user experience');
-    if (recentFiles.some(f => f.includes('documentation'))) {
-      content.Added.push('Updated documentation and guides');
+    
+    processedCommits.add(commit);
+    
+    // Categorize based on commit message keywords
+    if (lowerCommit.includes('add') || lowerCommit.includes('implement') || lowerCommit.includes('create') || lowerCommit.includes('new')) {
+      content.Added.push(commit.charAt(0).toUpperCase() + commit.slice(1));
+    } else if (lowerCommit.includes('fix') || lowerCommit.includes('resolve') || lowerCommit.includes('correct') || lowerCommit.includes('bug')) {
+      content.Fixed.push(commit.charAt(0).toUpperCase() + commit.slice(1));
+    } else if (lowerCommit.includes('update') || lowerCommit.includes('enhance') || lowerCommit.includes('improve') || lowerCommit.includes('change')) {
+      content.Changed.push(commit.charAt(0).toUpperCase() + commit.slice(1));
+    } else {
+      // Default to Fixed for other changes
+      content.Fixed.push(commit.charAt(0).toUpperCase() + commit.slice(1));
     }
-  } else {
-    content.Fixed.push('Bug fixes and stability improvements');
-    content.Fixed.push('Performance optimizations');
-    if (recentFiles.some(f => f.includes('src/'))) {
-      content.Fixed.push('Resolved user interface issues');
-    }
-    if (recentFiles.some(f => f.includes('documentation'))) {
-      content.Fixed.push('Updated documentation accuracy');
+  }
+  
+  // If no meaningful commits found, fall back to generic content
+  if (content.Added.length === 0 && content.Changed.length === 0 && content.Fixed.length === 0) {
+    if (versionType === 'major') {
+      content.Added.push('Major system architecture improvements');
+      content.Changed.push('Complete redesign of core components');
+      content.Changed.push('Updated user interface and experience');
+      if (recentFiles.some(f => f.includes('src/'))) {
+        content.Added.push('New application features and capabilities');
+      }
+    } else if (versionType === 'minor') {
+      content.Added.push('New feature implementations');
+      content.Changed.push('Enhanced existing functionality');
+      content.Changed.push('Improved user experience');
+      if (recentFiles.some(f => f.includes('documentation'))) {
+        content.Added.push('Updated documentation and guides');
+      }
+    } else {
+      content.Fixed.push('Bug fixes and stability improvements');
+      content.Fixed.push('Performance optimizations');
+      if (recentFiles.some(f => f.includes('src/'))) {
+        content.Fixed.push('Resolved user interface issues');
+      }
+      if (recentFiles.some(f => f.includes('documentation'))) {
+        content.Fixed.push('Updated documentation accuracy');
+      }
     }
   }
   
@@ -236,12 +317,13 @@ function main() {
     log(`📈 New version: ${newVersion} (${versionType})`, 'green');
     
     // Analyze git changes
-    const { hasChanges, recentFiles } = getGitChanges();
+    const { hasChanges, recentFiles, commitMessages } = getGitChanges();
     log(`📊 Recent files changed: ${recentFiles.length}`, 'cyan');
+    log(`📝 Recent commits found: ${commitMessages.length}`, 'cyan');
     
     // Generate release content automatically
-    const title = generateReleaseTitle(versionType, recentFiles);
-    const sections = generateReleaseContent(versionType, recentFiles);
+    const title = generateReleaseTitle(versionType, recentFiles, commitMessages);
+    const sections = generateReleaseContent(versionType, recentFiles, commitMessages);
     
     log(`📋 Generated title: ${title}`, 'yellow');
     log(`📝 Generated ${Object.keys(sections).filter(k => sections[k].length > 0).length} sections`, 'yellow');
