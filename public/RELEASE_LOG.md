@@ -10,6 +10,14 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
+## [3.2.4] - 2025-07-13 09:42:56
+**Stability and Performance Fixes**
+### Fixed
+- Feat: Complete checkout experience with Joy UI components
+- Fix sidebar viewport overflow issue v3.0.3
+- Feat: clean up unit test suite and fix test environment
+
+
 ## [3.2.3] - 2025-07-13 09:40:07
 **Release Automation Improvements**
 ### Fixed

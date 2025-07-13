@@ -10,14 +10,20 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
-## [3.2.3] - 2025-07-13 09:40:07
-**Timezone and Time Handling Fixes**
-### Changed
-- V3.0.4: Checkout Dialog UI Improvements
-
+## [3.2.4] - 2025-07-13 09:42:56
+**Stability and Performance Fixes**
 ### Fixed
-- V3.1.1: Suppliers Page Grid Layout Fix
 - Feat: Complete checkout experience with Joy UI components
+- Fix sidebar viewport overflow issue v3.0.3
+- Feat: clean up unit test suite and fix test environment
+
+
+## [3.2.3] - 2025-07-13 09:40:07
+**Release Automation Improvements**
+### Fixed
+- Enhanced release automation to generate meaningful release notes from commit messages
+- Improved commit message parsing with better filtering of release and version commits
+- Added intelligent categorization of commits into Added/Changed/Fixed sections
 
 
 ## [3.2.2] - 2025-07-13 09:35:32
