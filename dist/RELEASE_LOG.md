@@ -10,6 +10,12 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
+## [3.2.14] - 2025-07-13 10:04:44
+**Release Automation Improvements**
+### Added
+- Enhanced change detection in release automation
+
+
 ## [3.2.13] - 2025-07-13 10:02:23
 **Timezone and Time Handling Fixes**
 ### Fixed

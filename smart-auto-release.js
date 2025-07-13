@@ -232,10 +232,10 @@ function generateReleaseContent(versionType, recentFiles, commitMessages = []) {
     console.log('DEBUG - Processing commit:', commit);
     console.log('DEBUG - Lower case:', lowerCommit);
     
-    // Skip generic, automated, or release commits
+    // Skip generic, automated, or release commits (but not our analyzed descriptions)
     if (lowerCommit.includes('merge') || 
         lowerCommit.includes('bump version') || 
-        lowerCommit.includes('release') ||
+        lowerCommit.startsWith('release') ||  // Only skip if starts with "release"
         lowerCommit.startsWith('v3.') ||
         lowerCommit.startsWith('v2.') ||
         lowerCommit.startsWith('v1.') ||
