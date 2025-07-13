@@ -37,6 +37,7 @@ import { useResponsive } from '../hooks/useResponsive';
 import ResponsiveContainer from '../components/ResponsiveContainer';
 import PurchaseOrderForm from '../Dialog/PurchaseOrderForm';
 import DialogReceivePurchaseOrder from '../Dialog/DialogReceivePurchaseOrder';
+import SupplierForm from '../Dialog/SupplierForm';
 import PageLayout from '../layouts/PageLayout';
 import fonts from '../theme/fonts';
 import type { Database } from '../general/supabase.types';
@@ -51,6 +52,7 @@ export interface PurchaseOrderItem {
   total: number;
   notes?: string;
   supplier_name: string;
+  supplier_id?: string;
   Suppliers?: {
     name: string;
   };
@@ -100,9 +102,15 @@ const PagePurchaseOrders = () => {
   
   // Dialog states
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [receiveDialogOpen, setReceiveDialogOpen] = useState(false);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<PurchaseOrderItem | null>(null);
   const [poItems, setPoItems] = useState<any[]>([]);
+  
+  // Supplier dialog states
+  const [supplierDialogOpen, setSupplierDialogOpen] = useState(false);
+  const [selectedSupplier, setSelectedSupplier] = useState<any>(null);
 
   // Fetch purchase orders
   const fetchOrders = async () => {
@@ -112,15 +120,24 @@ const PagePurchaseOrders = () => {
     try {
       const { data, error } = await supabase
         .from('PurchaseOrders')
-        .select('id, order_number, order_date, status, total, notes, Suppliers(name)')
+        .select(`
+          id, 
+          order_number, 
+          order_date, 
+          status, 
+          total, 
+          notes,
+          supplier_id,
+          Suppliers(name)
+        `)
         .order('order_date', { ascending: false });
 
       if (error) throw error;
 
       if (data) {
-        const mappedOrders = data.map(order => ({
+        const mappedOrders = data.map((order: any) => ({
           ...order,
-          supplier_name: order.Suppliers?.[0]?.name || 'N/A',
+          supplier_name: order.Suppliers?.name || 'N/A',
           Suppliers: undefined, // Remove to match expected type
         }));
         setOrders(mappedOrders);
@@ -143,9 +160,9 @@ const PagePurchaseOrders = () => {
       if (error) throw error;
 
       if (data) {
-        const mappedItems = data.map(item => ({
+        const mappedItems = data.map((item: any) => ({
           ...item,
-          ProductName: item.Products?.[0]?.ProductName || 'Unknown Product',
+          ProductName: item.Products?.ProductName || 'Unknown Product',
         }));
         setPoItems(mappedItems);
       }
@@ -195,6 +212,41 @@ const PagePurchaseOrders = () => {
       await fetchOrders();
     } catch (err: any) {
       setError(err.message || 'Failed to receive order');
+    }
+  };
+
+  // Handle supplier click
+  const handleSupplierClick = async (supplierId: string) => {
+    if (!supplierId) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('Suppliers')
+        .select('*')
+        .eq('id', supplierId)
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        setSelectedSupplier(data);
+        setSupplierDialogOpen(true);
+      }
+    } catch (err: any) {
+      console.error('Error fetching supplier:', err);
+      setError(err.message || 'Failed to fetch supplier details');
+    }
+  };
+
+  const handleOrderClick = (order: PurchaseOrderItem) => {
+    setSelectedOrder(order);
+    
+    // If order is pending, allow editing since it hasn't been sent to supplier yet
+    if (order.status === 'Pending') {
+      setEditDialogOpen(true);
+    } else {
+      // For other statuses (Approved, Received, Cancelled), show in view mode
+      setViewDialogOpen(true);
     }
   };
 
@@ -291,6 +343,8 @@ const PagePurchaseOrders = () => {
                   bgcolor: 'background.level1'
                 }
               }}
+              onClick={() => handleOrderClick(order)}
+              title={order.status === 'Pending' ? 'Tap to edit (pending orders are editable)' : 'Tap to view details'}
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 {/* Status Icon */}
@@ -324,7 +378,11 @@ const PagePurchaseOrders = () => {
                         maxWidth: '60%'
                       }}
                     >
-                      Order #{order.order_number}
+                      {order.order_number ? `Order #${order.order_number}` : (
+                        <Typography component="span" sx={{ color: 'neutral.400', fontStyle: 'italic' }}>
+                          No order number
+                        </Typography>
+                      )}
                     </Typography>
                     
                     {/* Status Chip */}
@@ -339,7 +397,22 @@ const PagePurchaseOrders = () => {
                   </Box>
                   
                   <Typography level="body-xs" color="neutral" sx={{ mb: 0.5 }}>
-                    {order.supplier_name} • {new Date(order.order_date).toLocaleDateString()}
+                    <Typography 
+                      component="span"
+                      sx={{ 
+                        cursor: order.supplier_id ? 'pointer' : 'default',
+                        color: order.supplier_id ? 'primary.600' : 'inherit',
+                        textDecoration: order.supplier_id ? 'underline' : 'none',
+                        '&:hover': order.supplier_id ? {
+                          color: 'primary.800'
+                        } : {}
+                      }}
+                      onClick={() => order.supplier_id && handleSupplierClick(order.supplier_id)}
+                    >
+                      {order.supplier_name}
+                    </Typography>
+                    {' • '}
+                    {new Date(order.order_date).toLocaleDateString()}
                   </Typography>
                   
                   <Typography level="body-sm" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
@@ -438,8 +511,19 @@ const PagePurchaseOrders = () => {
               </tr>
             )}
             {sortedOrders.map((order) => (
-              <tr key={order.id} style={{ cursor: 'pointer', height: 48 }}>
-                <td style={typographyStyles}>{order.order_number}</td>
+              <tr 
+                key={order.id} 
+                style={{ cursor: 'pointer', height: 48 }} 
+                onClick={() => handleOrderClick(order)}
+                title={order.status === 'Pending' ? 'Click to edit (pending orders are editable)' : 'Click to view details'}
+              >
+                <td style={typographyStyles}>
+                  {order.order_number || (
+                    <Typography component="span" sx={{ color: 'neutral.400', fontStyle: 'italic' }}>
+                      No order number
+                    </Typography>
+                  )}
+                </td>
                 <td style={typographyStyles}>{new Date(order.order_date).toLocaleDateString()}</td>
                 <td style={typographyStyles}>
                   <Chip
@@ -451,7 +535,23 @@ const PagePurchaseOrders = () => {
                   </Chip>
                 </td>
                 <td style={typographyStyles}>{formatCurrencyWithSymbol(order.total || 0)}</td>
-                <td style={typographyStyles}>{order.supplier_name}</td>
+                <td style={typographyStyles}>
+                  <Typography 
+                    component="span"
+                    sx={{ 
+                      cursor: order.supplier_id ? 'pointer' : 'default',
+                      color: order.supplier_id ? 'primary.600' : 'inherit',
+                      textDecoration: order.supplier_id ? 'underline' : 'none',
+                      fontSize: fonts.sizes.small,
+                      '&:hover': order.supplier_id ? {
+                        color: 'primary.800'
+                      } : {}
+                    }}
+                    onClick={() => order.supplier_id && handleSupplierClick(order.supplier_id)}
+                  >
+                    {order.supplier_name}
+                  </Typography>
+                </td>
                 <td style={typographyStyles}>{order.notes || '-'}</td>
                 <td>
                   {order.status === 'Pending' ? (
@@ -494,6 +594,46 @@ const PagePurchaseOrders = () => {
         order={undefined}
       />
 
+      {/* Edit Purchase Order Dialog */}
+      <PurchaseOrderForm
+        open={editDialogOpen}
+        onClose={() => {
+          setEditDialogOpen(false);
+          setSelectedOrder(null);
+        }}
+        onCreated={handleOrderChange}
+        mode="edit"
+        order={selectedOrder ? {
+          id: selectedOrder.id,
+          order_number: selectedOrder.order_number,
+          order_date: selectedOrder.order_date,
+          status: selectedOrder.status,
+          total: selectedOrder.total,
+          notes: selectedOrder.notes || '',
+          supplier_id: selectedOrder.supplier_id || '',
+        } : undefined}
+      />
+
+      {/* View Purchase Order Dialog */}
+      <PurchaseOrderForm
+        open={viewDialogOpen}
+        onClose={() => {
+          setViewDialogOpen(false);
+          setSelectedOrder(null);
+        }}
+        onCreated={() => {}} // No action needed when viewing
+        mode="view"
+        order={selectedOrder ? {
+          id: selectedOrder.id,
+          order_number: selectedOrder.order_number,
+          order_date: selectedOrder.order_date,
+          status: selectedOrder.status,
+          total: selectedOrder.total,
+          notes: selectedOrder.notes || '',
+          supplier_id: selectedOrder.supplier_id || '',
+        } : undefined}
+      />
+
       {/* Receive Purchase Order Dialog */}
       <DialogReceivePurchaseOrder
         open={receiveDialogOpen && !!selectedOrder?.id}
@@ -505,6 +645,19 @@ const PagePurchaseOrders = () => {
         orderNumber={selectedOrder?.order_number || ''}
         items={poItems.filter(item => !!item.id && !!item.product_id)}
         onConfirm={handleReceiveConfirm}
+      />
+
+      {/* Supplier Details Dialog */}
+      <SupplierForm
+        open={supplierDialogOpen}
+        onClose={() => {
+          setSupplierDialogOpen(false);
+          setSelectedSupplier(null);
+        }}
+        supplier={selectedSupplier}
+        onSaved={() => {}} // No action needed when viewing supplier
+        mode="view"
+        onEdit={() => {}} // Could implement edit functionality later
       />
     </PageLayout>
   );

@@ -10,6 +10,19 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
+## [3.2.1] - 2025-07-13 16:20:00
+**Purchase Order Form Improvements & Bug Fixes**
+### Added
+- Split layout purchase order form with header info on left and items on right
+- Responsive mobile design with card-based item layout
+- Real-time total calculation display at bottom of items section
+- Status-based editing (pending orders editable, others view-only)
+### Fixed
+- Purchase order number generation for new orders
+- Missing order number display with fallback text
+- Form state synchronization when switching between orders
+- Table column spacing and overlap issues in items editor
+
 ## [3.2.0] - 2025-07-13 15:30:00
 **Enhanced Supplier Management with Contact Actions & Purchase Order Integration**
 ### Added

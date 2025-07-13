@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { supabase } from '../utils/supabaseClient';
-import { preparePurchaseOrderItemCurrencyData } from '../utils/currencyUtils';
+import { preparePurchaseOrderItemCurrencyData, formatCurrencyWithSymbol } from '../utils/currencyUtils';
 import Modal from '@mui/joy/Modal';
 import ModalDialog from '@mui/joy/ModalDialog';
 import ModalClose from '@mui/joy/ModalClose';
@@ -38,9 +38,9 @@ interface PurchaseOrderFormProps {
   onCreated: () => void;
 
   /**
-   * Specifies whether the form is in "add" or "edit" mode.
+   * Specifies whether the form is in "add", "edit", or "view" mode.
    */
-  mode?: 'add' | 'edit';
+  mode?: 'add' | 'edit' | 'view';
 
   /**
    * The purchase order object for editing.
@@ -84,7 +84,7 @@ export default function PurchaseOrderForm({ open, onClose, onCreated, mode = 'ad
       supabase.from('Suppliers').select('id, name').then(({ data }) => {
         setSuppliers(data || []);
       });
-      if (mode === 'edit' && order?.id) {
+      if ((mode === 'edit' || mode === 'view') && order?.id) {
         // Fetch items for this purchase order
         supabase.from('purchaseorderitems').select('*').eq('purchase_order_id', order.id).then(({ data }) => {
           setItems(data || []);
@@ -96,6 +96,27 @@ export default function PurchaseOrderForm({ open, onClose, onCreated, mode = 'ad
       console.log('[PurchaseOrderForm] Modal closed');
     }
   }, [open, mode, order]);
+
+  React.useEffect(() => {
+    if (open && order) {
+      // Update all form fields when order changes
+      setOrderNumber(order.order_number || '');
+      setOrderDate(order.order_date || new Date().toISOString().slice(0, 10));
+      setStatus(order.status || 'Pending');
+      setTotal(order.total ? String(order.total) : '');
+      setNotes(order.notes || '');
+      setSupplierId(order.supplier_id || null);
+    } else if (open && mode === 'add') {
+      // Reset form for add mode
+      setOrderNumber('');
+      setOrderDate(new Date().toISOString().slice(0, 10));
+      setStatus('Pending');
+      setTotal('');
+      setNotes('');
+      setSupplierId(null);
+      setSupplierInput('');
+    }
+  }, [open, order, mode]);
 
   // After adding a supplier, refresh and select the new supplier
   const handleSupplierAdded = async (newSupplierId?: string | number) => {
@@ -117,6 +138,19 @@ export default function PurchaseOrderForm({ open, onClose, onCreated, mode = 'ad
     return `PO-${date}-${rand}`;
   };
 
+  // Calculate total from items
+  const calculateItemsTotal = () => {
+    return items.reduce((sum, item) => {
+      return sum + (item.quantity_ordered * item.unit_price);
+    }, 0);
+  };
+
+  // Update total when items change
+  React.useEffect(() => {
+    const newTotal = calculateItemsTotal();
+    setTotal(newTotal.toString());
+  }, [items]);
+
   const handleSave = async () => {
     console.log('[PurchaseOrderForm] handleSave called');
     setSaving(true);
@@ -126,13 +160,16 @@ export default function PurchaseOrderForm({ open, onClose, onCreated, mode = 'ad
       status,
       notes,
       supplier_id: supplierId,
+      total: total ? parseFloat(total) : null,
     };
+    
     if (mode === 'edit') {
       payload.order_number = orderNumber;
-      payload.total = total ? parseFloat(total) : null;
-    } else {
-      payload.total = total ? parseFloat(total) : null;
+    } else if (mode === 'add') {
+      // Generate order number for new orders
+      payload.order_number = generateOrderNumber();
     }
+    
     let result;
     let purchaseOrderId = order?.id;
     if (mode === 'add') {
@@ -186,112 +223,241 @@ export default function PurchaseOrderForm({ open, onClose, onCreated, mode = 'ad
 
   return (
     <Modal open={open} onClose={onClose} aria-labelledby="purchase-order-form-title">
-      <ModalDialog sx={{ minWidth: 400 }}>
-        <ModalClose />
-        <Typography id="purchase-order-form-title" level="title-md" sx={{ mb: 2 }}>{mode === 'edit' ? 'Edit' : 'Add'} Purchase Order</Typography>
-        <form onSubmit={e => { e.preventDefault(); handleSave(); }}>
-          <Input
-            type="date"
-            value={orderDate}
-            onChange={e => setOrderDate(e.target.value)}
-            sx={{ mb: 2 }}
-            required
-          />
-          <Select
-            value={status}
-            onChange={(_, value) => setStatus(value ?? 'Pending')}
-            sx={{ mb: 2, display: 'none' }}
-            required
-          >
-            {statusOptions.map(opt => (
-              <Option key={opt} value={opt}>{opt}</Option>
-            ))}
-          </Select>
-          {/* Hide status field in add mode */}
-          {mode === 'edit' && (
-            <Box sx={{ mb: 2 }}>
-              <Chip
-                variant="soft"
-                color={
-                  status === 'Approved'
-                    ? 'success'
-                    : status === 'Received'
-                    ? 'primary'
-                    : status === 'Cancelled'
-                    ? 'danger'
-                    : 'neutral'
-                }
-                sx={{ textTransform: 'capitalize', fontWeight: 600, fontSize: 'md', px: 1.5, py: 0.5 }}
-                onClick={() => {
-                  // Cycle through status options on click
-                  const idx = statusOptions.indexOf(status);
-                  setStatus(statusOptions[(idx + 1) % statusOptions.length]);
-                }}
-              >
-                {status}
-              </Chip>
-            </Box>
-          )}
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <Autocomplete
-              options={suppliers}
-              getOptionLabel={option => option.name}
-              value={suppliers.find(s => s.id === supplierId) || null}
-              onChange={(_e, value) => setSupplierId(value ? value.id : null)}
-              inputValue={supplierInput}
-              onInputChange={(_e, value) => setSupplierInput(value)}
-              placeholder="Select supplier"
-              sx={{ flex: 1, mb: 0 }}
-              isOptionEqualToValue={(option, value) => option.id === value.id}
-              required
+      <ModalDialog 
+        size="lg"
+        sx={{
+          width: { xs: '100vw', md: '90vw' },
+          maxWidth: { xs: 'none', md: 1200 },
+          height: { xs: '100vh', md: '90vh' },
+          maxHeight: { xs: 'none', md: 800 },
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          m: 0,
+          borderRadius: { xs: 0, md: 'md' },
+          p: 0,
+        }}
+      >
+        {/* Header - only on desktop */}
+        <Box sx={{ 
+          display: { xs: 'none', md: 'flex' },
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          p: 2,
+          borderBottom: '1px solid',
+          borderColor: 'divider'
+        }}>
+          <Typography id="purchase-order-form-title" level="title-md">
+            {mode === 'edit' ? 'Edit' : mode === 'view' ? 'View' : 'Add'} Purchase Order
+          </Typography>
+          <ModalClose />
+        </Box>
+
+        {/* Mobile Header */}
+        <Box sx={{ 
+          display: { xs: 'flex', md: 'none' },
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          p: 2,
+          borderBottom: '1px solid',
+          borderColor: 'divider'
+        }}>
+          <Typography id="purchase-order-form-title" level="title-md">
+            {mode === 'edit' ? 'Edit' : mode === 'view' ? 'View' : 'Add'} Purchase Order
+          </Typography>
+          <ModalClose />
+        </Box>
+
+        <Box sx={{ 
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          height: '100%',
+          overflow: 'hidden'
+        }}>
+          {/* Left Side - Header Information */}
+          <Box sx={{ 
+            width: { xs: '100%', md: '400px' },
+            borderRight: { xs: 'none', md: '1px solid' },
+            borderBottom: { xs: '1px solid', md: 'none' },
+            borderColor: 'divider',
+            p: 3,
+            overflow: 'auto',
+            flexShrink: 0
+          }}>
+            <Typography level="title-sm" sx={{ mb: 2 }}>Order Information</Typography>
+            
+            <form onSubmit={e => { e.preventDefault(); if (mode !== 'view') handleSave(); }}>
+              <Input
+                type="date"
+                value={orderDate}
+                onChange={e => setOrderDate(e.target.value)}
+                sx={{ mb: 2 }}
+                required
+                readOnly={mode === 'view'}
+                startDecorator={<Typography level="body-sm" sx={{ minWidth: 80 }}>Date:</Typography>}
+              />
+
+              {/* Status Field */}
+              {(mode === 'edit' || mode === 'view') && (
+                <Box sx={{ mb: 2 }}>
+                  <Typography level="body-sm" sx={{ mb: 1 }}>Status:</Typography>
+                  <Chip
+                    variant="soft"
+                    color={
+                      status === 'Approved'
+                        ? 'success'
+                        : status === 'Received'
+                        ? 'primary'
+                        : status === 'Cancelled'
+                        ? 'danger'
+                        : 'neutral'
+                    }
+                    sx={{ textTransform: 'capitalize', fontWeight: 600, fontSize: 'md', px: 1.5, py: 0.5 }}
+                    onClick={mode === 'view' ? undefined : () => {
+                      // Cycle through status options on click (only in edit mode)
+                      const idx = statusOptions.indexOf(status);
+                      setStatus(statusOptions[(idx + 1) % statusOptions.length]);
+                    }}
+                  >
+                    {status}
+                  </Chip>
+                </Box>
+              )}
+
+              {/* Supplier Field */}
+              <Box sx={{ mb: 2 }}>
+                <Typography level="body-sm" sx={{ mb: 1 }}>Supplier:</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Autocomplete
+                    options={suppliers}
+                    getOptionLabel={option => option.name}
+                    value={suppliers.find(s => s.id === supplierId) || null}
+                    onChange={(_e, value) => setSupplierId(value ? value.id : null)}
+                    inputValue={supplierInput}
+                    onInputChange={(_e, value) => setSupplierInput(value)}
+                    placeholder="Select supplier"
+                    sx={{ flex: 1, mb: 0 }}
+                    isOptionEqualToValue={(option, value) => option.id === value.id}
+                    required
+                    readOnly={mode === 'view'}
+                  />
+                  {mode !== 'view' && (
+                    <IconButton color="primary" sx={{ ml: 1 }} onClick={() => setAddSupplierOpen(true)}>
+                      <Add />
+                    </IconButton>
+                  )}
+                </Box>
+              </Box>
+
+              {/* Order Number and Total - for edit/view modes */}
+              {(mode === 'edit' || mode === 'view') && (
+                <>
+                  <Input
+                    placeholder="Order Number"
+                    value={orderNumber}
+                    onChange={e => setOrderNumber(e.target.value)}
+                    sx={{ mb: 2 }}
+                    readOnly={mode === 'view'}
+                    startDecorator={<Typography level="body-sm" sx={{ minWidth: 80 }}>Number:</Typography>}
+                  />
+                  <Input
+                    placeholder="Total"
+                    value={total}
+                    onChange={e => setTotal(e.target.value)}
+                    sx={{ mb: 2 }}
+                    type="number"
+                    readOnly
+                    startDecorator={<Typography level="body-sm" sx={{ minWidth: 80 }}>Total:</Typography>}
+                  />
+                </>
+              )}
+
+              {/* Notes Field */}
+              <Input
+                placeholder="Notes"
+                value={notes}
+                onChange={e => setNotes(e.target.value)}
+                sx={{ mb: 2 }}
+                readOnly={mode === 'view'}
+                startDecorator={<Typography level="body-sm" sx={{ minWidth: 80 }}>Notes:</Typography>}
+              />
+
+              {/* Action Buttons */}
+              {mode !== 'view' && (
+                <Box sx={{ mt: 3 }}>
+                  {error && <Typography color="danger" sx={{ mb: 2 }}>{error}</Typography>}
+                  <Button type="submit" loading={saving} disabled={saving} variant="solid" fullWidth>
+                    Save Purchase Order
+                  </Button>
+                </Box>
+              )}
+            </form>
+
+            {/* Supplier Form Dialog */}
+            <SupplierForm
+              open={addSupplierOpen}
+              onClose={() => setAddSupplierOpen(false)}
+              onSaved={handleSupplierAdded}
+              mode="add"
             />
-            <IconButton color="primary" sx={{ ml: 1 }} onClick={() => setAddSupplierOpen(true)}>
-              <Add />
-            </IconButton>
           </Box>
-          <SupplierForm
-            open={addSupplierOpen}
-            onClose={() => setAddSupplierOpen(false)}
-            onSaved={handleSupplierAdded}
-            mode="add"
-          />
-          {mode === 'edit' && (
-            <>
-              <Input
-                placeholder="Order Number"
-                value={orderNumber}
-                onChange={e => setOrderNumber(e.target.value)}
-                sx={{ mb: 2 }}
+
+          {/* Right Side - Order Items */}
+          <Box sx={{ 
+            flex: 1,
+            display: 'flex', 
+            flexDirection: 'column',
+            minHeight: 0,
+            overflow: 'hidden'
+          }}>
+            <Box sx={{ 
+              p: 1,
+              borderBottom: '0px solid',
+              borderColor: 'divider',
+              flexShrink: 0
+            }}>
+              <Typography level="title-sm">Order Items</Typography>
+            </Box>
+            
+            <Box sx={{ 
+              flex: 1,
+              overflow: 'auto',
+              p: 2,
+              paddingBottom: 0
+            }}>
+              <PurchaseOrderItemsEditor
+                orderId={order?.id}
+                editable={mode === 'add' || mode === 'edit'}
+                onItemsChange={setItems}
+                initialItems={items}
               />
-              <Input
-                placeholder="Total"
-                value={total}
-                onChange={e => setTotal(e.target.value)}
-                sx={{ mb: 2 }}
-                type="number"
-                readOnly
-              />
-            </>
-          )}
-          <Input
-            placeholder="Notes"
-            value={notes}
-            onChange={e => setNotes(e.target.value)}
-            sx={{ mb: 2 }}
-          />
-          <PurchaseOrderItemsEditor
-            orderId={order?.id}
-            editable={mode === 'add'}
-            onItemsChange={setItems}
-            initialItems={items}
-          />
-          {/* Add padding between Add Item and Save button */}
-          <Box sx={{ height: 16 }} />
-          {error && <Typography color="danger" sx={{ mb: 1 }}>{error}</Typography>}
-          <Button type="submit" loading={saving} disabled={saving} variant="solid">
-            Save
-          </Button>
-        </form>
+            </Box>
+
+            {/* Totals Section */}
+            <Box sx={{ 
+              borderTop: '1px solid',
+              borderColor: 'divider',
+              p: 3,
+              flexShrink: 0,
+              backgroundColor: 'background.level1'
+            }}>
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                maxWidth: { xs: '100%', md: '400px' },
+                ml: 'auto'
+              }}>
+                <Typography level="title-md" sx={{ fontWeight: 600 }}>
+                  Total:
+                </Typography>
+                <Typography level="title-md" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                  {formatCurrencyWithSymbol(calculateItemsTotal())}
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+        </Box>
       </ModalDialog>
     </Modal>
   );
