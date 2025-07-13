@@ -10,6 +10,32 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
+## [3.2.0] - 2025-07-13 15:30:00
+**Enhanced Supplier Management with Contact Actions & Purchase Order Integration**
+### Added
+- Unified supplier dialog with view, edit, and add modes
+- Clickable email and phone buttons that open device default applications
+- "Add Purchase Order" button with supplier auto-injection
+- Purchase orders table in supplier view showing order history
+- Supplier avatar upload functionality with 5MB limit and image validation
+- Contact action buttons for direct email and phone communication
+### Changed
+- Supplier cards now open in view mode first, with edit accessible via button
+- Edit button changed from primary (blue) to secondary (outlined) styling
+- "Add Purchase Order" button styled as primary action (blue solid)
+- Improved responsive layout for contact information with better button spacing
+- Consolidated SupplierDisplay functionality into unified SupplierForm component
+### Fixed
+- Avatar display issues with proper image scaling within circular bounds
+- Grid layout alignment with negative margins for edge-to-edge card display
+- Responsive contact button layout preventing text overflow on small screens
+### Technical Details
+- Enhanced SupplierForm component with three distinct modes (add/edit/view)
+- Integrated PurchaseOrderForm with pre-selected supplier context
+- Automatic purchase orders list refresh after new order creation
+- Improved TypeScript interfaces and error handling
+- Supabase storage integration for supplier image management
+
 ## [3.1.1] - 2025-07-12 16:45:00
 **Suppliers Page Grid Layout Fix**
 ### Fixed
@@ -18,7 +44,7 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Enhanced clickable card interaction with delete functionality moved to edit form
 
 ## [3.1.0] - 2025-07-12 15:30:00
-**Checkout Dialog UI Improvements**
+**Checkout Dialog**
 ### Added
 - Total amount display in both collapsed and expanded mobile order summary
 ### Changed

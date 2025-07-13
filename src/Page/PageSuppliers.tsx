@@ -108,10 +108,14 @@ const PageSuppliers = () => {
   };
 
   // Handle supplier operations
-  const handleEdit = (supplier: SupplierItem) => {
+  const handleView = (supplier: SupplierItem) => {
     setEditedSupplier(supplier);
-    setMode('edit');
+    setMode('view');
     setIsOpen(true);
+  };
+
+  const handleEdit = () => {
+    setMode('edit');
   };
 
   const handleDelete = async (id: string | number) => {
@@ -145,7 +149,7 @@ const PageSuppliers = () => {
 
   // Mobile View Component
   const MobileView = () => (
-    <Box sx={{ width: '100%', minHeight: '100vh' }}>
+    <Box sx={{ pb: 2 }}>
       {/* Header */}
       <ResponsiveContainer padding="medium">
         <Typography level="h2" sx={{ mb: 2, fontSize: fonts.sizes.xlarge }}>
@@ -186,7 +190,7 @@ const PageSuppliers = () => {
       )}
 
       {/* Supplier List */}
-      <Box sx={{ px: 2 }}>
+      <Box>
         {sortedSuppliers.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 6 }}>
             <Typography color="neutral">
@@ -199,6 +203,7 @@ const PageSuppliers = () => {
               key={supplier.id} 
               variant="outlined"
               sx={{ 
+                mx: 2, 
                 mb: 2,
                 cursor: 'pointer',
                 '&:hover': {
@@ -207,21 +212,18 @@ const PageSuppliers = () => {
                   transition: 'all 0.2s ease-in-out'
                 }
               }}
-              onClick={() => handleEdit(supplier)}
+              onClick={() => handleView(supplier)}
             >
               <CardContent sx={{ p: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
                   {/* Avatar */}
                   <Avatar
                     size="md"
+                    src={supplier.image_url}
                     color={getSupplierColor(supplier.name)}
                     sx={{ flexShrink: 0 }}
                   >
-                    {supplier.image_url ? (
-                      <img src={supplier.image_url} alt={supplier.name} />
-                    ) : (
-                      getSupplierInitials(supplier.name)
-                    )}
+                    {!supplier.image_url && getSupplierInitials(supplier.name)}
                   </Avatar>
 
                   {/* Main Content */}
@@ -311,17 +313,17 @@ const PageSuppliers = () => {
   // Desktop View Component
   const DesktopView = () => (
     <ResponsiveContainer variant="table-page">
-      <Typography level="h2" sx={{ mb: 3, fontSize: fonts.sizes.xlarge }}>
+      <Typography level="h2" sx={{ mb: 2, fontSize: fonts.sizes.xlarge }}>
         Suppliers
       </Typography>
       
-      <Box sx={{ display: 'flex', gap: 2, mb: 4, alignItems: 'center' }}>
+      <Box sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'center' }}>
         <Input
           placeholder="Search suppliers..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           startDecorator={<SearchIcon />}
-          sx={{ flex: 1, maxWidth: '400px' }}
+          sx={{ flex: 1 }}
         />
         <Button
           variant="solid"
@@ -346,19 +348,15 @@ const PageSuppliers = () => {
       )}
 
       {/* Suppliers Grid */}
-      <Box sx={{ width: '100%' }}>
-        <Grid 
-          container 
-          spacing={2} 
-          sx={{ 
-            width: '100%', 
-            m: 0,
-            '& .MuiGrid-item': {
-              paddingLeft: '8px !important',
-              paddingTop: '8px !important'
-            }
-          }}
-        >
+      <Grid 
+        container 
+        spacing={2} 
+        sx={{ 
+          width: 'calc(100% + 16px)', 
+          ml: '-8px',
+          mt: '-8px'
+        }}
+      >
           {sortedSuppliers.length === 0 ? (
             <Grid xs={12} sx={{ width: '100%' }}>
               <Box sx={{ textAlign: 'center', py: 6 }}>
@@ -394,7 +392,7 @@ const PageSuppliers = () => {
                       transition: 'all 0.2s ease-in-out'
                     }
                   }}
-                  onClick={() => handleEdit(supplier)}
+                  onClick={() => handleView(supplier)}
                 >
                   <CardContent sx={{ 
                     flex: 1, 
@@ -405,14 +403,11 @@ const PageSuppliers = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
                       <Avatar
                         size="md"
+                        src={supplier.image_url}
                         color={getSupplierColor(supplier.name)}
                         sx={{ flexShrink: 0 }}
                       >
-                        {supplier.image_url ? (
-                          <img src={supplier.image_url} alt={supplier.name} />
-                        ) : (
-                          getSupplierInitials(supplier.name)
-                        )}
+                        {!supplier.image_url && getSupplierInitials(supplier.name)}
                       </Avatar>
                       <Typography 
                         level="title-md" 
@@ -514,8 +509,7 @@ const PageSuppliers = () => {
               </Grid>
             ))
           )}
-        </Grid>
-      </Box>
+      </Grid>
     </ResponsiveContainer>
   );
 
@@ -529,8 +523,9 @@ const PageSuppliers = () => {
         onClose={() => setIsOpen(false)}
         supplier={editedSupplier as any}
         onSaved={handleSave}
-        mode={mode === 'edit' || mode === 'add' ? mode : undefined}
+        mode={mode === 'edit' || mode === 'add' || mode === 'view' ? mode : undefined}
         onDelete={mode === 'edit' ? handleDelete : undefined}
+        onEdit={handleEdit}
       />
     </PageLayout>
   );
