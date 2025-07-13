@@ -84,61 +84,47 @@ function getCurrentVersion() {
 function getGitChanges() {
   try {
     const status = execSync('git status --porcelain', { encoding: 'utf8' });
-    const diff = execSync('git diff --name-only HEAD~1', { encoding: 'utf8' }).trim();
     
-    // Get commit messages since last release tag (not time-based)
-    let commitMessages = [];
-    try {
-      // First, get the last release tag
-      let lastTag = '';
-      try {
-        lastTag = execSync('git describe --tags --abbrev=0', { encoding: 'utf8' }).trim();
-      } catch (tagError) {
-        // If no tags exist, get commits from beginning
-        lastTag = '';
+    // Get list of changed files (both staged and unstaged)
+    const changedFiles = [];
+    const statusLines = status.split('\n').filter(line => line.trim());
+    
+    for (const line of statusLines) {
+      if (line.length >= 3) {
+        const fileName = line.substring(3).trim();
+        if (fileName && !fileName.includes('RELEASE_LOG.md') && !fileName.includes('package.json')) {
+          changedFiles.push(fileName);
+        }
       }
-      
-      // Get commits since last tag, excluding release commits
-      let gitCommand;
-      if (lastTag) {
-        gitCommand = `git log ${lastTag}..HEAD --format="%s"`;
-      } else {
-        gitCommand = 'git log --format="%s" -10'; // Last 10 commits if no tags
-      }
-      
-      const commits = execSync(gitCommand, { encoding: 'utf8' }).trim();
-      commitMessages = commits ? commits.split('\n').filter(msg => {
-        const clean = msg.trim();
-        return clean && 
-               !clean.toLowerCase().includes('release') && 
-               !clean.toLowerCase().startsWith('v3.') &&
-               !clean.toLowerCase().startsWith('v2.') &&
-               !clean.toLowerCase().startsWith('v1.') &&
-               !clean.toLowerCase().includes('merge') &&
-               !clean.toLowerCase().includes('bump version');
-      }) : [];
-    } catch (error) {
-      // Fallback: get recent commits and filter manually
+    }
+    
+    // Analyze the actual file changes to generate meaningful descriptions
+    let changeDescriptions = [];
+    
+    for (const file of changedFiles) {
       try {
-        const commits = execSync('git log --oneline -5 --format="%s"', { encoding: 'utf8' }).trim();
-        const allCommits = commits ? commits.split('\n').filter(msg => msg.trim()) : [];
-        commitMessages = allCommits.filter(msg => {
-          const clean = msg.trim().toLowerCase();
-          return !clean.includes('release') && 
-                 !clean.startsWith('v3.') &&
-                 !clean.startsWith('v2.') &&
-                 !clean.startsWith('v1.') &&
-                 !clean.includes('merge');
-        });
-      } catch (fallbackError) {
-        commitMessages = [];
+        // Get the diff for this file
+        const diff = execSync(`git diff HEAD -- "${file}"`, { encoding: 'utf8' });
+        if (diff) {
+          // Analyze the diff to understand what changed
+          const description = analyzeFileDiff(file, diff);
+          if (description) {
+            changeDescriptions.push(description);
+          }
+        }
+      } catch (diffError) {
+        // If git diff fails, just note the file was changed
+        const description = analyzeFileByName(file);
+        if (description) {
+          changeDescriptions.push(description);
+        }
       }
     }
     
     return { 
-      hasChanges: status.length > 0, 
-      recentFiles: diff.split('\n').filter(f => f),
-      commitMessages 
+      hasChanges: changedFiles.length > 0, 
+      recentFiles: changedFiles,
+      commitMessages: changeDescriptions // Use change descriptions instead of commit messages
     };
   } catch (error) {
     return { hasChanges: false, recentFiles: [], commitMessages: [] };
@@ -329,6 +315,58 @@ function runCommand(command, description) {
     log(`❌ ${description} failed: ${error.message}`, 'red');
     throw error;
   }
+}
+
+function analyzeFileDiff(fileName, diff) {
+  const lowerName = fileName.toLowerCase();
+  const diffLower = diff.toLowerCase();
+  
+  // Analyze based on file type and content
+  if (lowerName.includes('component') || lowerName.includes('.tsx') || lowerName.includes('.jsx')) {
+    if (diffLower.includes('+') && diffLower.includes('function') || diffLower.includes('const ')) {
+      return `Enhanced ${fileName.split('/').pop()} component functionality`;
+    }
+    if (diffLower.includes('style') || diffLower.includes('css')) {
+      return `Updated ${fileName.split('/').pop()} component styling`;
+    }
+    return `Modified ${fileName.split('/').pop()} component`;
+  }
+  
+  if (lowerName.includes('page') && (lowerName.includes('.tsx') || lowerName.includes('.jsx'))) {
+    return `Updated ${fileName.split('/').pop().replace(/\.tsx?$/, '')} page functionality`;
+  }
+  
+  if (lowerName.includes('dialog') || lowerName.includes('modal')) {
+    return `Improved ${fileName.split('/').pop().replace(/\.tsx?$/, '')} dialog/modal`;
+  }
+  
+  if (lowerName.includes('form')) {
+    return `Enhanced ${fileName.split('/').pop().replace(/\.tsx?$/, '')} form functionality`;
+  }
+  
+  if (lowerName.includes('api') || lowerName.includes('service')) {
+    return `Updated ${fileName.split('/').pop()} API/service logic`;
+  }
+  
+  if (lowerName.includes('util') || lowerName.includes('helper')) {
+    return `Improved ${fileName.split('/').pop()} utility functions`;
+  }
+  
+  return null; // Skip files we can't meaningfully describe
+}
+
+function analyzeFileByName(fileName) {
+  const baseName = fileName.split('/').pop().replace(/\.tsx?$/, '').replace(/\.jsx?$/, '');
+  
+  if (fileName.toLowerCase().includes('component')) {
+    return `Updated ${baseName} component`;
+  }
+  
+  if (fileName.toLowerCase().includes('page')) {
+    return `Modified ${baseName} page`;
+  }
+  
+  return `Updated ${baseName}`;
 }
 
 function main() {
