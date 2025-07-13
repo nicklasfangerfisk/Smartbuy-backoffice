@@ -84,10 +84,14 @@ export default function UserDialog({ open, onClose, userProfile, editName, setEd
           {/* Avatar Section */}
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 110 }}>
             <Avatar
-              src={editAvatar || userProfile?.avatar_url || ''}
+              src={editAvatar || userProfile?.avatar_url || undefined}
               alt={editName || userProfile?.name || 'Avatar'}
               sx={{ width: 96, height: 96, mb: 1 }}
-            />
+            >
+              {!(editAvatar || userProfile?.avatar_url) && (
+                (editName || userProfile?.name || 'U').substring(0, 2).toUpperCase()
+              )}
+            </Avatar>
             <Typography level="body-xs" sx={{ mt: 1, textAlign: 'center' }}>
               Last login:<br />
               {userProfile?.last_login ? new Date(userProfile.last_login).toLocaleString() : 'Never'}

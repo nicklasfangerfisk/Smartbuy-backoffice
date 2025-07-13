@@ -59,6 +59,7 @@ export interface UserItem {
   created_at: string | null;
   last_login: string | null;
   phone: string | null;
+  avatar_url: string | null;
 }
 
 // Typography styles for consistency
@@ -160,7 +161,15 @@ const PageUsers = () => {
           created_at: user.created_at || null,
           last_login: user.last_login || null,
           phone: user.phone || null,
+          avatar_url: user.avatar_url || null,
         }));
+        
+        // Debug: Log avatar URLs to console
+        console.log('User avatar URLs:', mappedUsers.map(u => ({ 
+          email: u.email, 
+          avatar_url: u.avatar_url 
+        })));
+        
         setUsers(mappedUsers);
       }
     } catch (err: any) {
@@ -269,10 +278,11 @@ const PageUsers = () => {
                 {/* Avatar */}
                 <Avatar
                   size="md"
+                  src={user.avatar_url || undefined}
                   color={getAvatarColor(user.name, user.email)}
                   sx={{ flexShrink: 0 }}
                 >
-                  {getInitials(user.name, user.email)}
+                  {!user.avatar_url && getInitials(user.name, user.email)}
                 </Avatar>
 
                 {/* Main Content */}
@@ -412,9 +422,10 @@ const PageUsers = () => {
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Avatar 
                       size="sm" 
+                      src={user.avatar_url || undefined}
                       color={getAvatarColor(user.name, user.email)}
                     >
-                      {getInitials(user.name, user.email)}
+                      {!user.avatar_url && getInitials(user.name, user.email)}
                     </Avatar>
                     <Typography level="body-sm" fontWeight="md">
                       {user.name || 'Unnamed User'}

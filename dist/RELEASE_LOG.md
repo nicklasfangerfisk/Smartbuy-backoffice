@@ -10,6 +10,17 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
+## [3.2.15] - 2025-07-13 10:15:41
+**Timezone and Time Handling Fixes**
+### Added
+- Enhanced UserDialog.tsx component functionality
+- Enhanced PageUsers.tsx component functionality
+- Enhanced Sidebar.tsx component functionality
+
+### Fixed
+- Fixed timezone handling in release automation
+
+
 ## [3.2.14] - 2025-07-13 10:04:44
 **Release Automation Improvements**
 ### Added

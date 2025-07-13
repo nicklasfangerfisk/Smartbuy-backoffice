@@ -356,7 +356,18 @@ function Sidebar({ setView, view }: { setView: (view: MenuItem['value']) => void
           variant="outlined"
           size="sm"
           src={userProfile?.avatar_url || user?.user_metadata?.avatar_url || undefined}
-        />
+        >
+          {/* Fallback initials if no avatar */}
+          {(!userProfile?.avatar_url && !user?.user_metadata?.avatar_url) && (
+            userProfile?.name ? 
+              userProfile.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() :
+              user?.user_metadata?.full_name ?
+                user.user_metadata.full_name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() :
+                user?.email ? 
+                  user.email.substring(0, 2).toUpperCase() :
+                  'U'
+          )}
+        </Avatar>
         {!isCollapsed && (
           <Box sx={{ minWidth: 0, flex: 1 }}>
             <Typography level="title-sm">{userProfile?.name || user?.user_metadata?.full_name || user?.email || 'Not signed in'}</Typography>
