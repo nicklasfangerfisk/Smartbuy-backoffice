@@ -432,6 +432,11 @@ function main() {
     log(`📊 Recent files changed: ${recentFiles.length}`, 'cyan');
     log(`📝 Recent commits found: ${commitMessages.length}`, 'cyan');
     
+    // Debug: Show what we analyzed
+    if (commitMessages.length > 0) {
+      console.log('DEBUG - Analyzed descriptions:', commitMessages);
+    }
+    
     // Generate release content automatically
     const title = generateReleaseTitle(versionType, recentFiles, commitMessages);
     const sections = generateReleaseContent(versionType, recentFiles, commitMessages);
