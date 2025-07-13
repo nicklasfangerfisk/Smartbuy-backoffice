@@ -83,6 +83,7 @@ function getCurrentVersion() {
 
 function getGitChanges() {
   try {
+    // Analyze uncommitted changes instead of git history for accurate release notes
     const status = execSync('git status --porcelain', { encoding: 'utf8' });
     
     // Get list of changed files (both staged and unstaged)

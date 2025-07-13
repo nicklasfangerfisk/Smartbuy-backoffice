@@ -1,5 +1,7 @@
 # Smartback Inventory System
 
+**SmartBack** is a modern inventory management system built with React, TypeScript, and Supabase, featuring automated release management and Copenhagen timezone support.
+
 ## Local Development
 
 For the best local development experience (frontend + API routes + environment parity), always use:
