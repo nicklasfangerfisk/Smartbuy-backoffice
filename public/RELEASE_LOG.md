@@ -10,7 +10,7 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
-## [3.2.1] - 2025-07-13 16:20:00
+## [3.2.1] - 2025-07-13 09:25:00
 **Purchase Order Form Improvements & Bug Fixes**
 ### Added
 - Split layout purchase order form with header info on left and items on right

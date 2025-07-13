@@ -21,10 +21,9 @@ function log(message, color = 'white') {
 }
 
 function getCurrentCopenhagenTime() {
+  // Use proper Copenhagen timezone with automatic DST handling
   const now = new Date();
-  // Copenhagen time approximation
-  const copenhagenOffset = now.getTimezoneOffset() === -60 ? 1 : 2;
-  const copenhagenTime = new Date(now.getTime() + (copenhagenOffset * 60 * 60 * 1000));
+  const copenhagenTime = new Date(now.toLocaleString("en-US", {timeZone: "Europe/Copenhagen"}));
   
   const year = copenhagenTime.getFullYear();
   const month = String(copenhagenTime.getMonth() + 1).padStart(2, '0');

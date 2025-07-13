@@ -21,11 +21,10 @@ function log(message, color = 'white') {
   console.log(`${colors[color]}${message}${colors.reset}`);
 }
 
-function getCurrentCopenhageTime() {
+function getCurrentCopenhagenTime() {
+  // Use proper Copenhagen timezone with automatic DST handling
   const now = new Date();
-  // Copenhagen time (CET/CEST) - approximation
-  const copenhagenOffset = now.getTimezoneOffset() === -60 ? 1 : 2; // Simple summer/winter time detection
-  const copenhagenTime = new Date(now.getTime() + (copenhagenOffset * 60 * 60 * 1000));
+  const copenhagenTime = new Date(now.toLocaleString("en-US", {timeZone: "Europe/Copenhagen"}));
   
   const year = copenhagenTime.getFullYear();
   const month = String(copenhagenTime.getMonth() + 1).padStart(2, '0');
@@ -84,7 +83,7 @@ function getCurrentVersion() {
 }
 
 function createReleaseEntry(version, title, sections) {
-  const timestamp = getCurrentCopenhageTime();
+  const timestamp = getCurrentCopenhagenTime();
   let entry = `## [${version}] - ${timestamp}\n`;
   entry += `**${title}**\n`;
   
@@ -257,7 +256,7 @@ async function main() {
     log('\n🎉 Release completed successfully!', 'green');
     log('===================================', 'green');
     log(`📦 Version: ${newVersion}`, 'cyan');
-    log(`🕐 Timestamp: ${getCurrentCopenhageTime()}`, 'cyan');
+    log(`🕐 Timestamp: ${getCurrentCopenhagenTime()}`, 'cyan');
     log(`📋 Title: ${title}`, 'cyan');
     log(`🏷️  Tag: v${newVersion}`, 'cyan');
     log(`🔗 Repository: Updated and pushed`, 'cyan');
