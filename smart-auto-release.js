@@ -91,9 +91,10 @@ function getGitChanges() {
     
     for (const line of statusLines) {
       if (line.length >= 3) {
+        const statusCode = line.substring(0, 2);
         const fileName = line.substring(3).trim();
         if (fileName && !fileName.includes('RELEASE_LOG.md') && !fileName.includes('package.json')) {
-          changedFiles.push(fileName);
+          changedFiles.push({ file: fileName, status: statusCode });
         }
       }
     }
@@ -101,20 +102,32 @@ function getGitChanges() {
     // Analyze the actual file changes to generate meaningful descriptions
     let changeDescriptions = [];
     
-    for (const file of changedFiles) {
+    for (const fileInfo of changedFiles) {
       try {
-        // Get the diff for this file
-        const diff = execSync(`git diff HEAD -- "${file}"`, { encoding: 'utf8' });
+        // Determine which diff command to use based on file status
+        let diffCommand;
+        if (fileInfo.status.startsWith('A')) {
+          // New file - use staged diff
+          diffCommand = `git diff --cached -- "${fileInfo.file}"`;
+        } else if (fileInfo.status[0] !== ' ') {
+          // Staged changes - use cached diff
+          diffCommand = `git diff --cached -- "${fileInfo.file}"`;
+        } else {
+          // Unstaged changes - use working tree diff
+          diffCommand = `git diff HEAD -- "${fileInfo.file}"`;
+        }
+        
+        const diff = execSync(diffCommand, { encoding: 'utf8' });
         if (diff) {
           // Analyze the diff to understand what changed
-          const description = analyzeFileDiff(file, diff);
+          const description = analyzeFileDiff(fileInfo.file, diff);
           if (description) {
             changeDescriptions.push(description);
           }
         }
       } catch (diffError) {
         // If git diff fails, just note the file was changed
-        const description = analyzeFileByName(file);
+        const description = analyzeFileByName(fileInfo.file);
         if (description) {
           changeDescriptions.push(description);
         }
@@ -123,7 +136,7 @@ function getGitChanges() {
     
     return { 
       hasChanges: changedFiles.length > 0, 
-      recentFiles: changedFiles,
+      recentFiles: changedFiles.map(f => f.file),
       commitMessages: changeDescriptions // Use change descriptions instead of commit messages
     };
   } catch (error) {
@@ -321,9 +334,23 @@ function analyzeFileDiff(fileName, diff) {
   const lowerName = fileName.toLowerCase();
   const diffLower = diff.toLowerCase();
   
+  // Special handling for automation files
+  if (lowerName.includes('release') || lowerName.includes('automation')) {
+    if (diffLower.includes('timezone') || diffLower.includes('copenhagen')) {
+      return 'Fixed timezone handling in release automation';
+    }
+    if (diffLower.includes('diff') || diffLower.includes('git status')) {
+      return 'Enhanced change detection in release automation';
+    }
+    if (diffLower.includes('analyze') || diffLower.includes('description')) {
+      return 'Improved release note generation logic';
+    }
+    return 'Enhanced release automation system';
+  }
+  
   // Analyze based on file type and content
   if (lowerName.includes('component') || lowerName.includes('.tsx') || lowerName.includes('.jsx')) {
-    if (diffLower.includes('+') && diffLower.includes('function') || diffLower.includes('const ')) {
+    if (diffLower.includes('+') && (diffLower.includes('function') || diffLower.includes('const '))) {
       return `Enhanced ${fileName.split('/').pop()} component functionality`;
     }
     if (diffLower.includes('style') || diffLower.includes('css')) {
