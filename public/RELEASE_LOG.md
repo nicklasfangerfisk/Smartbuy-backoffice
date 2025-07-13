@@ -11,10 +11,11 @@ DEVELOPER INSTRUCTION: How to write release notes
 -->
 
 ## [3.2.6] - 2025-07-13 09:47:18
-**Bug Fixes and Minor Improvements**
+**Release Automation Tag-Based Commit Analysis**
 ### Fixed
-- Bug fixes and stability improvements
-- Performance optimizations
+- Fixed release automation to analyze commits since last tag instead of time-based approach
+- Resolved chicken-and-egg problem where release commits were included in analysis
+- Improved commit detection to capture all changes between releases properly
 
 
 ## [3.2.5] - 2025-07-13 09:44:41
