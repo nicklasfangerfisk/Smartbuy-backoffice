@@ -10,6 +10,13 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
+## [3.2.2] - 2025-07-13 09:35:32
+**Stability and Performance Fixes**
+### Fixed
+- Bug fixes and stability improvements
+- Performance optimizations
+
+
 ## [3.2.1] - 2025-07-13 09:25:00
 **Purchase Order Form Improvements & Bug Fixes**
 ### Added

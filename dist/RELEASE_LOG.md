@@ -10,6 +10,116 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
+## [3.2.2] - 2025-07-13 09:35:32
+**Stability and Performance Fixes**
+### Fixed
+- Bug fixes and stability improvements
+- Performance optimizations
+
+
+## [3.2.1] - 2025-07-13 09:25:00
+**Purchase Order Form Improvements & Bug Fixes**
+### Added
+- Split layout purchase order form with header info on left and items on right
+- Responsive mobile design with card-based item layout
+- Real-time total calculation display at bottom of items section
+- Status-based editing (pending orders editable, others view-only)
+### Fixed
+- Purchase order number generation for new orders
+- Missing order number display with fallback text
+- Form state synchronization when switching between orders
+- Table column spacing and overlap issues in items editor
+
+## [3.2.0] - 2025-07-13 15:30:00
+**Enhanced Supplier Management with Contact Actions & Purchase Order Integration**
+### Added
+- Unified supplier dialog with view, edit, and add modes
+- Clickable email and phone buttons that open device default applications
+- "Add Purchase Order" button with supplier auto-injection
+- Purchase orders table in supplier view showing order history
+- Supplier avatar upload functionality with 5MB limit and image validation
+- Contact action buttons for direct email and phone communication
+### Changed
+- Supplier cards now open in view mode first, with edit accessible via button
+- Edit button changed from primary (blue) to secondary (outlined) styling
+- "Add Purchase Order" button styled as primary action (blue solid)
+- Improved responsive layout for contact information with better button spacing
+- Consolidated SupplierDisplay functionality into unified SupplierForm component
+### Fixed
+- Avatar display issues with proper image scaling within circular bounds
+- Grid layout alignment with negative margins for edge-to-edge card display
+- Responsive contact button layout preventing text overflow on small screens
+### Technical Details
+- Enhanced SupplierForm component with three distinct modes (add/edit/view)
+- Integrated PurchaseOrderForm with pre-selected supplier context
+- Automatic purchase orders list refresh after new order creation
+- Improved TypeScript interfaces and error handling
+- Supabase storage integration for supplier image management
+
+## [3.1.1] - 2025-07-12 16:45:00
+**Suppliers Page Grid Layout Fix**
+### Fixed
+- Fixed responsive grid layout preventing card overlapping
+- Improved card sizing and spacing across all screen sizes
+- Enhanced clickable card interaction with delete functionality moved to edit form
+
+## [3.1.0] - 2025-07-12 15:30:00
+**Checkout Dialog**
+### Added
+- Total amount display in both collapsed and expanded mobile order summary
+### Changed
+- Removed card borders around Contact and Address sections for cleaner UI
+- Improved mobile order summary layout with better button positioning
+### Fixed
+- Fixed checkout navigation buttons visibility on mobile by adjusting z-index layering
+- Resolved collapse button overlap with close button in mobile checkout dialog
+
+## [3.0.3] - 2025-07-11 21:25:00
+**Sidebar Viewport Overflow Fix**
+### Fixed
+- Fixed sidebar extending beyond viewport bottom causing page scrollbar
+- Improved layout height management using proper flex constraints
+- Optimized page content overflow behavior for better scrolling experience
+
+## [3.0.2] - 2025-07-11 20:15:00
+**Unit Test Suite Cleanup & Environment Fixes**
+### Fixed
+- Removed temporary debugging test file causing consistent test failures
+- Added window.matchMedia mock for Material-UI components in Jest environment
+- Fixed test selectors to match actual UI placeholders and button text
+- Test suite now properly runs only the three intended authentication test cases
+### Technical Details
+- Enhanced Jest setup configuration for React component testing
+- Improved test reliability and compatibility with Material-UI Joy components
+- All authentication tests now pass consistently (login, error handling, logout)
+
+## [3.0.1] - 2025-07-11 17:55:00
+**Product Image Upload & Inventory Management Enhancement**
+### Added
+- Product image upload functionality with Supabase storage integration
+- Drag & drop image upload interface with file validation (images only, max 5MB)
+- Image preview and removal capabilities in product forms
+- Inventory management section in product creation/editing forms
+- Minimum stock, maximum stock, and reorder amount fields
+- Dedicated inventory section with clear visual separation and icons
+- Storage policies for productimages bucket with proper RLS configuration
+- Database column consistency improvements (image_url standardization)
+### Changed
+- ProductTableForm and ProductDialog components enhanced with image upload
+- Product interface updated to include inventory management fields
+- Form validation improved with proper type conversion for inventory fields
+- Product save operations now handle image URLs and inventory data
+- Enhanced user experience with intuitive form organization
+### Fixed
+- Column name consistency between database schema and TypeScript interfaces
+- Storage bucket name alignment for successful image uploads
+- RLS policy violations resolved for authenticated image uploads
+### Technical Details
+- Image storage integrated with Supabase productimages bucket
+- Inventory fields connected to existing database schema (min_stock, max_stock, reorder_amount)
+- Proper null handling for optional inventory and image fields
+- TypeScript type safety maintained across all form components
+
 ## [3.0.0] - 2025-07-11 16:45:00
 **Major Update: Comprehensive Currency Persistence & Multi-Currency Foundation**
 ### Added
