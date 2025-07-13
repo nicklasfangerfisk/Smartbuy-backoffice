@@ -86,23 +86,41 @@ function getGitChanges() {
     const status = execSync('git status --porcelain', { encoding: 'utf8' });
     const diff = execSync('git diff --name-only HEAD~1', { encoding: 'utf8' }).trim();
     
-    // Get recent commit messages since last release (excluding release commits)
+    // Get commit messages since last release tag (not time-based)
     let commitMessages = [];
     try {
-      // Get commits since last release, excluding merge and release commits
-      const commits = execSync('git log --oneline --since="2 days ago" --format="%s" --grep="^Release" --invert-grep', { encoding: 'utf8' }).trim();
+      // First, get the last release tag
+      let lastTag = '';
+      try {
+        lastTag = execSync('git describe --tags --abbrev=0', { encoding: 'utf8' }).trim();
+      } catch (tagError) {
+        // If no tags exist, get commits from beginning
+        lastTag = '';
+      }
+      
+      // Get commits since last tag, excluding release commits
+      let gitCommand;
+      if (lastTag) {
+        gitCommand = `git log ${lastTag}..HEAD --format="%s"`;
+      } else {
+        gitCommand = 'git log --format="%s" -10'; // Last 10 commits if no tags
+      }
+      
+      const commits = execSync(gitCommand, { encoding: 'utf8' }).trim();
       commitMessages = commits ? commits.split('\n').filter(msg => {
         const clean = msg.trim();
         return clean && 
                !clean.toLowerCase().includes('release') && 
                !clean.toLowerCase().startsWith('v3.') &&
                !clean.toLowerCase().startsWith('v2.') &&
-               !clean.toLowerCase().startsWith('v1.');
+               !clean.toLowerCase().startsWith('v1.') &&
+               !clean.toLowerCase().includes('merge') &&
+               !clean.toLowerCase().includes('bump version');
       }) : [];
     } catch (error) {
       // Fallback: get recent commits and filter manually
       try {
-        const commits = execSync('git log --oneline -10 --format="%s"', { encoding: 'utf8' }).trim();
+        const commits = execSync('git log --oneline -5 --format="%s"', { encoding: 'utf8' }).trim();
         const allCommits = commits ? commits.split('\n').filter(msg => msg.trim()) : [];
         commitMessages = allCommits.filter(msg => {
           const clean = msg.trim().toLowerCase();
