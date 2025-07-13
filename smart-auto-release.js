@@ -224,8 +224,13 @@ function generateReleaseContent(versionType, recentFiles, commitMessages = []) {
   // Parse commit messages for meaningful content
   const processedCommits = new Set(); // Avoid duplicates
   
+  console.log('DEBUG - generateReleaseContent called with:', commitMessages);
+  
   for (const commit of commitMessages) {
     const lowerCommit = commit.toLowerCase();
+    
+    console.log('DEBUG - Processing commit:', commit);
+    console.log('DEBUG - Lower case:', lowerCommit);
     
     // Skip generic, automated, or release commits
     if (lowerCommit.includes('merge') || 
@@ -236,33 +241,45 @@ function generateReleaseContent(versionType, recentFiles, commitMessages = []) {
         lowerCommit.startsWith('v1.') ||
         lowerCommit.includes(': ') && (lowerCommit.includes('v3.') || lowerCommit.includes('v2.')) ||
         processedCommits.has(commit)) {
+      console.log('DEBUG - Skipping commit (filtered)');
       continue;
     }
     
     processedCommits.add(commit);
+    console.log('DEBUG - Processing commit after filtering');
     
     // Categorize based on commit message keywords or content
     if (lowerCommit.includes('add') || lowerCommit.includes('implement') || lowerCommit.includes('create') || lowerCommit.includes('new') || lowerCommit.includes('enhanced')) {
+      console.log('DEBUG - Adding to Added section');
       content.Added.push(commit.charAt(0).toUpperCase() + commit.slice(1));
     } else if (lowerCommit.includes('fix') || lowerCommit.includes('resolve') || lowerCommit.includes('correct') || lowerCommit.includes('bug') || lowerCommit.includes('fixed')) {
+      console.log('DEBUG - Adding to Fixed section');
       content.Fixed.push(commit.charAt(0).toUpperCase() + commit.slice(1));
     } else if (lowerCommit.includes('update') || lowerCommit.includes('enhance') || lowerCommit.includes('improve') || lowerCommit.includes('change') || lowerCommit.includes('modified')) {
+      console.log('DEBUG - Adding to Changed section');
       content.Changed.push(commit.charAt(0).toUpperCase() + commit.slice(1));
     } else {
       // For our analyzed descriptions, use smart categorization
+      console.log('DEBUG - Using smart categorization');
       if (lowerCommit.includes('timezone') || lowerCommit.includes('time') || lowerCommit.includes('automation') || lowerCommit.includes('detection')) {
+        console.log('DEBUG - Smart categorization: Fixed');
         content.Fixed.push(commit.charAt(0).toUpperCase() + commit.slice(1));
       } else if (lowerCommit.includes('component') || lowerCommit.includes('page') || lowerCommit.includes('form')) {
+        console.log('DEBUG - Smart categorization: Changed');
         content.Changed.push(commit.charAt(0).toUpperCase() + commit.slice(1));
       } else {
         // Default to Changed for other analyzed content
+        console.log('DEBUG - Smart categorization: Default Changed');
         content.Changed.push(commit.charAt(0).toUpperCase() + commit.slice(1));
       }
     }
   }
   
+  console.log('DEBUG - Final content before fallback:', content);
+  
   // If no meaningful commits found, fall back to generic content
   if (content.Added.length === 0 && content.Changed.length === 0 && content.Fixed.length === 0) {
+    console.log('DEBUG - Using fallback generic content');
     if (versionType === 'major') {
       content.Added.push('Major system architecture improvements');
       content.Changed.push('Complete redesign of core components');
@@ -289,6 +306,7 @@ function generateReleaseContent(versionType, recentFiles, commitMessages = []) {
     }
   }
   
+  console.log('DEBUG - Final content after fallback:', content);
   return content;
 }
 
