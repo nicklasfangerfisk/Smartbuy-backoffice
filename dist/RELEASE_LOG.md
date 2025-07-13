@@ -10,11 +10,23 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
-## [3.2.2] - 2025-07-13 09:35:32
-**Stability and Performance Fixes**
+## [3.2.3] - 2025-07-13 09:40:07
+**Timezone and Time Handling Fixes**
+### Changed
+- V3.0.4: Checkout Dialog UI Improvements
+
 ### Fixed
-- Bug fixes and stability improvements
-- Performance optimizations
+- V3.1.1: Suppliers Page Grid Layout Fix
+- Feat: Complete checkout experience with Joy UI components
+
+
+## [3.2.2] - 2025-07-13 09:35:32
+**Release Automation Timezone Fixes**
+### Fixed
+- Fixed incorrect timezone calculation in release automation scripts using proper Europe/Copenhagen timezone API
+- Corrected function name typo from getCurrentCopenhageTime to getCurrentCopenhagenTime
+- Replaced manual DST offset calculation with automatic timezone handling
+- Fixed release log file paths in automation scripts to use public/RELEASE_LOG.md
 
 
 ## [3.2.1] - 2025-07-13 09:25:00

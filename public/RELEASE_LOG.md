@@ -10,6 +10,16 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
+## [3.2.3] - 2025-07-13 09:40:07
+**Timezone and Time Handling Fixes**
+### Changed
+- V3.0.4: Checkout Dialog UI Improvements
+
+### Fixed
+- V3.1.1: Suppliers Page Grid Layout Fix
+- Feat: Complete checkout experience with Joy UI components
+
+
 ## [3.2.2] - 2025-07-13 09:35:32
 **Release Automation Timezone Fixes**
 ### Fixed
