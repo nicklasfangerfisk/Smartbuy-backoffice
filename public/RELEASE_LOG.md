@@ -11,13 +11,11 @@ DEVELOPER INSTRUCTION: How to write release notes
 -->
 
 ## [3.2.3] - 2025-07-13 09:40:07
-**Timezone and Time Handling Fixes**
-### Changed
-- V3.0.4: Checkout Dialog UI Improvements
-
+**Release Automation Improvements**
 ### Fixed
-- V3.1.1: Suppliers Page Grid Layout Fix
-- Feat: Complete checkout experience with Joy UI components
+- Enhanced release automation to generate meaningful release notes from commit messages
+- Improved commit message parsing with better filtering of release and version commits
+- Added intelligent categorization of commits into Added/Changed/Fixed sections
 
 
 ## [3.2.2] - 2025-07-13 09:35:32

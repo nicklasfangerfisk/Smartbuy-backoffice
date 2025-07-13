@@ -86,16 +86,32 @@ function getGitChanges() {
     const status = execSync('git status --porcelain', { encoding: 'utf8' });
     const diff = execSync('git diff --name-only HEAD~1', { encoding: 'utf8' }).trim();
     
-    // Get recent commit messages since last release
+    // Get recent commit messages since last release (excluding release commits)
     let commitMessages = [];
     try {
-      const commits = execSync('git log --oneline --since="1 day ago" --format="%s"', { encoding: 'utf8' }).trim();
-      commitMessages = commits ? commits.split('\n').filter(msg => msg.trim()) : [];
+      // Get commits since last release, excluding merge and release commits
+      const commits = execSync('git log --oneline --since="2 days ago" --format="%s" --grep="^Release" --invert-grep', { encoding: 'utf8' }).trim();
+      commitMessages = commits ? commits.split('\n').filter(msg => {
+        const clean = msg.trim();
+        return clean && 
+               !clean.toLowerCase().includes('release') && 
+               !clean.toLowerCase().startsWith('v3.') &&
+               !clean.toLowerCase().startsWith('v2.') &&
+               !clean.toLowerCase().startsWith('v1.');
+      }) : [];
     } catch (error) {
-      // Fallback to last few commits if time-based fails
+      // Fallback: get recent commits and filter manually
       try {
-        const commits = execSync('git log --oneline -5 --format="%s"', { encoding: 'utf8' }).trim();
-        commitMessages = commits ? commits.split('\n').filter(msg => msg.trim()) : [];
+        const commits = execSync('git log --oneline -10 --format="%s"', { encoding: 'utf8' }).trim();
+        const allCommits = commits ? commits.split('\n').filter(msg => msg.trim()) : [];
+        commitMessages = allCommits.filter(msg => {
+          const clean = msg.trim().toLowerCase();
+          return !clean.includes('release') && 
+                 !clean.startsWith('v3.') &&
+                 !clean.startsWith('v2.') &&
+                 !clean.startsWith('v1.') &&
+                 !clean.includes('merge');
+        });
       } catch (fallbackError) {
         commitMessages = [];
       }
@@ -193,10 +209,14 @@ function generateReleaseContent(versionType, recentFiles, commitMessages = []) {
   for (const commit of commitMessages) {
     const lowerCommit = commit.toLowerCase();
     
-    // Skip generic or automated commits
+    // Skip generic, automated, or release commits
     if (lowerCommit.includes('merge') || 
         lowerCommit.includes('bump version') || 
         lowerCommit.includes('release') ||
+        lowerCommit.startsWith('v3.') ||
+        lowerCommit.startsWith('v2.') ||
+        lowerCommit.startsWith('v1.') ||
+        lowerCommit.includes(': ') && (lowerCommit.includes('v3.') || lowerCommit.includes('v2.')) ||
         processedCommits.has(commit)) {
       continue;
     }
