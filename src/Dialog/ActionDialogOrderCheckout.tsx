@@ -43,6 +43,7 @@ import SubDialogOrderCheckoutPayment from './SubDialogOrderCheckoutPayment';
 
 // Utilities
 import { formatCurrencyWithSymbol } from '../utils/currencyUtils';
+import { completeOrder } from '../utils/orderUtils';
 
 // Types
 import type { Database } from '../general/supabase.types';
@@ -57,6 +58,7 @@ export interface ActionDialogOrderCheckoutProps {
     discount?: number;
     customer_name?: string;
     customer_email?: string;
+    storefront_id?: string;
   } | null;
   onSuccess: () => void;
 }
@@ -217,42 +219,18 @@ export default function ActionDialogOrderCheckout({ open, onClose, order, onSucc
     setError(null);
 
     try {
-      // Update order with customer information and change status to Paid
+      // Use the completeOrder utility which handles everything
       const customerName = customerInfo.firstName && customerInfo.lastName 
         ? `${customerInfo.firstName} ${customerInfo.lastName}`
         : customerInfo.name || '';
-        
-      const { error: orderError } = await supabase
-        .from('Orders')
-        .update({
-          customer_name: customerName,
-          customer_email: customerInfo.email,
-          status: 'Paid',
-          // Add payment and shipping info as JSON in a notes field or separate table
-        })
-        .eq('uuid', order.uuid);
 
-      if (orderError) throw orderError;
+      const result = await completeOrder(order.uuid, {
+        name: customerName,
+        email: customerInfo.email
+      });
 
-      // Create stock movements for order fulfillment
-      if (orderItems.length > 0) {
-        const stockMovements = orderItems.map(item => ({
-          product_id: item.product_uuid!,
-          movement_type: 'outgoing' as const,
-          quantity: item.quantity,
-          date: new Date().toISOString(),
-          reason: 'Order Fulfillment',
-          referenceuuid: order.uuid
-        }));
-
-        const { error: movementError } = await supabase
-          .from('stock_movements')
-          .insert(stockMovements);
-
-        if (movementError) {
-          console.warn('Failed to create stock movements:', movementError);
-          // Continue with order completion even if stock movements fail
-        }
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to complete order');
       }
 
       setOrderCompleted(true);

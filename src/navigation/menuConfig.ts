@@ -11,9 +11,10 @@ import StorefrontIcon from '@mui/icons-material/Storefront';
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import PersonIcon from '@mui/icons-material/Person';
 import BadgeIcon from '@mui/icons-material/Badge';
+import EmailIcon from '@mui/icons-material/Email';
 import LanguageIcon from '@mui/icons-material/Language';
 
-export type MenuValue = 'home' | 'dashboard' | 'orders' | 'users' | 'customers' | 'employees' | 'suppliers' | 'products' | 'purchaseorders' | 'tickets' | 'smscampaigns' | 'movements' | 'settings' | 'profile' | 'storefronts';
+export type MenuValue = 'home' | 'dashboard' | 'orders' | 'users' | 'customers' | 'employees' | 'suppliers' | 'products' | 'purchaseorders' | 'tickets' | 'smscampaigns' | 'movements' | 'settings' | 'profile' | 'storefronts' | 'emailsettings';
 
 export type MenuArea = 'Sales' | 'Support' | 'Marketing' | 'Operations' | 'Administration';
 
@@ -67,6 +68,7 @@ export const menuByArea: Record<MenuArea, MenuItem[]> = {
   ],
   Administration: [
     { label: 'Employees', icon: React.createElement(BadgeIcon), value: 'employees', route: '/employees', showInMobile: true },
+    { label: 'Email Settings', icon: React.createElement(EmailIcon), value: 'emailsettings', route: '/email-settings', showInMobile: true },
     { label: 'My Profile', icon: React.createElement(PersonIcon), value: 'profile', route: '/settings', showInMobile: true },
   ],
 };

@@ -35,6 +35,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import './App.css'; // Import custom styles
 import LoginLayout from './auth/LoginLayout';
 import PageMovements from './Page/PageMovements';
+import PageEmailSettings from './Page/PageEmailSettings';
 import PageSettings from './Page/PageSettings';
 import { MenuValue } from './navigation/menuConfig';
 
@@ -66,6 +67,7 @@ function Layout() {
       '/sms-campaigns': 'dashboard', // SMS campaigns grouped under dashboard for mobile
       '/movements': 'dashboard', // Movements grouped under dashboard for mobile
       '/settings': 'profile', // Settings page maps to profile in mobile
+      '/email-settings': 'profile', // Email settings page maps to profile in mobile
     };
     setMobileMenuValue(pathToValueMap[location.pathname] || 'dashboard');
   }, [location.pathname]);
@@ -110,7 +112,8 @@ function Layout() {
                 'smscampaigns': '/sms-campaigns',
                 'movements': '/movements',
                 'profile': '/settings',
-                'settings': '/settings'
+                'settings': '/settings',
+                'emailsettings': '/email-settings'
               };
               
               const targetRoute = routeMap[value] || `/${value}`;
@@ -222,6 +225,14 @@ function Layout() {
             element={
               <ProtectedRoute>
                 <PageSettings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/email-settings"
+            element={
+              <ProtectedRoute>
+                <PageEmailSettings />
               </ProtectedRoute>
             }
           />

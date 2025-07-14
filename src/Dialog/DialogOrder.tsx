@@ -30,6 +30,12 @@ interface Product {
   SalesPrice?: number;
 }
 
+interface Storefront {
+  id: string;
+  name: string;
+  is_online: boolean;
+}
+
 interface OrderItemDraft {
   id: string;
   product: Product | null;
@@ -88,6 +94,7 @@ export default function DialogOrder({
   const [orderNumber, setOrderNumber] = React.useState('');
   const [orderDate, setOrderDate] = React.useState(new Date().toISOString().slice(0, 10));
   const [status, setStatus] = React.useState<OrderStatus>('Draft');
+  const [storefrontId, setStorefrontId] = React.useState<string>('');
   const [customerName, setCustomerName] = React.useState('');
   const [customerEmail, setCustomerEmail] = React.useState('');
   const [total, setTotal] = React.useState('0');
@@ -103,6 +110,10 @@ export default function DialogOrder({
   // Product selection states
   const [products, setProducts] = React.useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = React.useState(false);
+  
+  // Storefront states
+  const [storefronts, setStorefronts] = React.useState<Storefront[]>([]);
+  const [loadingStorefronts, setLoadingStorefronts] = React.useState(false);
   
   // UI states
   const [saving, setSaving] = React.useState(false);
@@ -121,6 +132,7 @@ export default function DialogOrder({
       setTotal(order.total ? String(order.total) : '0');
       setDiscount(order.discount || 0);
       setNotes(order.notes || '');
+      setStorefrontId((order as any).storefront_id || '');
     } else if (open && mode === 'add') {
       // Reset form for add mode
       setOrderNumber(generateOrderNumber());
@@ -131,6 +143,7 @@ export default function DialogOrder({
       setTotal('0');
       setDiscount(0);
       setNotes('');
+      setStorefrontId('');
       setOrderItems([{ id: crypto.randomUUID(), product: null, quantity: 1, unitprice: 0, discount: 0 }]);
     }
     setError(null);
@@ -151,6 +164,34 @@ export default function DialogOrder({
         .finally(() => setLoading(false));
     }
   }, [open, mode, order, fetchOrderItems]);
+
+  // Load storefronts when dialog opens
+  React.useEffect(() => {
+    if (open) {
+      setLoadingStorefronts(true);
+      const loadStorefronts = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('storefronts')
+            .select('id, name, is_online')
+            .eq('is_online', true)
+            .order('name', { ascending: true });
+          
+          if (!error && data) {
+            setStorefronts(data);
+          } else {
+            console.error('Error loading storefronts:', error);
+          }
+        } catch (err) {
+          console.error('Error loading storefronts:', err);
+        } finally {
+          setLoadingStorefronts(false);
+        }
+      };
+      
+      loadStorefronts();
+    }
+  }, [open]);
 
   // Load products for add/edit mode
   React.useEffect(() => {
@@ -258,6 +299,7 @@ export default function DialogOrder({
         total: parseFloat(total),
         discount: discount,
         notes: notes.trim() || null,
+        storefront_id: storefrontId || null, // Include storefront ID
       };
 
       if (mode === 'edit' && order?.id) {
@@ -394,6 +436,23 @@ export default function DialogOrder({
                   placeholder="customer@example.com"
                   required
                 />
+              </FormControl>
+
+              <FormControl>
+                <FormLabel>Storefront</FormLabel>
+                <Select
+                  value={storefrontId}
+                  onChange={(_, value) => setStorefrontId(value || '')}
+                  disabled={isReadOnly || loadingStorefronts}
+                  placeholder="Select a storefront (optional)"
+                >
+                  <Option value="">No specific storefront</Option>
+                  {storefronts.map((storefront) => (
+                    <Option key={storefront.id} value={storefront.id}>
+                      {storefront.name}
+                    </Option>
+                  ))}
+                </Select>
               </FormControl>
             </Box>
 
@@ -631,6 +690,39 @@ export default function DialogOrder({
           <Button variant="plain" onClick={onClose} disabled={saving}>
             {isReadOnly ? 'Close' : 'Cancel'}
           </Button>
+          
+          {/* Resend Email Button - only show for paid orders with email */}
+          {order && order.status === 'Paid' && order.customer_email && (
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={async () => {
+                try {
+                  const response = await fetch('/api/resend-order-confirmation', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                      orderUuid: order.uuid,
+                      resendEmail: true 
+                    }),
+                  });
+                  
+                  const result = await response.json();
+                  if (result.success) {
+                    alert('Confirmation email sent successfully!');
+                  } else {
+                    alert('Failed to send email: ' + result.error);
+                  }
+                } catch (err: any) {
+                  alert('Error sending email: ' + err.message);
+                }
+              }}
+              disabled={saving}
+            >
+              Resend Email
+            </Button>
+          )}
+          
           {!isReadOnly && (
             <Button
               onClick={handleSave}
