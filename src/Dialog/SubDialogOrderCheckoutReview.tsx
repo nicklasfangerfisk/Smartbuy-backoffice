@@ -1,5 +1,5 @@
 /**
- * OrderReview - Final step of checkout process
+ * SubDialogOrderCheckoutReview - Final step of checkout process
  * 
  * Displays order summary, customer information, and payment details for review
  */
@@ -17,10 +17,10 @@ import List from '@mui/joy/List';
 import ListItem from '@mui/joy/ListItem';
 import ListItemContent from '@mui/joy/ListItemContent';
 
-import type { CustomerInfo, PaymentInfo, OrderItem } from '../CheckoutDialog';
-import { formatCurrencyWithSymbol } from '../../utils/currencyUtils';
+import type { CustomerInfo, PaymentInfo, OrderItem } from './ActionDialogOrderCheckout';
+import { formatCurrencyWithSymbol } from '../utils/currencyUtils';
 
-interface OrderReviewProps {
+interface SubDialogOrderCheckoutReviewProps {
   order: {
     uuid: string;
     order_number_display?: string;
@@ -32,7 +32,7 @@ interface OrderReviewProps {
   paymentInfo: PaymentInfo;
 }
 
-export default function OrderReview({ order, orderItems, customerInfo, paymentInfo }: OrderReviewProps) {
+export default function SubDialogOrderCheckoutReview({ order, orderItems, customerInfo, paymentInfo }: SubDialogOrderCheckoutReviewProps) {
   if (!order) return null;
 
   const calculateSubtotal = () => {
@@ -58,19 +58,25 @@ export default function OrderReview({ order, orderItems, customerInfo, paymentIn
             { label: 'Expires', value: paymentInfo.expiryDate || '' },
           ]
         };
-      case 'bank':
+      case 'mobilepay':
         return {
-          title: 'Bank Transfer',
+          title: 'MobilePay',
           details: [
-            { label: 'Account', value: `****${paymentInfo.bankAccount?.slice(-4) || ''}` },
-            { label: 'Routing', value: paymentInfo.routingNumber || '' },
+            { label: 'Method', value: 'MobilePay' },
           ]
         };
-      case 'cash':
+      case 'viabill':
         return {
-          title: 'Cash Payment',
+          title: 'ViaBill',
           details: [
-            { label: 'Method', value: 'Cash on Delivery' },
+            { label: 'Method', value: 'ViaBill Financing' },
+          ]
+        };
+      case 'international':
+        return {
+          title: 'International Payment',
+          details: [
+            { label: 'Method', value: 'International Transfer' },
           ]
         };
       default:

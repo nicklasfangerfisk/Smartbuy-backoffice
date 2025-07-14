@@ -64,6 +64,7 @@ function UserProfile() {
   const [role, setRole] = useState('');
   const [department, setDepartment] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
 
   useEffect(() => {
     loadUserData();
@@ -72,30 +73,41 @@ function UserProfile() {
   const loadUserData = async () => {
     try {
       setLoading(true);
-      
       // Get authenticated user
       const { data: authData } = await supabase.auth.getUser();
       const authUser = authData.user;
-      
       if (authUser) {
         setUser(authUser);
         setEmail(authUser.email || '');
-        
         // Get user profile from database
         const { data: profileData } = await supabase
           .from('users')
           .select('*')
           .eq('id', authUser.id)
           .single();
-          
         if (profileData) {
           setUserProfile(profileData);
-          const nameParts = (profileData.name || '').split(' ');
-          setFirstName(nameParts[0] || '');
-          setLastName(nameParts.slice(1).join(' ') || '');
+          // Use first_name and last_name directly from database
+          setFirstName(profileData.first_name || '');
+          setLastName(profileData.last_name || '');
           setRole(profileData.role || 'UI Developer');
           setDepartment(profileData.department || '');
           setAvatarUrl(profileData.avatar_url || '');
+          setPhoneNumber(profileData.phone_number || '');
+        }
+        // Fallback to auth metadata if database fields are empty
+        if (!profileData?.phone_number && authUser.user_metadata?.phone_number) {
+          setPhoneNumber(authUser.user_metadata.phone_number);
+        }
+        // Note: authUser.phone is for SMS-based auth, not the same as our profile phone
+        // Sync name fields from auth.users metadata if they exist and profile fields are empty
+        if (authUser.user_metadata) {
+          if (!profileData?.first_name && authUser.user_metadata.first_name) {
+            setFirstName(authUser.user_metadata.first_name);
+          }
+          if (!profileData?.last_name && authUser.user_metadata.last_name) {
+            setLastName(authUser.user_metadata.last_name);
+          }
         }
       }
     } catch (error) {
@@ -109,33 +121,76 @@ function UserProfile() {
   const handleSave = async () => {
     if (!user) return;
     
+    // Validate phone number: must start with + and be at least 8 digits total
+    const phoneRegex = /^\+[1-9]\d{7,}$/;
+    if (phoneNumber && !phoneRegex.test(phoneNumber)) {
+      setMessage({ 
+        type: 'danger', 
+        text: 'Phone number must include country code and be valid (e.g., +4512345678, +1234567890)' 
+      });
+      return;
+    }
+    
+    // Validate names
+    if (!firstName.trim()) {
+      setMessage({ type: 'danger', text: 'First name is required' });
+      return;
+    }
+    
     try {
       setSaving(true);
-      const fullName = `${firstName} ${lastName}`.trim();
       
-      // Update user profile in database
-      const { error } = await supabase
+      // Note: name field will be automatically synced via database trigger
+      // We only need to update first_name, last_name, and other fields
+      const { error: userTableError } = await supabase
         .from('users')
         .update({
-          name: fullName,
-          role: role,
-          department: department,
-          avatar_url: avatarUrl || null,
+          role: role.trim() || null,
+          department: department.trim() || null,
+          avatar_url: avatarUrl.trim() || null,
+          phone_number: phoneNumber.trim() || null,
+          first_name: firstName.trim(),
+          last_name: lastName.trim() || null,
+          // name field will be auto-updated by trigger
         })
         .eq('id', user.id);
-
-      if (error) throw error;
+      
+      if (userTableError) throw userTableError;
+      
+      // Update phone number and metadata in auth.users table
+      // Note: Supabase auth doesn't support direct phone updates via updateUser for existing users
+      // Phone number will be stored in our users table and user_metadata
+      const { error: authError } = await supabase.auth.updateUser({
+        data: {
+          first_name: firstName.trim(),
+          last_name: lastName.trim() || null,
+          full_name: `${firstName.trim()} ${lastName.trim()}`.trim(),
+          phone_number: phoneNumber.trim() || null, // Store in metadata for reference
+        }
+      });
+      
+      if (authError) {
+        console.warn('Failed to update auth.users metadata:', authError);
+        // Don't throw error - auth metadata update is not critical
+        // The phone number is still properly stored in our users table
+      }
       
       // Reload user data
       await loadUserData();
       setEditing(false);
       setMessage({ type: 'success', text: 'Profile updated successfully' });
-      
-      // Clear message after 3 seconds
       setTimeout(() => setMessage(null), 3000);
     } catch (error) {
       console.error('Error saving profile:', error);
-      setMessage({ type: 'danger', text: 'Failed to save profile' });
+      let errorMessage = 'Failed to save profile';
+      if (error instanceof Error) {
+        if (error.message.includes('phone_number_format_check')) {
+          errorMessage = 'Phone number format is invalid. Please use international format with country code (e.g., +4512345678)';
+        } else {
+          errorMessage = `Failed to save profile: ${error.message}`;
+        }
+      }
+      setMessage({ type: 'danger', text: errorMessage });
     } finally {
       setSaving(false);
     }
@@ -227,12 +282,12 @@ function UserProfile() {
 
   const handleCancel = () => {
     // Reset form to current data
-    const nameParts = (userProfile?.name || '').split(' ');
-    setFirstName(nameParts[0] || '');
-    setLastName(nameParts.slice(1).join(' ') || '');
+    setFirstName(userProfile?.first_name || '');
+    setLastName(userProfile?.last_name || '');
     setRole(userProfile?.role || 'UI Developer');
     setDepartment(userProfile?.department || '');
     setAvatarUrl(userProfile?.avatar_url || '');
+    setPhoneNumber(userProfile?.phone_number || '');
     setEditing(false);
     setMessage(null);
   };
@@ -383,6 +438,23 @@ function UserProfile() {
                 </Box>
               </Box>
 
+              {/* Phone Number Row */}
+              <FormControl>
+                <FormLabel>Phone Number</FormLabel>
+                <Input
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  disabled={!editing}
+                  placeholder="e.g., +4512345678, +1234567890"
+                  startDecorator="📞"
+                />
+                {editing && (
+                  <Typography level="body-xs" color="neutral" sx={{ mt: 0.5 }}>
+                    Include country code (e.g., +45 for Denmark, +1 for US/Canada)
+                  </Typography>
+                )}
+              </FormControl>
+
               {/* Role and Department Row */}
               <Box sx={{ 
                 display: 'flex', 
@@ -445,6 +517,11 @@ function UserProfile() {
                     {userProfile.last_login && (
                       <Typography level="body-sm">
                         <strong>Last login:</strong> {new Date(userProfile.last_login).toLocaleDateString()}
+                      </Typography>
+                    )}
+                    {(userProfile.phone_number || phoneNumber) && (
+                      <Typography level="body-sm">
+                        <strong>Phone (stored):</strong> {userProfile.phone_number || phoneNumber}
                       </Typography>
                     )}
                     <Typography level="body-sm">

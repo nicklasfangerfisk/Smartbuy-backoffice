@@ -4,7 +4,7 @@
  * HOCs: ProtectedRoute (route-level auth guard)
  * Layout: PageLayout (no ResponsiveContainer - custom layout)
  * Responsive: useResponsive() hook for mobile detection
- * Dialogs: DialogTicketCreate, DialogTicketResolve
+ * Dialogs: ActionDialogTicketCreate, ActionDialogTicketResolve
  * Data: Supabase tickets and ticket_messages tables with real-time
  */
 
@@ -30,8 +30,8 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import IconButton from '@mui/joy/IconButton';
 import Select from '@mui/joy/Select';
 import Option from '@mui/joy/Option';
-import DialogTicketCreate from '../Dialog/DialogTicketCreate';
-import DialogTicketResolve from '../Dialog/DialogTicketResolve';
+import ActionDialogTicketCreate from '../Dialog/ActionDialogTicketCreate';
+import ActionDialogTicketResolve from '../Dialog/ActionDialogTicketResolve';
 import PageLayout from '../layouts/PageLayout';
 import { useResponsive } from '../hooks/useResponsive';
 import Divider from '@mui/joy/Divider';
@@ -457,13 +457,13 @@ export default function PageTickets() {
           </Box>
 
           {/* Dialogs */}
-          <DialogTicketCreate
+          <ActionDialogTicketCreate
             open={isCreateDialogOpen}
             onClose={() => setIsCreateDialogOpen(false)}
             onCreated={refreshTickets}
           />
           
-          <DialogTicketResolve
+          <ActionDialogTicketResolve
             open={isResolveDialogOpen}
             onClose={() => setIsResolveDialogOpen(false)}
             onSubmit={handleResolve}
@@ -597,13 +597,13 @@ export default function PageTickets() {
         </Box>
 
         {/* Dialogs */}
-        <DialogTicketCreate
+        <ActionDialogTicketCreate
           open={isCreateDialogOpen}
           onClose={() => setIsCreateDialogOpen(false)}
           onCreated={refreshTickets}
         />
         
-        <DialogTicketResolve
+        <ActionDialogTicketResolve
           open={isResolveDialogOpen}
           onClose={() => setIsResolveDialogOpen(false)}
           onSubmit={handleResolve}
@@ -909,13 +909,13 @@ export default function PageTickets() {
       </Box>
       
       {/* Dialogs */}
-      <DialogTicketCreate
+      <ActionDialogTicketCreate
         open={isCreateDialogOpen}
         onClose={() => setIsCreateDialogOpen(false)}
         onCreated={refreshTickets}
       />
       
-      <DialogTicketResolve
+      <ActionDialogTicketResolve
         open={isResolveDialogOpen}
         onClose={() => setIsResolveDialogOpen(false)}
         onSubmit={handleResolve}

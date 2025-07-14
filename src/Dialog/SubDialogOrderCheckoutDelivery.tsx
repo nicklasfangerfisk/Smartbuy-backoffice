@@ -10,7 +10,7 @@ import Box from '@mui/joy/Box';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
 import SpeedIcon from '@mui/icons-material/Speed';
-import { formatCurrency, formatCurrencyWithSymbol } from '../../utils/currencyUtils';
+import { formatCurrency, formatCurrencyWithSymbol } from '../utils/currencyUtils';
 
 export interface DeliveryInfo {
   method: 'standard' | 'express' | 'overnight';
@@ -24,7 +24,7 @@ export interface DeliveryInfo {
   };
 }
 
-interface DeliveryFormProps {
+interface SubDialogOrderCheckoutDeliveryProps {
   deliveryInfo: DeliveryInfo;
   onChange: (deliveryInfo: DeliveryInfo) => void;
   subtotal?: number; // Add subtotal prop for free shipping calculation
@@ -54,7 +54,7 @@ const deliveryOptions = [
   }
 ];
 
-export default function DeliveryForm({ deliveryInfo, onChange, subtotal = 0 }: DeliveryFormProps) {
+export default function SubDialogOrderCheckoutDelivery({ deliveryInfo, onChange, subtotal = 0 }: SubDialogOrderCheckoutDeliveryProps) {
   const freeShippingThreshold = 1000;
   const qualifiesForFreeShipping = subtotal >= freeShippingThreshold;
   

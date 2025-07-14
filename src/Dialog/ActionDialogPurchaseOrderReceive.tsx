@@ -20,7 +20,7 @@ interface POItem {
   quantity_received: number;
 }
 
-interface DialogReceivePurchaseOrderProps {
+interface ActionDialogPurchaseOrderReceiveProps {
   open: boolean;
   onClose: () => void;
   poId: string | number;
@@ -29,7 +29,7 @@ interface DialogReceivePurchaseOrderProps {
   onConfirm: (receivedItems: { id: string; quantity_received: number }[]) => void;
 }
 
-const DialogReceivePurchaseOrder: React.FC<DialogReceivePurchaseOrderProps> = ({
+const ActionDialogPurchaseOrderReceive: React.FC<ActionDialogPurchaseOrderReceiveProps> = ({
   open,
   onClose,
   poId,
@@ -167,4 +167,4 @@ const DialogReceivePurchaseOrder: React.FC<DialogReceivePurchaseOrderProps> = ({
   );
 };
 
-export default DialogReceivePurchaseOrder;
+export default ActionDialogPurchaseOrderReceive;

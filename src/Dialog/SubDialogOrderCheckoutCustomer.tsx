@@ -1,5 +1,5 @@
 /**
- * CustomerInfoForm - First step of checkout process
+ * SubDialogOrderCheckoutCustomer - First step of checkout process
  * 
  * Collects customer information including name, email, phone, and address
  */
@@ -35,13 +35,13 @@ export interface CustomerInfo {
   reference?: string;
 }
 
-interface CustomerInfoFormProps {
+interface SubDialogOrderCheckoutCustomerProps {
   customerInfo: CustomerInfo;
   onChange: (info: CustomerInfo) => void;
   onLogin?: () => void; // Optional login handler for microfrontend use
 }
 
-export default function CustomerInfoForm({ customerInfo, onChange, onLogin }: CustomerInfoFormProps) {
+export default function SubDialogOrderCheckoutCustomer({ customerInfo, onChange, onLogin }: SubDialogOrderCheckoutCustomerProps) {
   const handleChange = (field: keyof CustomerInfo) => (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {

@@ -14,13 +14,14 @@ import Stack from '@mui/joy/Stack';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import DeleteIcon from '@mui/icons-material/Delete';
 import InventoryIcon from '@mui/icons-material/Inventory';
+import EditIcon from '@mui/icons-material/Edit';
 import { supabase } from '../utils/supabaseClient';
 import withAuth from '../auth/withAuth';
 
 /**
- * Props for the ProductTableForm component.
+ * Props for the DialogProducts component.
  */
-interface ProductTableFormProps {
+interface DialogProductsProps {
   /**
    * Controls the visibility of the modal.
    */
@@ -45,6 +46,11 @@ interface ProductTableFormProps {
   } | null;
 
   /**
+   * Mode of the dialog: 'add', 'edit', or 'view'
+   */
+  mode?: 'add' | 'edit' | 'view';
+
+  /**
    * Callback function to save the product details.
    * @param values - The updated product details.
    */
@@ -57,12 +63,17 @@ interface ProductTableFormProps {
     max_stock?: string;
     reorder_amount?: string;
   }) => void;
+
+  /**
+   * Callback function to switch from view to edit mode.
+   */
+  onEdit?: () => void;
 }
 
 /**
- * A modal dialog component for adding or editing product details.
+ * A modal dialog component for viewing, adding or editing product details.
  */
-function ProductTableForm({ open, onClose, product, onSave }: ProductTableFormProps) {
+function DialogProducts({ open, onClose, product, onSave, mode = 'add', onEdit }: DialogProductsProps) {
   const [form, setForm] = React.useState({
     ProductName: product?.ProductName || '',
     SalesPrice: product?.SalesPrice?.toString() || '',
@@ -153,9 +164,11 @@ function ProductTableForm({ open, onClose, product, onSave }: ProductTableFormPr
   };
 
   return (
-    <Modal open={open} onClose={onClose} aria-labelledby="product-table-form-title">
+    <Modal open={open} onClose={onClose} aria-labelledby="dialog-products-title">
       <ModalDialog sx={{ minWidth: { xs: '90vw', sm: 500 } }}>
-        <DialogTitle id="product-table-form-title">{product ? 'Edit Product' : 'Add Product'}</DialogTitle>
+        <DialogTitle id="dialog-products-title">
+          {mode === 'view' ? 'Product Details' : product ? 'Edit Product' : 'Add Product'}
+        </DialogTitle>
         <DialogContent>
           <Stack spacing={2}>
             {/* Product Image Section */}
@@ -176,21 +189,23 @@ function ProductTableForm({ open, onClose, product, onSave }: ProductTableFormPr
                       borderColor: 'neutral.300'
                     }}
                   />
-                  <IconButton
-                    size="sm"
-                    variant="solid"
-                    color="danger"
-                    onClick={handleRemoveImage}
-                    sx={{
-                      position: 'absolute',
-                      top: -8,
-                      right: -8,
-                      minHeight: 24,
-                      minWidth: 24
-                    }}
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
+                  {mode !== 'view' && (
+                    <IconButton
+                      size="sm"
+                      variant="solid"
+                      color="danger"
+                      onClick={handleRemoveImage}
+                      sx={{
+                        position: 'absolute',
+                        top: -8,
+                        right: -8,
+                        minHeight: 24,
+                        minWidth: 24
+                      }}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  )}
                 </Box>
               ) : (
                 <Box
@@ -203,13 +218,13 @@ function ProductTableForm({ open, onClose, product, onSave }: ProductTableFormPr
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    cursor: 'pointer',
-                    '&:hover': {
+                    cursor: mode === 'view' ? 'default' : 'pointer',
+                    '&:hover': mode === 'view' ? {} : {
                       borderColor: 'primary.500',
                       backgroundColor: 'primary.50'
                     }
                   }}
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={mode === 'view' ? undefined : () => fileInputRef.current?.click()}
                 >
                   <PhotoCameraIcon sx={{ fontSize: 32, color: 'neutral.400' }} />
                 </Box>
@@ -221,29 +236,32 @@ function ProductTableForm({ open, onClose, product, onSave }: ProductTableFormPr
                 accept="image/*"
                 onChange={handleImageUpload}
                 style={{ display: 'none' }}
+                disabled={mode === 'view'}
               />
 
-              <Stack direction="row" spacing={1}>
-                <Button
-                  size="sm"
-                  variant="outlined"
-                  onClick={() => fileInputRef.current?.click()}
-                  loading={uploading}
-                  disabled={uploading}
-                >
-                  {form.image_url ? 'Change Image' : 'Upload Image'}
-                </Button>
-                {form.image_url && (
+              {mode !== 'view' && (
+                <Stack direction="row" spacing={1}>
                   <Button
                     size="sm"
-                    variant="plain"
-                    color="danger"
-                    onClick={handleRemoveImage}
+                    variant="outlined"
+                    onClick={() => fileInputRef.current?.click()}
+                    loading={uploading}
+                    disabled={uploading}
                   >
-                    Remove
+                    {form.image_url ? 'Change Image' : 'Upload Image'}
                   </Button>
-                )}
-              </Stack>
+                  {form.image_url && (
+                    <Button
+                      size="sm"
+                      variant="plain"
+                      color="danger"
+                      onClick={handleRemoveImage}
+                    >
+                      Remove
+                    </Button>
+                  )}
+                </Stack>
+              )}
             </Box>
 
             {/* Product Details */}
@@ -252,6 +270,7 @@ function ProductTableForm({ open, onClose, product, onSave }: ProductTableFormPr
               value={form.ProductName}
               onChange={e => setForm({ ...form, ProductName: e.target.value })}
               placeholder="Product Name"
+              readOnly={mode === 'view'}
             />
             <Input
               name="SalesPrice"
@@ -259,6 +278,7 @@ function ProductTableForm({ open, onClose, product, onSave }: ProductTableFormPr
               onChange={e => setForm({ ...form, SalesPrice: e.target.value })}
               placeholder="Sales Price"
               type="number"
+              readOnly={mode === 'view'}
             />
             <Input
               name="CostPrice"
@@ -266,6 +286,7 @@ function ProductTableForm({ open, onClose, product, onSave }: ProductTableFormPr
               onChange={e => setForm({ ...form, CostPrice: e.target.value })}
               placeholder="Cost Price"
               type="number"
+              readOnly={mode === 'view'}
             />
 
             {/* Inventory Management Section */}
@@ -282,6 +303,7 @@ function ProductTableForm({ open, onClose, product, onSave }: ProductTableFormPr
                   placeholder="Minimum Stock Level"
                   type="number"
                   startDecorator={<Typography level="body-sm">Min:</Typography>}
+                  readOnly={mode === 'view'}
                 />
                 <Input
                   name="max_stock"
@@ -290,6 +312,7 @@ function ProductTableForm({ open, onClose, product, onSave }: ProductTableFormPr
                   placeholder="Maximum Stock Level"
                   type="number"
                   startDecorator={<Typography level="body-sm">Max:</Typography>}
+                  readOnly={mode === 'view'}
                 />
                 <Input
                   name="reorder_amount"
@@ -298,18 +321,31 @@ function ProductTableForm({ open, onClose, product, onSave }: ProductTableFormPr
                   placeholder="Reorder Amount"
                   type="number"
                   startDecorator={<Typography level="body-sm">Reorder:</Typography>}
+                  readOnly={mode === 'view'}
                 />
               </Stack>
             </Box>
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose} variant="plain" disabled={saving || uploading}>Cancel</Button>
-          <Button onClick={handleSave} variant="solid" loading={saving} disabled={saving || uploading}>Save</Button>
+          <Button onClick={onClose} variant="plain" disabled={saving || uploading}>
+            {mode === 'view' ? 'Close' : 'Cancel'}
+          </Button>
+          {mode === 'view' ? (
+            onEdit && (
+              <Button onClick={onEdit} variant="solid" startDecorator={<EditIcon />}>
+                Edit
+              </Button>
+            )
+          ) : (
+            <Button onClick={handleSave} variant="solid" loading={saving} disabled={saving || uploading}>
+              Save
+            </Button>
+          )}
         </DialogActions>
       </ModalDialog>
     </Modal>
   );
 }
 
-export default withAuth(ProductTableForm);
+export default withAuth(DialogProducts);

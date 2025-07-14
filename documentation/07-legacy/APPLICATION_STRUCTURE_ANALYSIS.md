@@ -78,14 +78,14 @@ Each page component follows a similar pattern:
   - `ProductDialog.tsx`: Product creation/editing
   - `ProductTableForm.tsx`: Alternative product form
   - `SupplierForm.tsx`: Supplier management modal
-  - `PurchaseOrderForm.tsx`: Purchase order creation/editing
+  - `DialogPurchaseOrder.tsx`: Purchase order creation/editing
   - `OrderTableCreate.tsx`: Order creation with items
   - `OrderDetailsDialog.tsx`: Order details viewer
-  - `DialogTicketCreate.tsx`: Ticket creation form
-  - `DialogTicketResolve.tsx`: Ticket resolution form
+  - `ActionDialogTicketCreate.tsx`: Ticket creation form
+  - `ActionDialogTicketResolve.tsx`: Ticket resolution form
   - `DialogInventory.tsx`: Inventory settings modal
-  - `DialogReceivePurchaseOrder.tsx`: PO receiving workflow
-  - `DialogPageSupplierDesktop.tsx`: Supplier details viewer
+  - `ActionDialogPurchaseOrderReceive.tsx`: PO receiving workflow
+  - `DialogSupplier.tsx`: Supplier details viewer
 
 #### Utility Components
 - **Material-UI Components**: Extensively used (Box, Typography, Button, Modal, etc.)
@@ -129,7 +129,7 @@ import withAuth from '../auth/withAuth';
 - **Behavior**:
   - Similar to ProtectedRoute but for components
   - Returns wrapped component with session validation
-  - Used in: `ProductTableForm`, `DialogTicketResolve`
+  - Used in: `ProductTableForm`, `ActionDialogTicketResolve`
 
 ### Theme and Styling HOCs
 

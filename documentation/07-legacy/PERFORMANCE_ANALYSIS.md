@@ -106,7 +106,7 @@ The current 290kB gzipped bundle size is acceptable for a full-featured business
 
 ### Build Performance Issues Fixed
 1. **TypeScript Import Errors**: Fixed incorrect relative import paths in 6 files
-   - `DialogPageSupplierDesktop.tsx`
+   - `DialogSupplier.tsx`
    - `SupplierDisplay.tsx`
    - `PagePurchasingDesktop.tsx`
    - `PageSmsCampaignsMobile.tsx`

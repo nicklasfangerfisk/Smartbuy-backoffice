@@ -10,6 +10,25 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
+## [3.2.16] - 2025-07-14 15:30:00
+**Dialog Component Consolidation and Refactoring**
+### Added
+- DialogEmployee.tsx - Unified employee management with role-specific fields and avatar upload
+- DialogCustomer.tsx - Unified customer management with tier-specific fields and address management
+- DialogOrder.tsx - Consolidated order management supporting add/edit/view modes
+
+### Changed
+- Split UserDialog into specialized DialogEmployee and DialogCustomer components
+- Consolidated OrderDetailsDialog, OrderTableCreate, and OrderTableDetails into unified DialogOrder
+- Updated PageEmployees and PageCustomers to use new specialized dialogs
+- Updated PageOrders to use unified DialogOrder component
+- Improved consistent naming conventions across dialog components
+
+### Fixed
+- TypeScript compilation errors in SubDialogOrderCheckoutReview payment method types
+- Missing StockMovementWithProduct type definition in PageMovements
+- All console errors and type mismatches resolved
+
 ## [3.2.15] - 2025-07-13 10:15:41
 **Timezone and Time Handling Fixes**
 ### Added

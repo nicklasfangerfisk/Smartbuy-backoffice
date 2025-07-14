@@ -93,10 +93,13 @@ export default function Login({ onLogin }: { onLogin: () => void }) {
     if (userError || !userRow) {
       console.error('[Login] User fetch error:', userError);
       // If not found, upsert as employee by default
+      const fullName = data.user.user_metadata?.full_name || data.user.user_metadata?.name || '';
+      const nameParts = fullName.split(' ');
       const { error: upsertError } = await supabase.from('users').upsert({
         id: userId,
         email: data.user.email,
-        name: data.user.user_metadata?.full_name || data.user.user_metadata?.name || '',
+        first_name: nameParts[0] || '',
+        last_name: nameParts.slice(1).join(' ') || null,
         role: 'employee',
       });
       if (upsertError) {

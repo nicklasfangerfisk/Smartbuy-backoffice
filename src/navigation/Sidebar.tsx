@@ -261,7 +261,7 @@ function Sidebar({ setView, view }: { setView: (view: MenuItem['value']) => void
             '--ListItem-radius': (theme) => theme.vars.radius.sm,
           }}
         >
-          {(['Sales', 'Support', 'Operations', 'Marketing'] as MenuArea[]).map((area) => (
+          {(['Sales', 'Support', 'Operations', 'Marketing', 'Administration'] as MenuArea[]).map((area) => (
             <ListItem nested key={area}>
               <Toggler defaultExpanded={!isCollapsed}
                 renderToggle={({ open, setOpen }) => (
@@ -359,10 +359,10 @@ function Sidebar({ setView, view }: { setView: (view: MenuItem['value']) => void
         >
           {/* Fallback initials if no avatar */}
           {(!userProfile?.avatar_url && !user?.user_metadata?.avatar_url) && (
-            userProfile?.name ? 
-              userProfile.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() :
+            userProfile?.first_name || userProfile?.last_name ? 
+              `${userProfile.first_name?.[0] || ''}${userProfile.last_name?.[0] || ''}`.toUpperCase() :
               user?.user_metadata?.full_name ?
-                user.user_metadata.full_name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() :
+                user.user_metadata.full_name.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase() :
                 user?.email ? 
                   user.email.substring(0, 2).toUpperCase() :
                   'U'
@@ -370,8 +370,13 @@ function Sidebar({ setView, view }: { setView: (view: MenuItem['value']) => void
         </Avatar>
         {!isCollapsed && (
           <Box sx={{ minWidth: 0, flex: 1 }}>
-            <Typography level="title-sm">{userProfile?.name || user?.user_metadata?.full_name || user?.email || 'Not signed in'}</Typography>
-            <Typography level="body-xs">{userProfile?.email || user?.email || ''}</Typography>
+            <Typography level="title-sm">
+              {userProfile?.first_name || userProfile?.last_name 
+                ? `${userProfile.first_name || ''} ${userProfile.last_name || ''}`.trim()
+                : user?.user_metadata?.full_name || user?.email || 'Not signed in'
+              }
+            </Typography>
+            <Typography level="body-xs">{user?.email || ''}</Typography>
           </Box>
         )}
       </Box>

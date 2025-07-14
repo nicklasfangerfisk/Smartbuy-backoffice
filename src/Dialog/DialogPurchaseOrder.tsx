@@ -12,16 +12,16 @@ import Option from '@mui/joy/Option';
 import Autocomplete from '@mui/joy/Autocomplete';
 import IconButton from '@mui/joy/IconButton';
 import Add from '@mui/icons-material/Add';
-import SupplierForm from './SupplierForm';
+import DialogSupplier from './DialogSupplier';
 import Box from '@mui/joy/Box';
 import Chip from '@mui/joy/Chip';
-import PurchaseOrderItemsEditor, { type PurchaseOrderItem } from './PurchaseOrderItemsEditor';
+import SubDialogPurchaseOrderItems, { type PurchaseOrderItem } from './SubDialogPurchaseOrderItems';
 import { useEffect } from 'react';
 
 /**
- * Props for the PurchaseOrderForm component.
+ * Props for the DialogPurchaseOrder component.
  */
-interface PurchaseOrderFormProps {
+interface DialogPurchaseOrderProps {
   /**
    * Controls the visibility of the modal.
    */
@@ -61,7 +61,7 @@ const statusOptions = ['Pending', 'Approved', 'Received', 'Cancelled'];
 /**
  * A modal dialog component for adding or editing purchase orders.
  */
-export default function PurchaseOrderForm({ open, onClose, onCreated, mode = 'add', order }: PurchaseOrderFormProps) {
+export default function DialogPurchaseOrder({ open, onClose, onCreated, mode = 'add', order }: DialogPurchaseOrderProps) {
   const [orderNumber, setOrderNumber] = React.useState(order?.order_number || '');
   const [orderDate, setOrderDate] = React.useState(order?.order_date || new Date().toISOString().slice(0, 10));
   const [status, setStatus] = React.useState(order?.status || 'Pending');
@@ -80,7 +80,7 @@ export default function PurchaseOrderForm({ open, onClose, onCreated, mode = 'ad
 
   React.useEffect(() => {
     if (open) {
-      console.log('[PurchaseOrderForm] Modal opened');
+      console.log('[DialogPurchaseOrder] Modal opened');
       supabase.from('Suppliers').select('id, name').then(({ data }) => {
         setSuppliers(data || []);
       });
@@ -93,7 +93,7 @@ export default function PurchaseOrderForm({ open, onClose, onCreated, mode = 'ad
         setItems([{ product_id: null, quantity_ordered: 1, unit_price: 0 }]);
       }
     } else {
-      console.log('[PurchaseOrderForm] Modal closed');
+      console.log('[DialogPurchaseOrder] Modal closed');
     }
   }, [open, mode, order]);
 
@@ -120,15 +120,15 @@ export default function PurchaseOrderForm({ open, onClose, onCreated, mode = 'ad
 
   // After adding a supplier, refresh and select the new supplier
   const handleSupplierAdded = async (newSupplierId?: string | number) => {
-    console.log('[PurchaseOrderForm] handleSupplierAdded called');
+    console.log('[DialogPurchaseOrder] handleSupplierAdded called');
     const { data } = await supabase.from('Suppliers').select('id, name');
     setSuppliers(data || []);
     if (newSupplierId) {
       setSupplierId(String(newSupplierId));
-      console.log('[PurchaseOrderForm] New supplier set:', newSupplierId);
+      console.log('[DialogPurchaseOrder] New supplier set:', newSupplierId);
     }
     setAddSupplierOpen(false);
-    console.log('[PurchaseOrderForm] SupplierForm closed');
+    console.log('[DialogPurchaseOrder] DialogSupplier closed');
   };
 
   const generateOrderNumber = () => {
@@ -152,7 +152,7 @@ export default function PurchaseOrderForm({ open, onClose, onCreated, mode = 'ad
   }, [items]);
 
   const handleSave = async () => {
-    console.log('[PurchaseOrderForm] handleSave called');
+    console.log('[DialogPurchaseOrder] handleSave called');
     setSaving(true);
     setError(null);
     const payload: any = {
@@ -206,7 +206,7 @@ export default function PurchaseOrderForm({ open, onClose, onCreated, mode = 'ad
     setSaving(false);
     if (result?.error) {
       setError(result.error.message);
-      console.log('[PurchaseOrderForm] Save error:', result.error.message);
+      console.log('[DialogPurchaseOrder] Save error:', result.error.message);
     } else {
       onCreated();
       onClose();
@@ -217,7 +217,7 @@ export default function PurchaseOrderForm({ open, onClose, onCreated, mode = 'ad
       setNotes('');
       setSupplierId(null);
       setSupplierInput('');
-      console.log('[PurchaseOrderForm] Purchase order saved and modal closed');
+      console.log('[DialogPurchaseOrder] Purchase order saved and modal closed');
     }
   };
 
@@ -394,7 +394,7 @@ export default function PurchaseOrderForm({ open, onClose, onCreated, mode = 'ad
             </form>
 
             {/* Supplier Form Dialog */}
-            <SupplierForm
+            <DialogSupplier
               open={addSupplierOpen}
               onClose={() => setAddSupplierOpen(false)}
               onSaved={handleSupplierAdded}
@@ -425,7 +425,7 @@ export default function PurchaseOrderForm({ open, onClose, onCreated, mode = 'ad
               p: 2,
               paddingBottom: 0
             }}>
-              <PurchaseOrderItemsEditor
+              <SubDialogPurchaseOrderItems
                 orderId={order?.id}
                 editable={mode === 'add' || mode === 'edit'}
                 onItemsChange={setItems}

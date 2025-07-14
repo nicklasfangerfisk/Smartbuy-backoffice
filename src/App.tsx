@@ -7,7 +7,10 @@ import Sidebar from './navigation/Sidebar';
 import PageOrders from './Page/PageOrders';
 import PageProducts from './Page/PageProducts';
 import PageUsers from './Page/PageUsers';
+import PageCustomers from './Page/PageCustomers';
+import PageEmployees from './Page/PageEmployees';
 import PageSuppliers from './Page/PageSuppliers';
+import PageStorefronts from './Page/PageStorefronts';
 import PagePurchaseOrders from './Page/PagePurchaseOrders';
 import Login from './auth/Login';
 import { supabase } from './utils/supabaseClient';
@@ -45,7 +48,7 @@ function Layout() {
   const mobileMenuItems: MobileMenuItem[] = [
     { label: 'Dashboard', icon: <DashboardRoundedIcon />, value: 'dashboard' },
     { label: 'Orders', icon: <ShoppingCartRoundedIcon />, value: 'orders' },
-    { label: 'Users', icon: <GroupRoundedIcon />, value: 'users' },
+    { label: 'Customers', icon: <GroupRoundedIcon />, value: 'customers' },
     { label: 'My Profile', icon: <PersonIcon />, value: 'profile' },
     { label: 'Settings', icon: <SettingsRoundedIcon />, value: 'settings' },
   ];
@@ -99,6 +102,8 @@ function Layout() {
                 'orders': '/orders',
                 'products': '/products',
                 'users': '/users',
+                'customers': '/customers',
+                'employees': '/employees',
                 'suppliers': '/suppliers',
                 'purchaseorders': '/purchase-orders',
                 'tickets': '/tickets',
@@ -141,10 +146,34 @@ function Layout() {
             }
           />
           <Route
+            path="/customers"
+            element={
+              <ProtectedRoute>
+                <PageCustomers />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/employees"
+            element={
+              <ProtectedRoute>
+                <PageEmployees />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/suppliers"
             element={
               <ProtectedRoute>
                 <PageSuppliers />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/storefronts"
+            element={
+              <ProtectedRoute>
+                <PageStorefronts />
               </ProtectedRoute>
             }
           />

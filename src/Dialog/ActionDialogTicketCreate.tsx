@@ -7,14 +7,14 @@ import Button from '@mui/joy/Button';
 import { supabase } from '../utils/supabaseClient';
 
 // Props interface
-interface DialogTicketCreateProps {
+interface ActionDialogTicketCreateProps {
   open: boolean; // Whether the modal is open
   onClose: () => void; // Function to close the modal
   onCreated?: () => void; // Callback function after a ticket is successfully created
 }
 
 /**
- * DialogTicketCreate Component
+ * ActionDialogTicketCreate Component
  * 
  * A modal form for creating new tickets.
  * 
@@ -23,7 +23,7 @@ interface DialogTicketCreateProps {
  * - onClose: Function to close the modal.
  * - onCreated: Optional callback function after a ticket is successfully created.
  */
-export default function DialogTicketCreate({ open, onClose, onCreated }: DialogTicketCreateProps) {
+export default function ActionDialogTicketCreate({ open, onClose, onCreated }: ActionDialogTicketCreateProps) {
   const [newSubject, setNewSubject] = React.useState('');
   const [newRequester, setNewRequester] = React.useState('');
   const [creating, setCreating] = React.useState(false);
@@ -34,11 +34,11 @@ export default function DialogTicketCreate({ open, onClose, onCreated }: DialogT
     setCreating(true);
     setError(null);
     const payload = { subject: newSubject, requester_name: newRequester, status: 'Open' };
-    console.log('[DialogTicketCreate] Creating ticket with payload:', payload);
+    console.log('[ActionDialogTicketCreate] Creating ticket with payload:', payload);
     const { error, data } = await supabase.from('tickets').insert(payload);
     if (error) {
       setError(error.message || JSON.stringify(error));
-      console.error('[DialogTicketCreate] Error creating ticket:', error);
+      console.error('[ActionDialogTicketCreate] Error creating ticket:', error);
     }
     setCreating(false);
     if (!error) {

@@ -1,5 +1,5 @@
 /**
- * CheckoutDialog - Clean checkout experience
+ * ActionDialogOrderCheckout - Clean checkout experience
  * 
  * Simplified checkout flow with:
  * 1. Customer Information
@@ -37,9 +37,9 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 
 // Import checkout step components
-import CustomerInfoForm from './CheckoutSteps/CustomerInfoForm';
-import DeliveryForm from './CheckoutSteps/DeliveryForm';
-import PaymentForm from './CheckoutSteps/PaymentForm';
+import SubDialogOrderCheckoutCustomer from './SubDialogOrderCheckoutCustomer';
+import SubDialogOrderCheckoutDelivery from './SubDialogOrderCheckoutDelivery';
+import SubDialogOrderCheckoutPayment from './SubDialogOrderCheckoutPayment';
 
 // Utilities
 import { formatCurrencyWithSymbol } from '../utils/currencyUtils';
@@ -47,7 +47,7 @@ import { formatCurrencyWithSymbol } from '../utils/currencyUtils';
 // Types
 import type { Database } from '../general/supabase.types';
 
-export interface CheckoutDialogProps {
+export interface ActionDialogOrderCheckoutProps {
   open: boolean;
   onClose: () => void;
   order: {
@@ -112,7 +112,7 @@ const steps = [
   { label: 'Payment' }
 ];
 
-export default function CheckoutDialog({ open, onClose, order, onSuccess }: CheckoutDialogProps) {
+export default function ActionDialogOrderCheckout({ open, onClose, order, onSuccess }: ActionDialogOrderCheckoutProps) {
   const [activeStep, setActiveStep] = useState(0);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [orderSummaryExpanded, setOrderSummaryExpanded] = useState(false);
@@ -298,7 +298,7 @@ export default function CheckoutDialog({ open, onClose, order, onSuccess }: Chec
     switch (step) {
       case 0:
         return (
-          <CustomerInfoForm
+          <SubDialogOrderCheckoutCustomer
             customerInfo={customerInfo}
             onChange={setCustomerInfo}
             // onLogin prop is intentionally omitted to disable login in this app
@@ -307,7 +307,7 @@ export default function CheckoutDialog({ open, onClose, order, onSuccess }: Chec
         );
       case 1:
         return (
-          <DeliveryForm
+          <SubDialogOrderCheckoutDelivery
             deliveryInfo={deliveryInfo}
             onChange={setDeliveryInfo}
             subtotal={calculateTotal()}
@@ -315,7 +315,7 @@ export default function CheckoutDialog({ open, onClose, order, onSuccess }: Chec
         );
       case 2:
         return (
-          <PaymentForm
+          <SubDialogOrderCheckoutPayment
             paymentInfo={paymentInfo}
             onChange={setPaymentInfo}
           />

@@ -52,7 +52,7 @@ import { useResponsive } from '../hooks/useResponsive';
 import ResponsiveContainer from '../components/ResponsiveContainer';
 import ResponsiveModal from '../components/ResponsiveModal';
 import PageLayout from '../layouts/PageLayout';
-import ProductTableForm from '../Dialog/ProductTableForm';
+import DialogProducts from '../Dialog/DialogProducts';
 import fonts from '../theme/fonts';
 import { formatCurrency } from '../utils/currencyUtils';
 import { prepareProductCurrencyData } from '../utils/currencyUtils';
@@ -94,7 +94,9 @@ const PageProducts = () => {
     const [filterDialogOpen, setFilterDialogOpen] = useState(false);
     const [addDialogOpen, setAddDialogOpen] = useState(false);
     const [editDialogOpen, setEditDialogOpen] = useState(false);
+    const [viewDialogOpen, setViewDialogOpen] = useState(false);
     const [editProduct, setEditProduct] = useState<Product | null>(null);
+    const [viewProduct, setViewProduct] = useState<Product | null>(null);
     
     // Toast notification states
     const [toastOpen, setToastOpen] = useState(false);
@@ -231,6 +233,20 @@ const PageProducts = () => {
     const handleEditProduct = (product: Product) => {
         setEditProduct(product);
         setEditDialogOpen(true);
+    };
+
+    const handleViewProduct = (product: Product) => {
+        setViewProduct(product);
+        setViewDialogOpen(true);
+    };
+
+    const handleEditFromView = () => {
+        if (viewProduct) {
+            setEditProduct(viewProduct);
+            setViewDialogOpen(false);
+            setViewProduct(null);
+            setEditDialogOpen(true);
+        }
     };
 
     const handleDeleteProduct = async (uuid: string) => {
@@ -409,10 +425,12 @@ const PageProducts = () => {
                                 p: 2, 
                                 borderBottom: '1px solid', 
                                 borderColor: 'divider',
+                                cursor: 'pointer',
                                 '&:hover': {
                                     bgcolor: 'background.level1'
                                 }
                             }}
+                            onClick={() => handleViewProduct(product)}
                         >
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                 {/* Product Image */}
@@ -489,13 +507,15 @@ const PageProducts = () => {
                                             </Typography>
                                         </Box>
                                         
-                                        {/* Action Buttons */}
                                         <Box sx={{ display: 'flex', gap: 0.5 }}>
                                             <IconButton
                                                 size="sm"
                                                 variant="soft"
                                                 color="primary"
-                                                onClick={() => handleEditProduct(product)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleEditProduct(product);
+                                                }}
                                             >
                                                 <EditIcon />
                                             </IconButton>
@@ -503,7 +523,10 @@ const PageProducts = () => {
                                                 size="sm"
                                                 variant="soft"
                                                 color="danger"
-                                                onClick={() => handleDeleteProduct(product.uuid)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDeleteProduct(product.uuid);
+                                                }}
                                                 disabled={submitting}
                                             >
                                                 <DeleteIcon />
@@ -582,7 +605,18 @@ const PageProducts = () => {
             
             <Card sx={{ overflow: 'visible' }}>
                 {loading && <LinearProgress />}
-                <Table aria-label="Products" sx={{ tableLayout: 'auto' }}>
+                <Table 
+                    aria-label="Products" 
+                    sx={{ 
+                        tableLayout: 'auto',
+                        '& tbody tr': {
+                            cursor: 'pointer',
+                            '&:hover': {
+                                backgroundColor: 'background.level1'
+                            }
+                        }
+                    }}
+                >
                     <thead>
                         <tr>
                             <th style={typographyStyles}>Image</th>
@@ -603,7 +637,10 @@ const PageProducts = () => {
                             </tr>
                         )}
                         {filteredProducts.map((product) => (
-                            <tr key={product.uuid}>
+                            <tr 
+                                key={product.uuid}
+                                onClick={() => handleViewProduct(product)}
+                            >
                                 <td style={typographyStyles}>
                                     {product.image_url ? (
                                         <Avatar 
@@ -698,7 +735,10 @@ const PageProducts = () => {
                                             size="sm"
                                             variant="soft"
                                             color="primary"
-                                            onClick={() => handleEditProduct(product)}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleEditProduct(product);
+                                            }}
                                         >
                                             <EditIcon />
                                         </IconButton>
@@ -706,7 +746,10 @@ const PageProducts = () => {
                                             size="sm"
                                             variant="soft"
                                             color="danger"
-                                            onClick={() => handleDeleteProduct(product.uuid)}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDeleteProduct(product.uuid);
+                                            }}
                                             disabled={submitting}
                                         >
                                             <DeleteIcon />
@@ -726,19 +769,31 @@ const PageProducts = () => {
             {isMobile ? <MobileView /> : <DesktopView />}
             
             {/* Add Product Dialog */}
-            <ProductTableForm
+            <DialogProducts
                 open={addDialogOpen}
                 onClose={() => setAddDialogOpen(false)}
                 product={null}
+                mode="add"
                 onSave={handleAddDialogSave}
             />
             
             {/* Edit Product Dialog */}
-            <ProductTableForm
+            <DialogProducts
                 open={editDialogOpen}
                 onClose={() => { setEditDialogOpen(false); setEditProduct(null); }}
                 product={editProduct}
+                mode="edit"
                 onSave={handleEditDialogSave}
+            />
+
+            {/* View Product Dialog */}
+            <DialogProducts
+                open={viewDialogOpen}
+                onClose={() => { setViewDialogOpen(false); setViewProduct(null); }}
+                product={viewProduct}
+                mode="view"
+                onSave={() => {}} // Not used in view mode
+                onEdit={handleEditFromView}
             />
             
             {/* Filter Dialog (Mobile) */}

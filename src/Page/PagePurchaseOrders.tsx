@@ -4,7 +4,7 @@
  * HOCs: ProtectedRoute (route-level auth guard)
  * Layout: PageLayout + ResponsiveContainer(table-page) - 16px padding
  * Responsive: Mobile/Desktop views, useResponsive() hook
- * Dialogs: PurchaseOrderForm, DialogReceivePurchaseOrder
+ * Dialogs: DialogPurchaseOrder, ActionDialogPurchaseOrderReceive
  * Data: Supabase PurchaseOrders and PurchaseOrderItems tables
  */
 
@@ -35,9 +35,10 @@ import CancelIcon from '@mui/icons-material/Cancel';
 // Local imports
 import { useResponsive } from '../hooks/useResponsive';
 import ResponsiveContainer from '../components/ResponsiveContainer';
-import PurchaseOrderForm from '../Dialog/PurchaseOrderForm';
-import DialogReceivePurchaseOrder from '../Dialog/DialogReceivePurchaseOrder';
-import SupplierForm from '../Dialog/SupplierForm';
+import DialogPurchaseOrder from '../Dialog/DialogPurchaseOrder';
+import ActionDialogPurchaseOrderReceive from '../Dialog/ActionDialogPurchaseOrderReceive';
+import ActionDialogPurchaseOrderOrder from '../Dialog/ActionDialogPurchaseOrderOrder';
+import DialogSupplier from '../Dialog/DialogSupplier';
 import PageLayout from '../layouts/PageLayout';
 import fonts from '../theme/fonts';
 import type { Database } from '../general/supabase.types';
@@ -112,6 +113,9 @@ const PagePurchaseOrders = () => {
   const [supplierDialogOpen, setSupplierDialogOpen] = useState(false);
   const [selectedSupplier, setSelectedSupplier] = useState<any>(null);
 
+  // Order action dialog states
+  const [orderDialogOpen, setOrderDialogOpen] = useState(false);
+
   // Fetch purchase orders
   const fetchOrders = async () => {
     setLoading(true);
@@ -176,19 +180,35 @@ const PagePurchaseOrders = () => {
     await fetchOrders();
   };
 
-  // Handle status update
+  // Handle status update - open dialog for ordering, direct update for other statuses
   const handleStatusUpdate = async (orderId: string, newStatus: string) => {
-    try {
-      const { error } = await supabase
-        .from('PurchaseOrders')
-        .update({ status: newStatus })
-        .eq('id', orderId);
+    if (newStatus === 'Ordered') {
+      // Find the order and open the order dialog
+      const order = orders.find(o => o.id === orderId);
+      if (order) {
+        setSelectedOrder(order);
+        setOrderDialogOpen(true);
+      }
+    } else {
+      // Direct update for other status changes
+      try {
+        const { error } = await supabase
+          .from('PurchaseOrders')
+          .update({ status: newStatus })
+          .eq('id', orderId);
 
-      if (error) throw error;
-      await fetchOrders();
-    } catch (err: any) {
-      setError(err.message || 'Failed to update order status');
+        if (error) throw error;
+        await fetchOrders();
+      } catch (err: any) {
+        setError(err.message || 'Failed to update order status');
+      }
     }
+  };
+
+  // Handle order confirmation from dialog
+  const handleOrderConfirm = async () => {
+    // Refresh the orders list
+    await fetchOrders();
   };
 
   // Handle receive order
@@ -407,7 +427,12 @@ const PagePurchaseOrders = () => {
                           color: 'primary.800'
                         } : {}
                       }}
-                      onClick={() => order.supplier_id && handleSupplierClick(order.supplier_id)}
+                      onClick={(e) => {
+                        if (order.supplier_id) {
+                          e.stopPropagation();
+                          handleSupplierClick(order.supplier_id);
+                        }
+                      }}
                     >
                       {order.supplier_name}
                     </Typography>
@@ -425,7 +450,10 @@ const PagePurchaseOrders = () => {
                       <Button
                         size="sm"
                         variant="outlined"
-                        onClick={() => handleStatusUpdate(order.id, 'Ordered')}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleStatusUpdate(order.id, 'Ordered');
+                        }}
                       >
                         Order
                       </Button>
@@ -433,7 +461,10 @@ const PagePurchaseOrders = () => {
                       <Button
                         size="sm"
                         variant="outlined"
-                        onClick={() => handleReceiveOrder(order)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleReceiveOrder(order);
+                        }}
                         disabled={order.status !== 'Approved' && order.status !== 'Ordered'}
                       >
                         Receive
@@ -547,7 +578,12 @@ const PagePurchaseOrders = () => {
                         color: 'primary.800'
                       } : {}
                     }}
-                    onClick={() => order.supplier_id && handleSupplierClick(order.supplier_id)}
+                    onClick={(e) => {
+                      if (order.supplier_id) {
+                        e.stopPropagation();
+                        handleSupplierClick(order.supplier_id);
+                      }
+                    }}
                   >
                     {order.supplier_name}
                   </Typography>
@@ -558,7 +594,10 @@ const PagePurchaseOrders = () => {
                     <Button
                       size="sm"
                       variant="outlined"
-                      onClick={() => handleStatusUpdate(order.id, 'Ordered')}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleStatusUpdate(order.id, 'Ordered');
+                      }}
                     >
                       Order
                     </Button>
@@ -566,7 +605,10 @@ const PagePurchaseOrders = () => {
                     <Button
                       size="sm"
                       variant="outlined"
-                      onClick={() => handleReceiveOrder(order)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleReceiveOrder(order);
+                      }}
                       disabled={order.status !== 'Approved' && order.status !== 'Ordered'}
                     >
                       Receive
@@ -586,7 +628,7 @@ const PagePurchaseOrders = () => {
       {isMobile ? <MobileView /> : <DesktopView />}
       
       {/* Add Purchase Order Dialog */}
-      <PurchaseOrderForm
+      <DialogPurchaseOrder
         open={addDialogOpen}
         onClose={() => setAddDialogOpen(false)}
         onCreated={handleOrderChange}
@@ -595,7 +637,7 @@ const PagePurchaseOrders = () => {
       />
 
       {/* Edit Purchase Order Dialog */}
-      <PurchaseOrderForm
+      <DialogPurchaseOrder
         open={editDialogOpen}
         onClose={() => {
           setEditDialogOpen(false);
@@ -615,7 +657,7 @@ const PagePurchaseOrders = () => {
       />
 
       {/* View Purchase Order Dialog */}
-      <PurchaseOrderForm
+      <DialogPurchaseOrder
         open={viewDialogOpen}
         onClose={() => {
           setViewDialogOpen(false);
@@ -635,7 +677,7 @@ const PagePurchaseOrders = () => {
       />
 
       {/* Receive Purchase Order Dialog */}
-      <DialogReceivePurchaseOrder
+      <ActionDialogPurchaseOrderReceive
         open={receiveDialogOpen && !!selectedOrder?.id}
         onClose={() => {
           setReceiveDialogOpen(false);
@@ -648,7 +690,7 @@ const PagePurchaseOrders = () => {
       />
 
       {/* Supplier Details Dialog */}
-      <SupplierForm
+      <DialogSupplier
         open={supplierDialogOpen}
         onClose={() => {
           setSupplierDialogOpen(false);
@@ -658,6 +700,23 @@ const PagePurchaseOrders = () => {
         onSaved={() => {}} // No action needed when viewing supplier
         mode="view"
         onEdit={() => {}} // Could implement edit functionality later
+      />
+
+      {/* Order Action Dialog */}
+      <ActionDialogPurchaseOrderOrder
+        open={orderDialogOpen}
+        onClose={() => {
+          setOrderDialogOpen(false);
+          setSelectedOrder(null);
+        }}
+        order={selectedOrder ? {
+          id: selectedOrder.id,
+          order_number: selectedOrder.order_number,
+          supplier_id: selectedOrder.supplier_id || '',
+          order_date: selectedOrder.order_date,
+          total: selectedOrder.total || 0,
+        } : null}
+        onConfirm={handleOrderConfirm}
       />
     </PageLayout>
   );

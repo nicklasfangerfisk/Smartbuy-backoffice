@@ -20,7 +20,7 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import EmailIcon from '@mui/icons-material/Email';
 import AddIcon from '@mui/icons-material/Add';
 import { formatCurrencyWithSymbol } from '../utils/currencyUtils';
-import PurchaseOrderForm from './PurchaseOrderForm';
+import DialogPurchaseOrder from './DialogPurchaseOrder';
 
 // Define TypeScript interface for supplier
 interface Supplier {
@@ -34,7 +34,7 @@ interface Supplier {
 }
 
 // Props interface
-interface SupplierFormProps {
+interface DialogSupplierProps {
   open: boolean;
   onClose: () => void;
   onSaved: (newSupplierId?: number) => void;
@@ -45,7 +45,7 @@ interface SupplierFormProps {
 }
 
 /**
- * SupplierForm Component
+ * DialogSupplier Component
  * 
  * A unified modal for viewing, adding, and editing supplier information.
  * In view mode, displays supplier details and purchase orders.
@@ -58,7 +58,7 @@ interface SupplierFormProps {
  * - supplier: Supplier object for edit/view mode.
  * - onEdit: Callback to switch from view to edit mode.
  */
-export default function SupplierForm({ 
+export default function DialogSupplier({ 
   open, 
   onClose, 
   onSaved, 
@@ -66,7 +66,7 @@ export default function SupplierForm({
   supplier, 
   onDelete, 
   onEdit 
-}: SupplierFormProps) {
+}: DialogSupplierProps) {
   // Form states
   const [name, setName] = React.useState(supplier?.name || '');
   const [contactName, setContactName] = React.useState(supplier?.contact_name || '');
@@ -85,7 +85,7 @@ export default function SupplierForm({
   const [ordersError, setOrdersError] = React.useState<string | null>(null);
 
   // Purchase order form state
-  const [purchaseOrderFormOpen, setPurchaseOrderFormOpen] = React.useState(false);
+  const [dialogPurchaseOrderOpen, setDialogPurchaseOrderOpen] = React.useState(false);
 
   React.useEffect(() => {
     if (open && (mode === 'edit' || mode === 'view') && supplier) {
@@ -137,7 +137,7 @@ export default function SupplierForm({
   };
 
   const handlePurchaseOrderCreated = () => {
-    setPurchaseOrderFormOpen(false);
+    setDialogPurchaseOrderOpen(false);
     if (mode === 'view') {
       fetchPurchaseOrders(); // Refresh the purchase orders list
     }
@@ -393,7 +393,7 @@ export default function SupplierForm({
                 <Button 
                   variant="solid"
                   startDecorator={<AddIcon />}
-                  onClick={() => setPurchaseOrderFormOpen(true)}
+                  onClick={() => setDialogPurchaseOrderOpen(true)}
                   sx={{ width: '100%' }}
                 >
                   Add Purchase Order
@@ -588,9 +588,9 @@ export default function SupplierForm({
     </Modal>
     
     {/* Purchase Order Form Dialog */}
-    <PurchaseOrderForm
-      open={purchaseOrderFormOpen}
-      onClose={() => setPurchaseOrderFormOpen(false)}
+    <DialogPurchaseOrder
+      open={dialogPurchaseOrderOpen}
+      onClose={() => setDialogPurchaseOrderOpen(false)}
       onCreated={handlePurchaseOrderCreated}
       mode="add"
       order={supplier?.id ? {

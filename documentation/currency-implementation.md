@@ -43,8 +43,8 @@ The following components have been updated to use Danish kroner:
 - `OrderTableDetails.tsx` - Order item pricing
 - `OrderDetailsDialog.tsx` - Order item details
 - `SupplierDisplay.tsx` - Purchase order totals
-- `DialogPageSupplierDesktop.tsx` - Purchase order display
-- `PurchaseOrderItemsEditor.tsx` - Item total calculations
+- `DialogSupplier.tsx` - Purchase order display
+- `SubDialogPurchaseOrderItems.tsx` - Item total calculations
 
 ### 4. Format Examples
 

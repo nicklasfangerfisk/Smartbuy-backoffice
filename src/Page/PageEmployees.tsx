@@ -1,10 +1,10 @@
 /**
- * PageUsers - User management and administration
+ * PageEmployees - Employee management and administration
  * 
  * HOCs: ProtectedRoute (route-level auth guard)
  * Layout: PageLayout + ResponsiveContainer(table-page) - 16px padding
  * Responsive: Mobile/Desktop views, useResponsive() hook
- * Data: Supabase Users table with role management
+ * Data: Supabase Users table filtered for employee roles
  */
 
 import React, { useEffect, useState } from 'react';
@@ -21,9 +21,6 @@ import Avatar from '@mui/joy/Avatar';
 import Chip from '@mui/joy/Chip';
 import Table from '@mui/joy/Table';
 import Stack from '@mui/joy/Stack';
-import Modal from '@mui/joy/Modal';
-import ModalDialog from '@mui/joy/ModalDialog';
-import ModalClose from '@mui/joy/ModalClose';
 import IconButton from '@mui/joy/IconButton';
 import Menu from '@mui/joy/Menu';
 import MenuButton from '@mui/joy/MenuButton';
@@ -38,6 +35,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import BadgeIcon from '@mui/icons-material/Badge';
 import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
 import PhoneIcon from '@mui/icons-material/Phone';
 import EmailIcon from '@mui/icons-material/Email';
@@ -48,10 +46,11 @@ import LoginIcon from '@mui/icons-material/Login';
 import { useResponsive } from '../hooks/useResponsive';
 import ResponsiveContainer from '../components/ResponsiveContainer';
 import PageLayout from '../layouts/PageLayout';
+import DialogEmployee, { EmployeeProfile } from '../Dialog/DialogEmployee';
 import fonts from '../theme/fonts';
 
 // Types
-export interface UserItem {
+export interface EmployeeItem {
   id: string;
   first_name: string | null;
   last_name: string | null;
@@ -72,8 +71,9 @@ const getRoleColor = (role: string | null) => {
   switch (role?.toLowerCase()) {
     case 'admin': return 'danger';
     case 'manager': return 'warning';
-    case 'user': return 'primary';
     case 'staff': return 'success';
+    case 'employee': return 'primary';
+    case 'user': return 'neutral';
     default: return 'neutral';
   }
 };
@@ -82,8 +82,9 @@ const getRoleIcon = (role: string | null) => {
   switch (role?.toLowerCase()) {
     case 'admin': return <AdminPanelSettingsIcon />;
     case 'manager': return <SupervisorAccountIcon />;
-    case 'user': return <PersonIcon />;
     case 'staff': return <AccountCircleIcon />;
+    case 'employee': return <PersonIcon />;
+    case 'user': return <PersonIcon />;
     default: return <PersonIcon />;
   }
 };
@@ -111,27 +112,29 @@ const getInitials = (firstName: string | null, lastName: string | null, email: s
 };
 
 // Row menu component
-function RowMenu() {
+function RowMenu({ employee, onEdit, onView }: { employee: EmployeeItem, onEdit: (employee: EmployeeItem) => void, onView: (employee: EmployeeItem) => void }) {
   return (
     <Dropdown>
       <MenuButton slots={{ root: IconButton }} slotProps={{ root: { variant: 'plain', color: 'neutral', size: 'sm' } }}>
         <MoreHorizRoundedIcon />
       </MenuButton>
       <Menu size="sm" sx={{ minWidth: 140 }}>
-        <MenuItem>Edit</MenuItem>
+        <MenuItem onClick={() => onEdit(employee)}>Edit Employee</MenuItem>
+        <MenuItem onClick={() => onView(employee)}>View Details</MenuItem>
+        <MenuItem>Change Role</MenuItem>
         <MenuItem>Reset Password</MenuItem>
-        <MenuItem>Disable</MenuItem>
-        <MenuItem color="danger">Delete</MenuItem>
+        <MenuItem>Deactivate</MenuItem>
+        <MenuItem color="danger">Remove</MenuItem>
       </Menu>
     </Dropdown>
   );
 }
 
-const PageUsers = () => {
+const PageEmployees = () => {
   const { isMobile } = useResponsive();
   
   // Data states
-  const [users, setUsers] = useState<UserItem[]>([]);
+  const [employees, setEmployees] = useState<EmployeeItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
@@ -141,61 +144,101 @@ const PageUsers = () => {
   
   // Dialog states
   const [createOpen, setCreateOpen] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState<EmployeeItem | undefined>();
+  const [dialogMode, setDialogMode] = useState<'add' | 'edit' | 'view'>('add');
 
-  // Fetch users
-  const fetchUsers = async () => {
+  // Fetch employees (filter for employee-type roles)
+  const fetchEmployees = async () => {
     setLoading(true);
     setError(null);
     
     try {
-      const { data, error } = await supabase.from('users').select('*');
+      // Filter for employee-related roles
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .in('role', ['admin', 'manager', 'staff', 'employee', 'user']); // Include all employee-type roles
       
       if (error) throw error;
 
       if (data) {
-        const mappedUsers = data.map((user) => ({
+        const mappedEmployees = data.map((user) => ({
           id: user.id,
           first_name: user.first_name || null,
           last_name: user.last_name || null,
           email: user.email,
-          role: user.role || null,
+          role: user.role || 'employee', // Default to employee if no role
           created_at: user.created_at || null,
           last_login: user.last_login || null,
           phone_number: user.phone_number || null,
           avatar_url: user.avatar_url || null,
         }));
         
-        // Debug: Log avatar URLs to console
-        console.log('User avatar URLs:', mappedUsers.map(u => ({ 
-          email: u.email, 
-          avatar_url: u.avatar_url 
-        })));
-        
-        setUsers(mappedUsers);
+        setEmployees(mappedEmployees);
       }
     } catch (err: any) {
-      console.error('Error fetching users:', err);
-      setError(err.message || 'Failed to fetch users');
+      console.error('Error fetching employees:', err);
+      setError(err.message || 'Failed to fetch employees');
     } finally {
       setLoading(false);
     }
   };
 
-  // Get unique roles for filter
-  const roleOptions = Array.from(new Set(users.map(u => u.role).filter(Boolean)));
+  // Dialog helper functions
+  const handleAddEmployee = () => {
+    setSelectedEmployee(undefined);
+    setDialogMode('add');
+    setCreateOpen(true);
+  };
 
-  // Filter users
-  const filteredUsers = users.filter(user => {
-    const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+  const handleEditEmployee = (employee: EmployeeItem) => {
+    setSelectedEmployee(employee);
+    setDialogMode('edit');
+    setCreateOpen(true);
+  };
+
+  const handleViewEmployee = (employee: EmployeeItem) => {
+    setSelectedEmployee(employee);
+    setDialogMode('view');
+    setCreateOpen(true);
+  };
+
+  const handleDialogClose = () => {
+    setCreateOpen(false);
+    setSelectedEmployee(undefined);
+  };
+
+  const handleEmployeeSaved = () => {
+    fetchEmployees(); // Refresh the employee list
+  };
+
+  // Convert EmployeeItem to EmployeeProfile format for dialog
+  const convertToEmployeeProfile = (employee: EmployeeItem): EmployeeProfile => ({
+    id: employee.id,
+    first_name: employee.first_name || undefined,
+    last_name: employee.last_name || undefined,
+    email: employee.email,
+    role: employee.role as 'admin' | 'manager' | 'staff' | 'employee' | undefined,
+    avatar_url: employee.avatar_url || undefined,
+    last_login: employee.last_login || undefined,
+    phone_number: employee.phone_number || undefined,
+  });
+
+  // Get unique roles for filter
+  const roleOptions = Array.from(new Set(employees.map(u => u.role).filter(Boolean)));
+
+  // Filter employees
+  const filteredEmployees = employees.filter(employee => {
+    const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim();
     const matchesSearch = 
       fullName.toLowerCase().includes(search.toLowerCase()) ||
-      user.email.toLowerCase().includes(search.toLowerCase());
-    const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+      employee.email.toLowerCase().includes(search.toLowerCase());
+    const matchesRole = roleFilter === 'all' || employee.role === roleFilter;
     return matchesSearch && matchesRole;
   });
 
-  // Sort users by name/email
-  const sortedUsers = [...filteredUsers].sort((a, b) => {
+  // Sort employees by name/email
+  const sortedEmployees = [...filteredEmployees].sort((a, b) => {
     const nameA = `${a.first_name || ''} ${a.last_name || ''}`.trim() || a.email;
     const nameB = `${b.first_name || ''} ${b.last_name || ''}`.trim() || b.email;
     return nameA.localeCompare(nameB);
@@ -203,7 +246,7 @@ const PageUsers = () => {
 
   // Initial fetch
   useEffect(() => {
-    fetchUsers();
+    fetchEmployees();
   }, []);
 
   // Mobile View Component
@@ -212,13 +255,13 @@ const PageUsers = () => {
       {/* Header */}
       <ResponsiveContainer padding="medium">
         <Typography level="h2" sx={{ mb: 2, fontSize: fonts.sizes.xlarge }}>
-          Users
+          Employees
         </Typography>
         
         {/* Search and Filter */}
         <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
           <Input
-            placeholder="Search users..."
+            placeholder="Search employees..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             startDecorator={<SearchIcon />}
@@ -240,10 +283,10 @@ const PageUsers = () => {
         <Button
           variant="solid"
           startDecorator={<AddIcon />}
-          onClick={() => setCreateOpen(true)}
+          onClick={handleAddEmployee}
           sx={{ width: '100%', mb: 2 }}
         >
-          Create User
+          Add Employee
         </Button>
       </ResponsiveContainer>
 
@@ -255,18 +298,18 @@ const PageUsers = () => {
         </Box>
       )}
 
-      {/* User List */}
+      {/* Employee List */}
       <Box>
-        {sortedUsers.length === 0 ? (
+        {sortedEmployees.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 6 }}>
             <Typography color="neutral">
-              No users found
+              No employees found
             </Typography>
           </Box>
         ) : (
-          sortedUsers.map((user) => (
+          sortedEmployees.map((employee) => (
             <Box 
-              key={user.id} 
+              key={employee.id} 
               sx={{ 
                 p: 2, 
                 borderBottom: '1px solid', 
@@ -280,11 +323,11 @@ const PageUsers = () => {
                 {/* Avatar */}
                 <Avatar
                   size="md"
-                  src={user.avatar_url || undefined}
-                  color={getAvatarColor(user.first_name, user.last_name, user.email)}
+                  src={employee.avatar_url || undefined}
+                  color={getAvatarColor(employee.first_name, employee.last_name, employee.email)}
                   sx={{ flexShrink: 0 }}
                 >
-                  {!user.avatar_url && getInitials(user.first_name, user.last_name, user.email)}
+                  {!employee.avatar_url && getInitials(employee.first_name, employee.last_name, employee.email)}
                 </Avatar>
 
                 {/* Main Content */}
@@ -300,18 +343,18 @@ const PageUsers = () => {
                         maxWidth: '60%'
                       }}
                     >
-                      {`${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Unnamed User'}
+                      {`${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 'Unnamed Employee'}
                     </Typography>
                     
                     {/* Role Chip */}
-                    {user.role && (
+                    {employee.role && (
                       <Chip 
                         size="sm"
-                        color={getRoleColor(user.role)}
+                        color={getRoleColor(employee.role)}
                         variant="soft"
                         sx={{ fontWeight: 'bold', minWidth: 'fit-content', textTransform: 'capitalize' }}
                       >
-                        {user.role}
+                        {employee.role}
                       </Chip>
                     )}
                   </Box>
@@ -319,34 +362,34 @@ const PageUsers = () => {
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
                     <EmailIcon sx={{ fontSize: 14, color: 'text.tertiary' }} />
                     <Typography level="body-xs" color="neutral">
-                      {user.email}
+                      {employee.email}
                     </Typography>
                   </Box>
                   
                   <Box sx={{ display: 'flex', gap: 2, mb: 0.5 }}>
-                    {user.phone_number && (
+                    {employee.phone_number && (
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         <PhoneIcon sx={{ fontSize: 14, color: 'text.tertiary' }} />
                         <Typography level="body-xs" color="neutral">
-                          {user.phone_number}
+                          {employee.phone_number}
                         </Typography>
                       </Box>
                     )}
-                    {user.last_login && (
+                    {employee.last_login && (
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         <LoginIcon sx={{ fontSize: 14, color: 'text.tertiary' }} />
                         <Typography level="body-xs" color="neutral">
-                          {new Date(user.last_login).toLocaleDateString()}
+                          {new Date(employee.last_login).toLocaleDateString()}
                         </Typography>
                       </Box>
                     )}
                   </Box>
 
-                  {user.created_at && (
+                  {employee.created_at && (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                       <CalendarTodayIcon sx={{ fontSize: 14, color: 'text.tertiary' }} />
                       <Typography level="body-xs" color="neutral">
-                        Joined {new Date(user.created_at).toLocaleDateString()}
+                        Hired {new Date(employee.created_at).toLocaleDateString()}
                       </Typography>
                     </Box>
                   )}
@@ -363,12 +406,12 @@ const PageUsers = () => {
   const DesktopView = () => (
     <ResponsiveContainer variant="table-page">
       <Typography level="h2" sx={{ mb: 2, fontSize: fonts.sizes.xlarge }}>
-        Users
+        Employees
       </Typography>
       
       <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <Input
-          placeholder="Search users..."
+          placeholder="Search employees..."
           sx={{ flex: 1 }}
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -386,11 +429,11 @@ const PageUsers = () => {
           ))}
         </Select>
         <Button
-          onClick={() => setCreateOpen(true)}
+          onClick={handleAddEmployee}
           variant="solid"
           startDecorator={<AddIcon />}
         >
-          Create User
+          Add Employee
         </Button>
       </Box>
 
@@ -398,64 +441,65 @@ const PageUsers = () => {
         {loading && <LinearProgress />}
         {error && <Typography color="danger">Error: {error}</Typography>}
         
-        <Table aria-label="Users" sx={{ tableLayout: 'auto' }}>
+        <Table aria-label="Employees" sx={{ tableLayout: 'auto' }}>
           <thead>
             <tr>
               <th style={headerStyles}>Name</th>
               <th style={headerStyles}>Email</th>
               <th style={headerStyles}>Role</th>
-              <th style={headerStyles}>Created At</th>
+              <th style={headerStyles}>Hired</th>
               <th style={headerStyles}>Last Login</th>
               <th style={headerStyles}>Phone</th>
               <th style={{ width: 120, ...headerStyles }}>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {sortedUsers.length === 0 && !loading && (
+            {sortedEmployees.length === 0 && !loading && (
               <tr>
                 <td colSpan={7} style={{ textAlign: 'center', color: '#888', ...typographyStyles }}>
-                  No users found.
+                  No employees found.
                 </td>
               </tr>
             )}
-            {sortedUsers.map((user) => (
-              <tr key={user.id} style={{ cursor: 'pointer', height: 48 }}>
+            {sortedEmployees.map((employee) => (
+              <tr key={employee.id} style={{ cursor: 'pointer', height: 48 }}>
                 <td style={typographyStyles}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>                <Avatar
-                  size="sm"
-                  src={user.avatar_url || undefined}
-                  color={getAvatarColor(user.first_name, user.last_name, user.email)}
-                >
-                  {!user.avatar_url && getInitials(user.first_name, user.last_name, user.email)}
-                </Avatar>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Avatar
+                      size="sm"
+                      src={employee.avatar_url || undefined}
+                      color={getAvatarColor(employee.first_name, employee.last_name, employee.email)}
+                    >
+                      {!employee.avatar_url && getInitials(employee.first_name, employee.last_name, employee.email)}
+                    </Avatar>
                     <Typography level="body-sm" fontWeight="md">
-                      {`${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Unnamed User'}
+                      {`${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 'Unnamed Employee'}
                     </Typography>
                   </Box>
                 </td>
-                <td style={typographyStyles}>{user.email}</td>
+                <td style={typographyStyles}>{employee.email}</td>
                 <td style={typographyStyles}>
-                  {user.role ? (
+                  {employee.role ? (
                     <Chip
                       size="sm"
-                      color={getRoleColor(user.role)}
+                      color={getRoleColor(employee.role)}
                       variant="soft"
                       sx={{ textTransform: 'capitalize' }}
                     >
-                      {user.role}
+                      {employee.role}
                     </Chip>
                   ) : (
                     '-'
                   )}
                 </td>
                 <td style={typographyStyles}>
-                  {user.created_at ? new Date(user.created_at).toLocaleDateString() : '-'}
+                  {employee.created_at ? new Date(employee.created_at).toLocaleDateString() : '-'}
                 </td>
                 <td style={typographyStyles}>
-                  {user.last_login ? new Date(user.last_login).toLocaleDateString() : '-'}
+                  {employee.last_login ? new Date(employee.last_login).toLocaleDateString() : '-'}
                 </td>
-                <td style={typographyStyles}>{user.phone_number || '-'}</td>
-                <td><RowMenu /></td>
+                <td style={typographyStyles}>{employee.phone_number || '-'}</td>
+                <td><RowMenu employee={employee} onEdit={handleEditEmployee} onView={handleViewEmployee} /></td>
               </tr>
             ))}
           </tbody>
@@ -468,27 +512,16 @@ const PageUsers = () => {
     <PageLayout>
       {isMobile ? <MobileView /> : <DesktopView />}
       
-      {/* Create User Modal */}
-      <Modal
+      {/* Employee Dialog */}
+      <DialogEmployee
         open={createOpen}
-        onClose={() => setCreateOpen(false)}
-        aria-labelledby="create-user-modal"
-      >
-        <ModalDialog aria-labelledby="create-user-modal" sx={{ maxWidth: 600, width: '100%' }}>
-          <ModalClose />
-          <Typography id="create-user-modal" level="title-md" fontWeight="lg" sx={{ mb: 2 }}>
-            Create User
-          </Typography>
-          <Typography level="body-sm" sx={{ mb: 2 }}>
-            User creation functionality will be implemented here.
-          </Typography>
-          <Button onClick={() => setCreateOpen(false)} variant="outlined">
-            Close
-          </Button>
-        </ModalDialog>
-      </Modal>
+        onClose={handleDialogClose}
+        employee={selectedEmployee ? convertToEmployeeProfile(selectedEmployee) : undefined}
+        mode={dialogMode}
+        onSaved={handleEmployeeSaved}
+      />
     </PageLayout>
   );
 };
 
-export default PageUsers;
+export default PageEmployees;

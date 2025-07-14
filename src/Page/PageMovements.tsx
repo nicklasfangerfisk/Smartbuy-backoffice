@@ -38,9 +38,15 @@ import ResponsiveContainer from '../components/ResponsiveContainer';
 import ResponsiveModal from '../components/ResponsiveModal';
 import PageLayout from '../layouts/PageLayout';
 import fonts from '../theme/fonts';
-import type { Database, StockMovementWithProduct } from '../general/supabase.types';
+import type { Database } from '../general/supabase.types';
 
 type Product = Database['public']['Tables']['Products']['Row'];
+type StockMovement = Database['public']['Tables']['stock_movements']['Row'];
+
+// Define the joined type for stock movements with product information
+type StockMovementWithProduct = StockMovement & {
+  Products?: Product;
+};
 
 // Typography styles for consistency
 const typographyStyles = { fontSize: fonts.sizes.small };

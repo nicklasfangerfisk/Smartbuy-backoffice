@@ -4,7 +4,7 @@
  * HOCs: ProtectedRoute (route-level auth guard)
  * Layout: PageLayout + ResponsiveContainer(table-page) - 16px padding
  * Responsive: Mobile/Desktop views, useResponsive() hook
- * Dialogs: SupplierForm for CRUD operations
+ * Dialogs: DialogSupplier for CRUD operations
  * Data: Supabase Suppliers table
  */
 
@@ -33,7 +33,7 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { useResponsive } from '../hooks/useResponsive';
 import ResponsiveContainer from '../components/ResponsiveContainer';
 import PageLayout from '../layouts/PageLayout';
-import SupplierForm from '../Dialog/SupplierForm';
+import DialogSupplier from '../Dialog/DialogSupplier';
 import fonts from '../theme/fonts';
 
 // Types
@@ -518,7 +518,7 @@ const PageSuppliers = () => {
       {isMobile ? <MobileView /> : <DesktopView />}
       
       {/* Supplier Form Dialog */}
-      <SupplierForm
+      <DialogSupplier
         open={isOpen}
         onClose={() => setIsOpen(false)}
         supplier={editedSupplier as any}

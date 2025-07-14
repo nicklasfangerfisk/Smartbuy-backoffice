@@ -81,7 +81,7 @@ interface CurrencyAmount {
 - Create: Use preparation functions for new orders and order items
 - Total calculation: Separated order total calculation for clarity
 
-#### Purchase Orders (PurchaseOrderForm.tsx)
+#### Purchase Orders (DialogPurchaseOrder.tsx)
 - Import: Added `preparePurchaseOrderItemCurrencyData`
 - Create: Use preparation function for new purchase order items
 

@@ -27,9 +27,9 @@ export interface PurchaseOrderItem {
 }
 
 /**
- * Props for the PurchaseOrderItemsEditor component.
+ * Props for the SubDialogPurchaseOrderItems component.
  */
-interface PurchaseOrderItemsEditorProps {
+interface SubDialogPurchaseOrderItemsProps {
   /**
    * The ID of the purchase order (optional).
    */
@@ -54,7 +54,7 @@ interface PurchaseOrderItemsEditorProps {
 /**
  * A table component for managing purchase order items.
  */
-export default function PurchaseOrderItemsEditor({ orderId, editable, onItemsChange, initialItems = [] }: PurchaseOrderItemsEditorProps) {
+export default function SubDialogPurchaseOrderItems({ orderId, editable, onItemsChange, initialItems = [] }: SubDialogPurchaseOrderItemsProps) {
   const [items, setItems] = React.useState<PurchaseOrderItem[]>(initialItems);
   const [products, setProducts] = React.useState<Product[]>([]);
   const [loading, setLoading] = React.useState(false);

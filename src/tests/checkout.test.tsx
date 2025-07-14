@@ -1,5 +1,5 @@
 /**
- * CheckoutDialog Tests
+ * ActionDialogOrderCheckout Tests
  * 
  * Basic tests to ensure the checkout dialog renders properly
  */
@@ -7,7 +7,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import CheckoutDialog from '../Dialog/CheckoutDialog';
+import ActionDialogOrderCheckout from '../Dialog/ActionDialogOrderCheckout';
 
 // Mock the Supabase client
 jest.mock('../utils/supabaseClient', () => ({
@@ -37,7 +37,7 @@ const mockOrder = {
   customer_email: 'john@example.com'
 };
 
-describe('CheckoutDialog', () => {
+describe('ActionDialogOrderCheckout', () => {
   const defaultProps = {
     open: true,
     onClose: jest.fn(),
@@ -50,7 +50,7 @@ describe('CheckoutDialog', () => {
   });
 
   test('renders checkout dialog when open', () => {
-    render(<CheckoutDialog {...defaultProps} />);
+    render(<ActionDialogOrderCheckout {...defaultProps} />);
     
     expect(screen.getByText('Checkout')).toBeInTheDocument();
     expect(screen.getByText('Order Summary')).toBeInTheDocument();
@@ -58,7 +58,7 @@ describe('CheckoutDialog', () => {
   });
 
   test('shows stepper with correct steps', () => {
-    render(<CheckoutDialog {...defaultProps} />);
+    render(<ActionDialogOrderCheckout {...defaultProps} />);
     
     expect(screen.getByText('Customer Information')).toBeInTheDocument();
     expect(screen.getByText('Payment Method')).toBeInTheDocument();
@@ -66,19 +66,19 @@ describe('CheckoutDialog', () => {
   });
 
   test('displays order total correctly', () => {
-    render(<CheckoutDialog {...defaultProps} />);
+    render(<ActionDialogOrderCheckout {...defaultProps} />);
     
     expect(screen.getByText('$100.00')).toBeInTheDocument();
   });
 
   test('does not render when closed', () => {
-    render(<CheckoutDialog {...defaultProps} open={false} />);
+    render(<ActionDialogOrderCheckout {...defaultProps} open={false} />);
     
     expect(screen.queryByText('Checkout')).not.toBeInTheDocument();
   });
 
   test('handles null order gracefully', () => {
-    render(<CheckoutDialog {...defaultProps} order={null} />);
+    render(<ActionDialogOrderCheckout {...defaultProps} order={null} />);
     
     expect(screen.queryByText('Checkout')).not.toBeInTheDocument();
   });

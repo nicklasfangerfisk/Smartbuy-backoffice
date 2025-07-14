@@ -80,16 +80,16 @@ Each page component follows a consistent pattern:
 - **Location**: `/src/Dialog/`
 - **Reusable Modal Components**:
   - `UserDialog.tsx`: User profile editing with avatar upload
-  - `ProductDialog.tsx`: Product creation/editing
-  - `ProductTableForm.tsx`: Alternative product form
+  - `DialogProducts.tsx`: Product creation/editing dialog with view/edit modes
+  - `DialogProducts.tsx`: Product creation/editing dialog with view/edit modes
   - `SupplierForm.tsx`: Supplier management modal
-  - `PurchaseOrderForm.tsx`: Purchase order creation/editing
+  - `DialogPurchaseOrder.tsx`: Purchase order creation/editing
   - `OrderTableCreate.tsx`: Order creation with items
   - `OrderDetailsDialog.tsx`: Order details viewer
-  - `DialogTicketCreate.tsx`: Ticket creation form
-  - `DialogTicketResolve.tsx`: Ticket resolution form
+  - `ActionDialogTicketCreate.tsx`: Ticket creation form
+  - `ActionDialogTicketResolve.tsx`: Ticket resolution form
   - `DialogInventory.tsx`: Inventory settings modal
-  - `DialogReceivePurchaseOrder.tsx`: PO receiving workflow
+  - `ActionDialogPurchaseOrderReceive.tsx`: PO receiving workflow
 
 #### Utility Components
 - **Material-UI Components**: Extensive use of Joy UI components
@@ -132,7 +132,7 @@ import withAuth from '../auth/withAuth';
 - **Behavior**:
   - Similar to ProtectedRoute but for components
   - Returns wrapped component with session validation
-  - Used in: `ProductTableForm`, `DialogTicketResolve`
+  - Used in: `DialogProducts`, `ActionDialogTicketResolve`
 
 ### Theme and Styling HOCs
 
@@ -248,7 +248,7 @@ src/
 │   └── ... (other pages)
 ├── Dialog/                    # Reusable modal components
 │   ├── UserDialog.tsx
-│   ├── ProductDialog.tsx
+│   ├── DialogProducts.tsx
 │   ├── SupplierForm.tsx
 │   └── ... (other dialogs)
 ├── utils/                     # Utility functions

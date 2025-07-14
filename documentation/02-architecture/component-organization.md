@@ -41,10 +41,10 @@ src/
 - **Purpose**: Modal dialogs, popups, and form overlays
 - **Examples**:
   - `UserDialog.tsx` - User profile editing
-  - `ProductDialog.tsx` - Product creation/editing
+  - `DialogProducts.tsx` - Product creation/editing with view/edit modes
   - `SupplierForm.tsx` - Supplier management modal
   - `OrderTableCreate.tsx` - Order creation dialog
-  - `DialogTicketCreate.tsx` - Ticket creation form
+  - `ActionDialogTicketCreate.tsx` - Ticket creation form
   - `DialogInventory.tsx` - Inventory settings modal
 
 #### 3. Authentication Components (`/src/auth/`)
@@ -111,7 +111,7 @@ page_order_desktop.tsx  → export const PageOrderDesktop
 PageOrderDesktop.tsx    // Desktop version
 PageOrderMobile.tsx     // Mobile version
 OrderTableDetails.tsx   // Details view
-ProductTableForm.tsx    // Form component
+DialogProducts.tsx       // Product dialog with view/edit modes
 
 // ❌ Incorrect - Unclear or abbreviated
 PageOrderD.tsx          // Unclear abbreviation
@@ -155,9 +155,9 @@ PageOrderM.tsx          // Unclear abbreviation
 ```typescript
 // ✅ Correct - Clear dialog purpose
 UserDialog.tsx          // User-related dialog
-ProductDialog.tsx       // Product-related dialog
+DialogProducts.tsx       // Product dialog with view/edit modes
 SupplierForm.tsx        // Supplier form (modal)
-DialogTicketCreate.tsx  // Ticket creation dialog
+ActionDialogTicketCreate.tsx  // Ticket creation dialog
 
 // ❌ Incorrect - Unclear purpose
 User.tsx                // Too generic

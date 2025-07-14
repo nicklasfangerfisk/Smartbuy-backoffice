@@ -20,7 +20,7 @@
     const handleCreateOrder = () => {
         setCreateOrderDialogOpen(true);
     };
- * Dialogs: OrderTableCreate, OrderTableDetails, ResponsiveModal
+ * Dialogs: DialogOrder, ResponsiveModal
  * Data: Supabase Orders table with real-time updates
  */
 
@@ -56,9 +56,8 @@ import { useResponsive } from '../hooks/useResponsive';
 import ResponsiveContainer from '../components/ResponsiveContainer';
 import ResponsiveModal from '../components/ResponsiveModal';
 import PageLayout from '../layouts/PageLayout';
-import OrderTableCreate from '../Dialog/OrderTableCreate';
-import OrderTableDetails from '../Dialog/OrderTableDetails';
-import CheckoutDialog from '../Dialog/CheckoutDialog';
+import DialogOrder, { OrderProfile } from '../Dialog/DialogOrder';
+import ActionDialogOrderCheckout from '../Dialog/ActionDialogOrderCheckout';
 import fonts from '../theme/fonts';
 import { formatCurrency } from '../utils/currencyUtils';
 import { prepareOrderCurrencyData, prepareOrderItemCurrencyData } from '../utils/currencyUtils';
@@ -101,17 +100,11 @@ const PageOrders = () => {
     const [categoryFilter, setCategoryFilter] = useState('');
     const [customerFilter, setCustomerFilter] = useState('');
     const [filterDialogOpen, setFilterDialogOpen] = useState(false);
-    const [createOrderDialogOpen, setCreateOrderDialogOpen] = useState(false);
-    const [orderDetailsOpen, setOrderDetailsOpen] = useState(false);
+    const [orderDialogOpen, setOrderDialogOpen] = useState(false);
     const [checkoutDialogOpen, setCheckoutDialogOpen] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<OrderRow | null>(null);
+    const [dialogMode, setDialogMode] = useState<'add' | 'edit' | 'view'>('add');
     const [creatingOrder, setCreatingOrder] = useState(false);
-    const [newOrder, setNewOrder] = useState({
-        date: new Date().toISOString().split('T')[0],
-        status: 'Draft' as OrderStatus,
-        customer_name: '',
-        customer_email: '',
-    });
     
     // Toast notification states
     const [toastOpen, setToastOpen] = useState(false);
@@ -247,12 +240,51 @@ const PageOrders = () => {
     const categoryOptions = Array.from(new Set(orders.map(order => order.category || 'purchase')));
     const customerOptions = Array.from(new Set(orders.map(order => order.customer.name)));
 
+    // Dialog helper functions
+    const handleAddOrder = () => {
+        setSelectedOrder(null);
+        setDialogMode('add');
+        setOrderDialogOpen(true);
+    };
+
+    const handleEditOrder = (order: OrderRow) => {
+        setSelectedOrder(order);
+        setDialogMode('edit');
+        setOrderDialogOpen(true);
+    };
+
+    const handleViewOrder = (order: OrderRow) => {
+        setSelectedOrder(order);
+        setDialogMode('view');
+        setOrderDialogOpen(true);
+    };
+
+    const handleDialogClose = () => {
+        setOrderDialogOpen(false);
+        setSelectedOrder(null);
+    };
+
+    const handleOrderSaved = () => {
+        fetchOrders(); // Refresh the order list
+    };
+
+    // Convert OrderRow to OrderProfile format for dialog
+    const convertToOrderProfile = (order: OrderRow): OrderProfile => ({
+        id: order.uuid,
+        uuid: order.uuid,
+        order_number: order.order_number_display,
+        date: order.date,
+        status: order.status,
+        customer_name: order.customer.name,
+        customer_email: order.customer.email,
+        total: order.order_total,
+    });
+
     // Event handlers
     const handleOrderClick = (orderId: string) => {
         const order = orders.find(o => o.uuid === orderId || o.order_number_display === orderId);
         if (order) {
-            setSelectedOrder(order);
-            setOrderDetailsOpen(true);
+            handleViewOrder(order);
         }
     };
 
@@ -262,80 +294,7 @@ const PageOrders = () => {
     };
 
     const handleCreateOrder = () => {
-        setCreateOrderDialogOpen(true);
-    };
-
-    const handleCreateOrderSubmit = async (orderItems: { product_uuid: string; quantity: number; unitprice: number; discount: number }[], orderDiscount: number) => {
-        setCreatingOrder(true);
-        try {
-            // Calculate order total
-            const orderTotal = orderItems.reduce((total, item) => total + (item.quantity * item.unitprice * (1 - item.discount / 100)), 0) - orderDiscount;
-            
-            // Prepare order data with currency fields
-            const orderData = prepareOrderCurrencyData({
-                date: newOrder.date,
-                status: newOrder.status,
-                customer_name: newOrder.customer_name,
-                customer_email: newOrder.customer_email,
-                order_total: orderTotal,
-            });
-
-            // Create the order first
-            const { data: createdOrder, error: orderError } = await supabase
-                .from('Orders')
-                .insert(orderData)
-                .select()
-                .single();
-
-            if (orderError) {
-                console.error('Error creating order:', orderError);
-                showToast('Failed to create order', 'danger');
-                return;
-            }
-
-            // Create order items with currency data
-            if (orderItems.length > 0) {
-                const orderItemsData = orderItems.map(item => 
-                    prepareOrderItemCurrencyData({
-                        order_uuid: createdOrder.uuid,
-                        product_uuid: item.product_uuid,
-                        quantity: item.quantity,
-                        unitprice: item.unitprice,
-                        discount: item.discount,
-                        price: 0, // Will be calculated by database trigger
-                    })
-                );
-
-                console.log('Inserting order items:', orderItemsData);
-
-                const { error: itemsError } = await supabase
-                    .from('OrderItems')
-                    .insert(orderItemsData);
-
-                if (itemsError) {
-                    console.error('Error creating order items:', itemsError);
-                    console.error('Order items data that failed:', orderItemsData);
-                    showToast('Order created but failed to add items', 'warning');
-                } else {
-                    console.log('Order items created successfully');
-                }
-            }
-
-            showToast('Order created successfully', 'success');
-            setCreateOrderDialogOpen(false);
-            setNewOrder({
-                date: new Date().toISOString().split('T')[0],
-                status: 'Paid',
-                customer_name: '',
-                customer_email: '',
-            });
-            fetchOrders(); // Refresh the orders list
-        } catch (err) {
-            console.error('Error creating order:', err);
-            showToast('Failed to create order', 'danger');
-        } finally {
-            setCreatingOrder(false);
-        }
+        handleAddOrder();
     };
 
     const handleCloseFilters = () => {
@@ -672,26 +631,18 @@ const PageOrders = () => {
         <PageLayout>
             {isMobile ? <MobileView /> : <DesktopView />}
             
-            {/* Create Order Dialog */}
-            <OrderTableCreate
-                open={createOrderDialogOpen}
-                creating={creatingOrder}
-                newOrder={newOrder}
-                setNewOrder={setNewOrder}
-                onClose={() => setCreateOrderDialogOpen(false)}
-                onCreate={handleCreateOrderSubmit}
-            />
-            
-            {/* Order Details Dialog */}
-            <OrderTableDetails
-                open={orderDetailsOpen}
-                onClose={() => setOrderDetailsOpen(false)}
-                selectedOrder={selectedOrder}
+            {/* Order Dialog (Create/Edit/View) */}
+            <DialogOrder
+                open={orderDialogOpen}
+                onClose={handleDialogClose}
+                order={selectedOrder ? convertToOrderProfile(selectedOrder) : undefined}
+                mode={dialogMode}
+                onSaved={handleOrderSaved}
                 fetchOrderItems={fetchOrderItems}
             />
 
             {/* Checkout Dialog */}
-            <CheckoutDialog
+            <ActionDialogOrderCheckout
                 open={checkoutDialogOpen}
                 onClose={() => setCheckoutDialogOpen(false)}
                 order={selectedOrder ? {

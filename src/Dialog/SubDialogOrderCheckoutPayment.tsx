@@ -1,5 +1,5 @@
 /**
- * PaymentForm - Second step of checkout process
+ * SubDialogOrderCheckoutPayment - Second step of checkout process
  * 
  * Collects payment method information (mocked for demo purposes)
  * Supports credit card, bank transfer, and cash payment methods
@@ -38,7 +38,7 @@ const MobilePayIcon = ({ sx }: { sx?: any }) => (
   />
 );
 
-import type { PaymentInfo as BasePaymentInfo } from '../CheckoutDialog';
+import type { PaymentInfo as BasePaymentInfo } from './ActionDialogOrderCheckout';
 
 type PaymentMethod = 'card' | 'mobilepay' | 'viabill' | 'international';
 
@@ -46,12 +46,12 @@ interface PaymentInfo extends BasePaymentInfo {
   method: PaymentMethod;
 }
 
-interface PaymentFormProps {
+interface SubDialogOrderCheckoutPaymentProps {
   paymentInfo: PaymentInfo;
   onChange: (info: PaymentInfo) => void;
 }
 
-export default function PaymentForm({ paymentInfo, onChange }: PaymentFormProps) {
+export default function SubDialogOrderCheckoutPayment({ paymentInfo, onChange }: SubDialogOrderCheckoutPaymentProps) {
   const handleMethodChange = (method: PaymentMethod) => {
     onChange({
       ...paymentInfo,
