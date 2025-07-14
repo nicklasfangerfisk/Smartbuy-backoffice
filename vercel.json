@@ -1,18 +1,4 @@
 {
-  "functions": {
-    "api/send-order-confirmation.ts": {
-      "runtime": "@vercel/node"
-    },
-    "api/resend-order-confirmation.ts": {
-      "runtime": "@vercel/node"
-    },
-    "api/check-sendgrid-config.ts": {
-      "runtime": "@vercel/node"
-    },
-    "api/receive-purchase-order.ts": {
-      "runtime": "@vercel/node"
-    }
-  },
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
