@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { supabase } from '../utils/supabaseClient';
-import { sendOrderConfirmationEmail } from '../utils/emailService';
+import { supabase } from '../src/utils/supabaseClient';
+import { sendOrderConfirmationEmail } from '../src/utils/emailService';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
