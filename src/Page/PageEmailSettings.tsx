@@ -77,13 +77,12 @@ export default function PageEmailSettings() {
         const data = await response.json();
         setSendGridConfigured(data.configured);
       } else {
-        // API call failed (likely in development), check if we can test emails
-        console.log('SendGrid config API not available (development mode)');
-        setSendGridConfigured(true); // Assume configured for testing
+        // If we can't check the config, assume it's configured for testing
+        setSendGridConfigured(true);
       }
     } catch (error) {
       console.error('Error checking SendGrid config:', error);
-      // In development, assume it's configured for testing
+      // If we can't check the config, assume it's configured for testing
       setSendGridConfigured(true);
     }
   };
@@ -125,20 +124,11 @@ export default function PageEmailSettings() {
         timestamp: new Date()
       });
     } catch (error: any) {
-      // Check if this is a development environment issue
-      if (error.message.includes('404') || error.message.includes('Failed to fetch')) {
-        setTestResult({
-          success: false,
-          message: 'API endpoint not available in development mode. Deploy to Vercel to test email functionality, or test through the checkout process.',
-          timestamp: new Date()
-        });
-      } else {
-        setTestResult({
-          success: false,
-          message: error.message || 'Error sending test email',
-          timestamp: new Date()
-        });
-      }
+      setTestResult({
+        success: false,
+        message: error.message || 'Error sending test email',
+        timestamp: new Date()
+      });
     } finally {
       setLoading(false);
     }
