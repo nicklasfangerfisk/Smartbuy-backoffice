@@ -314,19 +314,25 @@ export default function DialogOrder({
 
   return (
     <Modal open={open} onClose={onClose}>
-      <ModalDialog sx={{ maxWidth: 800, width: '100%', maxHeight: '90vh', overflow: 'auto' }}>
+      <ModalDialog sx={{ maxWidth: 1200, width: '100%', maxHeight: '90vh', overflow: 'auto' }}>
         <ModalClose />
         <Typography level="title-lg" sx={{ mb: 2 }}>
           {mode === 'add' ? 'Create Order' : mode === 'edit' ? 'Edit Order' : 'Order Details'}
         </Typography>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          {/* Order Information */}
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Typography level="title-sm">Order Information</Typography>
-            
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <FormControl sx={{ flex: 1 }}>
+        <Box sx={{ 
+          display: 'grid', 
+          gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
+          gap: 3,
+          minHeight: '400px'
+        }}>
+          {/* Left Column: Order Header Information */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            {/* Order Information */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Typography level="title-sm">Order Information</Typography>
+              
+              <FormControl>
                 <FormLabel>Order Number</FormLabel>
                 <Input
                   value={orderNumber}
@@ -336,7 +342,7 @@ export default function DialogOrder({
                 />
               </FormControl>
               
-              <FormControl sx={{ flex: 1 }}>
+              <FormControl>
                 <FormLabel>Date</FormLabel>
                 <Input
                   type="date"
@@ -346,7 +352,7 @@ export default function DialogOrder({
                 />
               </FormControl>
               
-              <FormControl sx={{ flex: 1 }}>
+              <FormControl>
                 <FormLabel>Status</FormLabel>
                 <Select
                   value={status}
@@ -360,16 +366,14 @@ export default function DialogOrder({
                 </Select>
               </FormControl>
             </Box>
-          </Box>
 
-          <Divider />
+            <Divider />
 
-          {/* Customer Information */}
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Typography level="title-sm">Customer Information</Typography>
-            
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <FormControl sx={{ flex: 1 }}>
+            {/* Customer Information */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Typography level="title-sm">Customer Information</Typography>
+              
+              <FormControl>
                 <FormLabel>Customer Name</FormLabel>
                 <Input
                   value={customerName}
@@ -380,7 +384,7 @@ export default function DialogOrder({
                 />
               </FormControl>
               
-              <FormControl sx={{ flex: 1 }}>
+              <FormControl>
                 <FormLabel>Customer Email</FormLabel>
                 <Input
                   type="email"
@@ -392,11 +396,46 @@ export default function DialogOrder({
                 />
               </FormControl>
             </Box>
+
+            <Divider />
+
+            {/* Order Summary */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Typography level="title-sm">Order Summary</Typography>
+              
+              <FormControl>
+                <FormLabel>Order Discount (%)</FormLabel>
+                <Input
+                  type="number"
+                  value={discount}
+                  onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
+                  disabled={isReadOnly}
+                  slotProps={{ input: { min: 0, max: 100, step: 0.01 } }}
+                />
+              </FormControl>
+              
+              <FormControl>
+                <FormLabel>Total Amount</FormLabel>
+                <Input
+                  value={formatCurrencyWithSymbol(parseFloat(total))}
+                  disabled
+                  sx={{ fontWeight: 'bold' }}
+                />
+              </FormControl>
+              
+              <FormControl>
+                <FormLabel>Notes</FormLabel>
+                <Input
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="Order notes (optional)"
+                />
+              </FormControl>
+            </Box>
           </Box>
 
-          <Divider />
-
-          {/* Order Items */}
+          {/* Right Column: Order Items */}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Typography level="title-sm">
@@ -423,10 +462,10 @@ export default function DialogOrder({
                   <thead>
                     <tr>
                       <th>Product</th>
-                      <th style={{ textAlign: 'right' }}>Quantity</th>
-                      <th style={{ textAlign: 'right' }}>Unit Price</th>
-                      <th style={{ textAlign: 'right' }}>Discount (%)</th>
-                      <th style={{ textAlign: 'right' }}>Total Price</th>
+                      <th style={{ textAlign: 'right' }}>Qty</th>
+                      <th style={{ textAlign: 'right' }}>Price</th>
+                      <th style={{ textAlign: 'right' }}>Disc %</th>
+                      <th style={{ textAlign: 'right' }}>Total</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -441,25 +480,39 @@ export default function DialogOrder({
                     ) : (
                       existingOrderItems.map((item, index) => (
                         <tr key={item.id || item.uuid || index}>
-                          <td>{item.ProductName || item.name || item.product_uuid}</td>
-                          <td style={{ textAlign: 'right' }}>{item.quantity}</td>
-                          <td style={{ textAlign: 'right' }}>
-                            {typeof item.unitprice === 'number' || typeof item.unitprice === 'string' 
-                              ? formatCurrencyWithSymbol(Number(item.unitprice)) 
-                              : '-'
-                            }
+                          <td>
+                            <Typography level="body-sm" sx={{ fontWeight: 'bold' }}>
+                              {item.ProductName || item.name || item.product_uuid}
+                            </Typography>
                           </td>
                           <td style={{ textAlign: 'right' }}>
-                            {typeof item.discount === 'number' || typeof item.discount === 'string' 
-                              ? `${Number(item.discount).toFixed(2)}%` 
-                              : '-'
-                            }
+                            <Typography level="body-sm">
+                              {item.quantity}
+                            </Typography>
                           </td>
                           <td style={{ textAlign: 'right' }}>
-                            {typeof item.price === 'number' || typeof item.price === 'string' 
-                              ? formatCurrencyWithSymbol(Number(item.price)) 
-                              : '-'
-                            }
+                            <Typography level="body-sm">
+                              {typeof item.unitprice === 'number' || typeof item.unitprice === 'string' 
+                                ? formatCurrencyWithSymbol(Number(item.unitprice)) 
+                                : '-'
+                              }
+                            </Typography>
+                          </td>
+                          <td style={{ textAlign: 'right' }}>
+                            <Typography level="body-sm">
+                              {typeof item.discount === 'number' || typeof item.discount === 'string' 
+                                ? `${Number(item.discount).toFixed(1)}%` 
+                                : '-'
+                              }
+                            </Typography>
+                          </td>
+                          <td style={{ textAlign: 'right' }}>
+                            <Typography level="body-sm" sx={{ fontWeight: 'bold' }}>
+                              {typeof item.price === 'number' || typeof item.price === 'string' 
+                                ? formatCurrencyWithSymbol(Number(item.price)) 
+                                : '-'
+                              }
+                            </Typography>
                           </td>
                         </tr>
                       ))
@@ -468,127 +521,125 @@ export default function DialogOrder({
                 </Table>
               )
             ) : (
-              // Add/Edit mode: Show editable items
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              // Add/Edit mode: Show editable items in a more compact layout
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {productsError && (
                   <Typography color="warning" level="body-sm">
                     {productsError}
                   </Typography>
                 )}
                 
-                {orderItems.map((item) => (
-                  <Box key={item.id} sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                    <Autocomplete
-                      placeholder="Select product"
-                      options={products}
-                      getOptionLabel={(option) => option.ProductName}
-                      value={item.product}
-                      onChange={(_, value) => handleProductSelect(item.id, value)}
-                      loading={loadingProducts}
-                      sx={{ flex: 2 }}
-                    />
-                    
-                    <Input
-                      type="number"
-                      placeholder="Qty"
-                      value={item.quantity}
-                      onChange={(e) => handleItemChange(item.id, 'quantity', parseInt(e.target.value) || 0)}
-                      sx={{ width: 80 }}
-                      slotProps={{ input: { min: 1 } }}
-                    />
-                    
-                    <Input
-                      type="number"
-                      placeholder="Price"
-                      value={item.unitprice}
-                      onChange={(e) => handleItemChange(item.id, 'unitprice', parseFloat(e.target.value) || 0)}
-                      sx={{ width: 100 }}
-                      slotProps={{ input: { min: 0, step: 0.01 } }}
-                    />
-                    
-                    <Input
-                      type="number"
-                      placeholder="Discount %"
-                      value={item.discount}
-                      onChange={(e) => handleItemChange(item.id, 'discount', parseFloat(e.target.value) || 0)}
-                      sx={{ width: 100 }}
-                      slotProps={{ input: { min: 0, max: 100, step: 0.01 } }}
-                    />
-                    
-                    <IconButton
-                      onClick={() => handleRemoveItem(item.id)}
-                      disabled={orderItems.length === 1}
-                      color="danger"
-                      size="sm"
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </Box>
-                ))}
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, maxHeight: '400px', overflowY: 'auto' }}>
+                  {orderItems.map((item) => (
+                    <Box key={item.id} sx={{ 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      gap: 1, 
+                      p: 2, 
+                      border: '1px solid', 
+                      borderColor: 'divider', 
+                      borderRadius: 'sm',
+                      bgcolor: 'background.surface'
+                    }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography level="body-sm" sx={{ fontWeight: 'bold' }}>
+                          Item {orderItems.indexOf(item) + 1}
+                        </Typography>
+                        <IconButton
+                          onClick={() => handleRemoveItem(item.id)}
+                          disabled={orderItems.length === 1}
+                          color="danger"
+                          size="sm"
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Box>
+                      
+                      <Autocomplete
+                        placeholder="Select product"
+                        options={products}
+                        getOptionLabel={(option) => option.ProductName}
+                        value={item.product}
+                        onChange={(_, value) => handleProductSelect(item.id, value)}
+                        loading={loadingProducts}
+                        size="sm"
+                      />
+                      
+                      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 1 }}>
+                        <Box>
+                          <FormLabel sx={{ fontSize: 'xs' }}>Quantity</FormLabel>
+                          <Input
+                            type="number"
+                            value={item.quantity}
+                            onChange={(e) => handleItemChange(item.id, 'quantity', parseInt(e.target.value) || 0)}
+                            size="sm"
+                            slotProps={{ input: { min: 1 } }}
+                          />
+                        </Box>
+                        
+                        <Box>
+                          <FormLabel sx={{ fontSize: 'xs' }}>Unit Price</FormLabel>
+                          <Input
+                            type="number"
+                            value={item.unitprice}
+                            onChange={(e) => handleItemChange(item.id, 'unitprice', parseFloat(e.target.value) || 0)}
+                            size="sm"
+                            slotProps={{ input: { min: 0, step: 0.01 } }}
+                          />
+                        </Box>
+                        
+                        <Box>
+                          <FormLabel sx={{ fontSize: 'xs' }}>Discount %</FormLabel>
+                          <Input
+                            type="number"
+                            value={item.discount}
+                            onChange={(e) => handleItemChange(item.id, 'discount', parseFloat(e.target.value) || 0)}
+                            size="sm"
+                            slotProps={{ input: { min: 0, max: 100, step: 0.01 } }}
+                          />
+                        </Box>
+                      </Box>
+                      
+                      {item.product && item.quantity > 0 && (
+                        <Box sx={{ textAlign: 'right', pt: 1, borderTop: '1px solid', borderColor: 'divider' }}>
+                          <Typography level="body-sm" sx={{ fontWeight: 'bold' }}>
+                            Item Total: {formatCurrencyWithSymbol(
+                              (item.quantity * item.unitprice) * (1 - item.discount / 100)
+                            )}
+                          </Typography>
+                        </Box>
+                      )}
+                    </Box>
+                  ))}
+                </Box>
               </Box>
             )}
           </Box>
+        </Box>
 
-          <Divider />
-
-          {/* Order Summary */}
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Typography level="title-sm">Order Summary</Typography>
-            
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <FormControl sx={{ flex: 1 }}>
-                <FormLabel>Order Discount (%)</FormLabel>
-                <Input
-                  type="number"
-                  value={discount}
-                  onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-                  disabled={isReadOnly}
-                  slotProps={{ input: { min: 0, max: 100, step: 0.01 } }}
-                />
-              </FormControl>
-              
-              <FormControl sx={{ flex: 1 }}>
-                <FormLabel>Total Amount</FormLabel>
-                <Input
-                  value={formatCurrencyWithSymbol(parseFloat(total))}
-                  disabled
-                  sx={{ fontWeight: 'bold' }}
-                />
-              </FormControl>
-            </Box>
-            
-            <FormControl>
-              <FormLabel>Notes</FormLabel>
-              <Input
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                disabled={isReadOnly}
-                placeholder="Order notes (optional)"
-              />
-            </FormControl>
-          </Box>
-
-          {error && (
+        {/* Error Message */}
+        {error && (
+          <Box sx={{ mt: 2 }}>
             <Typography color="danger" level="body-sm">
               {error}
             </Typography>
-          )}
-
-          {/* Actions */}
-          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-            <Button variant="plain" onClick={onClose} disabled={saving}>
-              {isReadOnly ? 'Close' : 'Cancel'}
-            </Button>
-            {!isReadOnly && (
-              <Button
-                onClick={handleSave}
-                loading={saving}
-                disabled={!customerName.trim() || !customerEmail.trim()}
-              >
-                {mode === 'edit' ? 'Update Order' : 'Create Order'}
-              </Button>
-            )}
           </Box>
+        )}
+
+        {/* Actions */}
+        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 3, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+          <Button variant="plain" onClick={onClose} disabled={saving}>
+            {isReadOnly ? 'Close' : 'Cancel'}
+          </Button>
+          {!isReadOnly && (
+            <Button
+              onClick={handleSave}
+              loading={saving}
+              disabled={!customerName.trim() || !customerEmail.trim()}
+            >
+              {mode === 'edit' ? 'Update Order' : 'Create Order'}
+            </Button>
+          )}
         </Box>
       </ModalDialog>
     </Modal>

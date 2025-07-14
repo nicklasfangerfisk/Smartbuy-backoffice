@@ -369,8 +369,13 @@ const PageOrders = () => {
                             sx={{ 
                                 p: 2, 
                                 borderBottom: '1px solid', 
-                                borderColor: 'divider'
+                                borderColor: 'divider',
+                                cursor: 'pointer',
+                                '&:hover': {
+                                    bgcolor: 'background.level1'
+                                }
                             }}
+                            onClick={() => handleOrderClick(order.uuid)}
                         >
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
                                 {/* Status Icon */}
@@ -439,19 +444,15 @@ const PageOrders = () => {
 
                             {/* Action Buttons */}
                             <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-                                <Button
-                                    size="sm"
-                                    variant="soft"
-                                    onClick={() => handleOrderClick(order.uuid)}
-                                >
-                                    View
-                                </Button>
                                 {order.status === 'Draft' && (
                                     <Button
                                         size="sm"
                                         variant="solid"
                                         color="primary"
-                                        onClick={() => handleCheckoutClick(order)}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleCheckoutClick(order);
+                                        }}
                                         startDecorator={<PaymentIcon />}
                                     >
                                         Checkout
@@ -550,7 +551,11 @@ const PageOrders = () => {
                             </tr>
                         )}
                         {filteredOrders.map((order) => (
-                            <tr key={order.uuid} style={{ cursor: 'pointer' }}>
+                            <tr 
+                                key={order.uuid} 
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => handleOrderClick(order.uuid)}
+                            >
                                 <td style={typographyStyles}>
                                     {order.order_number_display || order.uuid.substring(0, 8)}
                                 </td>
@@ -599,19 +604,15 @@ const PageOrders = () => {
                                 </td>
                                 <td style={typographyStyles}>
                                     <Box sx={{ display: 'flex', gap: 1 }}>
-                                        <Button
-                                            size="sm"
-                                            variant="soft"
-                                            onClick={() => handleOrderClick(order.uuid)}
-                                        >
-                                            View
-                                        </Button>
                                         {order.status === 'Draft' && (
                                             <Button
                                                 size="sm"
                                                 variant="solid"
                                                 color="primary"
-                                                onClick={() => handleCheckoutClick(order)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleCheckoutClick(order);
+                                                }}
                                                 startDecorator={<PaymentIcon />}
                                             >
                                                 Checkout

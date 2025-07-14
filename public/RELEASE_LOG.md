@@ -10,6 +10,17 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
+## [3.2.17] - 2025-07-14 16:45:00
+**Order Management UX Improvements**
+### Changed
+- PageOrders: Made table rows and mobile cards clickable to open order dialog
+- DialogOrder: Redesigned with two-column layout - order header on left, items on right
+- Removed redundant "View" buttons, now clicking row/card opens dialog
+- Enhanced order items display with improved compact layout for mobile/desktop
+
+### Fixed
+- Action buttons (Checkout) now properly prevent row click event propagation
+
 ## [3.2.16] - 2025-07-14 15:30:00
 **Dialog Component Consolidation and Refactoring**
 ### Added
