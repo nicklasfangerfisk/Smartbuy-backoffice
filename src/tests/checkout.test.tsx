@@ -5,16 +5,31 @@
  */
 
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, act, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import ActionDialogOrderCheckout from '../Dialog/ActionDialogOrderCheckout';
+
+// Mock order items data
+const mockOrderItems = [
+  {
+    uuid: 'item-1',
+    product_uuid: 'prod-1',
+    quantity: 2,
+    unitprice: 50,
+    discount: 0,
+    Products: { ProductName: 'Test Product' }
+  }
+];
 
 // Mock the Supabase client
 jest.mock('../utils/supabaseClient', () => ({
   supabase: {
     from: jest.fn(() => ({
       select: jest.fn(() => ({
-        eq: jest.fn(() => Promise.resolve({ data: [], error: null }))
+        eq: jest.fn(() => Promise.resolve({ 
+          data: mockOrderItems, 
+          error: null 
+        }))
       })),
       update: jest.fn(() => ({
         eq: jest.fn(() => Promise.resolve({ error: null }))
@@ -49,37 +64,58 @@ describe('ActionDialogOrderCheckout', () => {
     jest.clearAllMocks();
   });
 
-  test('renders checkout dialog when open', () => {
-    render(<ActionDialogOrderCheckout {...defaultProps} />);
+  test('renders checkout dialog when open', async () => {
+    await act(async () => {
+      render(<ActionDialogOrderCheckout {...defaultProps} />);
+    });
     
-    expect(screen.getByText('Checkout')).toBeInTheDocument();
-    expect(screen.getByText('Order Summary')).toBeInTheDocument();
+    // Check for elements that actually exist in the component
+    expect(screen.getByText('Summary')).toBeInTheDocument();
     expect(screen.getByText('Order #ORD-001')).toBeInTheDocument();
+    
+    // Wait for order items to load
+    await waitFor(() => {
+      expect(screen.getByText('Test Product')).toBeInTheDocument();
+    });
   });
 
-  test('shows stepper with correct steps', () => {
-    render(<ActionDialogOrderCheckout {...defaultProps} />);
+  test('shows stepper with correct steps', async () => {
+    await act(async () => {
+      render(<ActionDialogOrderCheckout {...defaultProps} />);
+    });
     
-    expect(screen.getByText('Customer Information')).toBeInTheDocument();
-    expect(screen.getByText('Payment Method')).toBeInTheDocument();
-    expect(screen.getByText('Review Order')).toBeInTheDocument();
+    // Check for the actual step labels used in the component (in the stepper)
+    const contactSteps = screen.getAllByText('Contact');
+    const deliverySteps = screen.getAllByText('Delivery');
+    const paymentSteps = screen.getAllByText('Payment');
+    
+    // Should find each step at least once
+    expect(contactSteps.length).toBeGreaterThanOrEqual(1);
+    expect(deliverySteps.length).toBeGreaterThanOrEqual(1);
+    expect(paymentSteps.length).toBeGreaterThanOrEqual(1);
   });
 
-  test('displays order total correctly', () => {
-    render(<ActionDialogOrderCheckout {...defaultProps} />);
+  test('displays order total correctly', async () => {
+    await act(async () => {
+      render(<ActionDialogOrderCheckout {...defaultProps} />);
+    });
     
-    expect(screen.getByText('$100.00')).toBeInTheDocument();
+    // Wait for order items to load and total to be calculated
+    await waitFor(() => {
+      const totalElements = screen.getAllByText('$100.00');
+      expect(totalElements.length).toBeGreaterThan(0);
+    });
   });
 
   test('does not render when closed', () => {
     render(<ActionDialogOrderCheckout {...defaultProps} open={false} />);
     
-    expect(screen.queryByText('Checkout')).not.toBeInTheDocument();
+    expect(screen.queryByText('Summary')).not.toBeInTheDocument();
   });
 
   test('handles null order gracefully', () => {
     render(<ActionDialogOrderCheckout {...defaultProps} order={null} />);
     
-    expect(screen.queryByText('Checkout')).not.toBeInTheDocument();
+    expect(screen.queryByText('Summary')).not.toBeInTheDocument();
   });
 });

@@ -10,6 +10,15 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
+## [3.2.18] - 2025-07-14 17:15:00
+**Unit Test Infrastructure Improvements**
+### Fixed
+- Fixed failing unit tests with proper React act() wrapping for async state updates
+- Resolved mock configuration issues for Supabase client in authentication tests
+- Fixed multiple element selection errors in checkout component tests
+- Improved test expectations to match actual component content and behavior
+- Enhanced test reliability with better async handling and element queries
+
 ## [3.2.17] - 2025-07-14 16:45:00
 **Order Management UX Improvements**
 ### Changed
