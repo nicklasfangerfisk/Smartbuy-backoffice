@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { twilioClient, TWILIO_MESSAGING_SERVICE_SID } from '../utils/twilioClient';
+import { twilioClient, TWILIO_MESSAGING_SERVICE_SID } from '../src/utils/twilioClient';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_ANON_KEY!);
