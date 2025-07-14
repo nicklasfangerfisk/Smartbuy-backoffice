@@ -10,6 +10,45 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
+## [3.2.18] - 2025-07-14 17:15:00
+**Unit Test Infrastructure Improvements**
+### Fixed
+- Fixed failing unit tests with proper React act() wrapping for async state updates
+- Resolved mock configuration issues for Supabase client in authentication tests
+- Fixed multiple element selection errors in checkout component tests
+- Improved test expectations to match actual component content and behavior
+- Enhanced test reliability with better async handling and element queries
+
+## [3.2.17] - 2025-07-14 16:45:00
+**Order Management UX Improvements**
+### Changed
+- PageOrders: Made table rows and mobile cards clickable to open order dialog
+- DialogOrder: Redesigned with two-column layout - order header on left, items on right
+- Removed redundant "View" buttons, now clicking row/card opens dialog
+- Enhanced order items display with improved compact layout for mobile/desktop
+
+### Fixed
+- Action buttons (Checkout) now properly prevent row click event propagation
+
+## [3.2.16] - 2025-07-14 15:30:00
+**Dialog Component Consolidation and Refactoring**
+### Added
+- DialogEmployee.tsx - Unified employee management with role-specific fields and avatar upload
+- DialogCustomer.tsx - Unified customer management with tier-specific fields and address management
+- DialogOrder.tsx - Consolidated order management supporting add/edit/view modes
+
+### Changed
+- Split UserDialog into specialized DialogEmployee and DialogCustomer components
+- Consolidated OrderDetailsDialog, OrderTableCreate, and OrderTableDetails into unified DialogOrder
+- Updated PageEmployees and PageCustomers to use new specialized dialogs
+- Updated PageOrders to use unified DialogOrder component
+- Improved consistent naming conventions across dialog components
+
+### Fixed
+- TypeScript compilation errors in SubDialogOrderCheckoutReview payment method types
+- Missing StockMovementWithProduct type definition in PageMovements
+- All console errors and type mismatches resolved
+
 ## [3.2.15] - 2025-07-13 10:15:41
 **Timezone and Time Handling Fixes**
 ### Added

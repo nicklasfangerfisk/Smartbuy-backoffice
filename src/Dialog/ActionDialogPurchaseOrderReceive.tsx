@@ -9,7 +9,6 @@ import Typography from '@mui/joy/Typography';
 import Box from '@mui/joy/Box';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
-import { receivePurchaseOrder } from '../api/receivePurchaseOrder';
 import Snackbar from '@mui/joy/Snackbar';
 
 interface POItem {
@@ -80,10 +79,20 @@ const ActionDialogPurchaseOrderReceive: React.FC<ActionDialogPurchaseOrderReceiv
         quantity_received,
       }));
 
-      await receivePurchaseOrder(
-        String(poId), // always send as string (UUID)
-        receivedItems
-      );
+      const response = await fetch('/api/receive-purchase-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          purchaseOrderId: String(poId), // always send as string (UUID)
+          items: receivedItems
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
 
       // Call the onConfirm callback to refresh parent component
       onConfirm(received.map(item => ({

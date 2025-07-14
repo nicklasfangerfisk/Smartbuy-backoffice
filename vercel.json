@@ -8,6 +8,9 @@
     },
     "api/check-sendgrid-config.ts": {
       "runtime": "@vercel/node"
+    },
+    "api/receive-purchase-order.ts": {
+      "runtime": "@vercel/node"
     }
   },
   "rewrites": [

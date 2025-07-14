@@ -1,4 +1,4 @@
-import { supabase } from '../utils/supabaseClient';
+import { supabase } from '../src/utils/supabaseClient';
 
 /**
  * Receives a purchase order and creates stock movement records.
