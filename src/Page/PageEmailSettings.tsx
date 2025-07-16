@@ -80,9 +80,9 @@ export default function PageEmailSettings() {
           const data = await response.json();
           setSendGridConfigured(data.configured);
         } else {
-          // In development, API routes may not work - assume configured
-          console.log('API routes not available in development - assuming configured');
-          setSendGridConfigured(true);
+          // Non-JSON response - likely authentication required or development mode
+          console.log('Non-JSON response received - likely authentication required');
+          setSendGridConfigured(true); // Assume configured to allow testing
         }
       } else {
         // If we can't check the config, assume it's configured for testing
@@ -122,13 +122,23 @@ export default function PageEmailSettings() {
 
       const contentType = response.headers.get('content-type');
       
-      // Check if we got HTML/JavaScript instead of JSON (development environment)
+      // Check if we got HTML instead of JSON (authentication required or development environment)
       if (!contentType || !contentType.includes('application/json')) {
-        setTestResult({
-          success: false,
-          message: 'API endpoints not available in development. Deploy to Vercel to test email functionality.',
-          timestamp: new Date()
-        });
+        // Check if it's an authentication page
+        const responseText = await response.text();
+        if (responseText.includes('Authentication Required') || responseText.includes('Vercel Authentication')) {
+          setTestResult({
+            success: false,
+            message: 'API endpoints require authentication. Please disable Vercel protection for API routes or authenticate.',
+            timestamp: new Date()
+          });
+        } else {
+          setTestResult({
+            success: false,
+            message: 'API endpoints not available in development. Deploy to Vercel to test email functionality.',
+            timestamp: new Date()
+          });
+        }
         return;
       }
 
@@ -148,7 +158,7 @@ export default function PageEmailSettings() {
       if (error.message.includes('Unexpected token')) {
         setTestResult({
           success: false,
-          message: 'API endpoints not available in development. Deploy to Vercel to test email functionality.',
+          message: 'API endpoints require authentication or are not available. Please check Vercel project settings.',
           timestamp: new Date()
         });
       } else {
