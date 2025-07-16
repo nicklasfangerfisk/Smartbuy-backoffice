@@ -299,19 +299,19 @@ export default function DialogOrder({
     setError(null);
 
     try {
-      const orderData = {
-        order_number: orderNumber,
-        date: orderDate,
-        status: status,
-        customer_name: customerName.trim(),
-        customer_email: customerEmail.trim(),
-        // total: parseFloat(total), // Remove - should be computed from order items
-        discount: discount,
-        // notes: notes.trim() || null, // Temporarily disabled until column is added
-        storefront_id: storefrontId || null, // Include storefront ID
-      };
-
       if (mode === 'edit' && order?.id) {
+        const orderData = {
+          order_number: orderNumber,
+          date: orderDate,
+          status: status,
+          customer_name: customerName.trim(),
+          customer_email: customerEmail.trim(),
+          // total: parseFloat(total), // Remove - should be computed from order items
+          discount: discount,
+          // notes: notes.trim() || null, // Temporarily disabled until column is added
+          storefront_id: storefrontId || null, // Include storefront ID
+        };
+
         const { error } = await supabase
           .from('Orders')
           .update(orderData)
@@ -319,6 +319,19 @@ export default function DialogOrder({
 
         if (error) throw error;
       } else if (mode === 'add') {
+        // For add mode, exclude order_number as it's auto-generated
+        const orderData = {
+          // order_number: orderNumber, // Remove - auto-generated identity column
+          date: orderDate,
+          status: status,
+          customer_name: customerName.trim(),
+          customer_email: customerEmail.trim(),
+          // total: parseFloat(total), // Remove - should be computed from order items
+          discount: discount,
+          // notes: notes.trim() || null, // Temporarily disabled until column is added
+          storefront_id: storefrontId || null, // Include storefront ID
+        };
+
         const { data, error } = await supabase
           .from('Orders')
           .insert([orderData])
@@ -383,15 +396,18 @@ export default function DialogOrder({
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <Typography level="title-sm">Order Information</Typography>
               
-              <FormControl>
-                <FormLabel>Order Number</FormLabel>
-                <Input
-                  value={orderNumber}
-                  onChange={(e) => setOrderNumber(e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="Auto-generated"
-                />
-              </FormControl>
+              {/* Only show order number in edit mode - it's auto-generated in add mode */}
+              {mode === 'edit' && (
+                <FormControl>
+                  <FormLabel>Order Number</FormLabel>
+                  <Input
+                    value={orderNumber}
+                    onChange={(e) => setOrderNumber(e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="Auto-generated"
+                  />
+                </FormControl>
+              )}
               
               <FormControl>
                 <FormLabel>Date</FormLabel>
