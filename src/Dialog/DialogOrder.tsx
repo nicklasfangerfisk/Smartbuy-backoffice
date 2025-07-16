@@ -171,11 +171,20 @@ export default function DialogOrder({
       setLoadingStorefronts(true);
       const loadStorefronts = async () => {
         try {
+          // First, let's see all storefronts for debugging
+          const { data: allStorefronts, error: allError } = await supabase
+            .from('storefronts')
+            .select('id, name, is_online');
+          
+          console.log('All storefronts in database:', allStorefronts);
+          
           const { data, error } = await supabase
             .from('storefronts')
             .select('id, name, is_online')
             .eq('is_online', true)
             .order('name', { ascending: true });
+          
+          console.log('Storefronts loaded:', data, 'Error:', error);
           
           if (!error && data) {
             setStorefronts(data);
@@ -298,7 +307,7 @@ export default function DialogOrder({
         customer_email: customerEmail.trim(),
         total: parseFloat(total),
         discount: discount,
-        notes: notes.trim() || null,
+        // notes: notes.trim() || null, // Temporarily disabled until column is added
         storefront_id: storefrontId || null, // Include storefront ID
       };
 

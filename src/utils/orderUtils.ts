@@ -70,7 +70,7 @@ export async function createOrderWithItems(
         customer_email: orderData.customer_email,
         storefront_id: orderData.storefront_id || null,
         discount: orderData.discount || 0,
-        notes: orderData.notes || null,
+        // notes: orderData.notes || null, // Temporarily disabled until column is added
         order_total: finalTotal,
         status: 'Draft',
         date: new Date().toISOString()
