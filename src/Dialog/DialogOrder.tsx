@@ -305,7 +305,7 @@ export default function DialogOrder({
         status: status,
         customer_name: customerName.trim(),
         customer_email: customerEmail.trim(),
-        total: parseFloat(total),
+        // total: parseFloat(total), // Remove - should be computed from order items
         discount: discount,
         // notes: notes.trim() || null, // Temporarily disabled until column is added
         storefront_id: storefrontId || null, // Include storefront ID

@@ -52,17 +52,7 @@ export async function createOrderWithItems(
   sendConfirmationEmail: boolean = true
 ): Promise<OrderCreationResult> {
   try {
-    // Calculate total from order items
-    const orderTotal = orderData.orderItems.reduce((sum, item) => {
-      const itemTotal = item.quantity * item.unitprice;
-      const itemDiscount = (item.discount || 0) * item.quantity;
-      return sum + itemTotal - itemDiscount;
-    }, 0);
-
-    // Apply order-level discount
-    const finalTotal = orderTotal - (orderData.discount || 0);
-
-    // Create the order
+    // Create the order (total will be computed by database triggers from OrderItems)
     const { data: orderResult, error: orderError } = await supabase
       .from('Orders')
       .insert({
@@ -71,7 +61,7 @@ export async function createOrderWithItems(
         storefront_id: orderData.storefront_id || null,
         discount: orderData.discount || 0,
         // notes: orderData.notes || null, // Temporarily disabled until column is added
-        order_total: finalTotal,
+        // order_total: finalTotal, // Remove - let database triggers compute this
         status: 'Draft',
         date: new Date().toISOString()
       })
