@@ -704,14 +704,17 @@ export default function DialogOrder({
               color="primary"
               onClick={async () => {
                 try {
+                  console.log(`📧 Resending order confirmation email for order: ${order.uuid}`);
                   // Use the new centralized API client
                   const result = await apiClient.sendOrderConfirmation(
                     order.uuid,
                     undefined, // no test email
-                    storefrontId
+                    storefrontId,
+                    order.customer_email // pass the customer email
                   );
                   
                   if (result.success) {
+                    console.log('✅ Order confirmation email resent successfully');
                     alert('Confirmation email sent successfully!');
                   } else {
                     if (result.statusCode === 404) {

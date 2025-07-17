@@ -1,16 +1,22 @@
 // API Configuration - Environment-aware setup
+import { DEV_CONFIG } from '../utils/devConfig';
+
 export const API_CONFIG = {
-  // Determine base URL based on environment
-  baseUrl: (() => {
+  // Determine base URL based on environment and dev configuration
+  get baseUrl() {
     if (typeof window !== 'undefined') {
-      // Browser environment
-      return window.location.origin;
+      // Browser environment - respect DEV_CONFIG settings
+      if (DEV_CONFIG.USE_PRODUCTION_API) {
+        return DEV_CONFIG.PRODUCTION_API_URL;
+      }
+      // Use local API with configured port
+      return `${window.location.protocol}//${window.location.hostname}:${DEV_CONFIG.LOCAL_API_PORT}`;
     }
     // Server environment
     return process.env.VERCEL_URL 
       ? `https://${process.env.VERCEL_URL}`
-      : 'http://localhost:3000';
-  })(),
+      : `http://localhost:${DEV_CONFIG.LOCAL_API_PORT}`;
+  },
   
   // API versioning
   version: 'v1',

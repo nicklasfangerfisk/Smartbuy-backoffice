@@ -1,5 +1,5 @@
 // Server-side email service for Vercel API functions
-import sgMail from '@sendgrid/mail';
+const sgMail = require('@sendgrid/mail');
 
 // Initialize SendGrid
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
@@ -42,7 +42,7 @@ if (SENDGRID_API_KEY) {
 /**
  * Generates HTML email template for order confirmation
  */
-export function generateOrderConfirmationHTML(data) {
+function generateOrderConfirmationHTML(data) {
   const { order, orderItems, storefront } = data;
   
   // Calculate totals
@@ -128,7 +128,7 @@ export function generateOrderConfirmationHTML(data) {
 /**
  * Sends a test order confirmation email (for development/testing)
  */
-export async function sendTestOrderConfirmationEmail(testEmail, storefrontId) {
+async function sendTestOrderConfirmationEmail(testEmail, storefrontId) {
   console.log('sendTestOrderConfirmationEmail called with:', { testEmail, storefrontId });
   
   const testData = {
@@ -219,8 +219,106 @@ Thank you for choosing ${testData.storefront.name}!
     console.error('Error sending test email:', {
       message: error.message,
       code: error.code,
-      response: error.response?.body
+      response: error.response && error.response.body ? error.response.body : undefined
     });
     throw error;
   }
 }
+
+/**
+ * Sends order confirmation email for a real order
+ */
+async function sendOrderConfirmationEmail(orderUuid, storefrontId, targetEmail = null) {
+  console.log('sendOrderConfirmationEmail called with:', { orderUuid, storefrontId, targetEmail });
+  
+  try {
+    if (!SENDGRID_API_KEY) {
+      console.error('SendGrid API key not configured');
+      throw new Error('SendGrid API key not configured');
+    }
+
+    if (!process.env.SENDGRID_FROM_EMAIL) {
+      console.error('SendGrid from email not configured');
+      throw new Error('SendGrid from email not configured');
+    }
+
+    // For now, send a simple order confirmation email
+    // In a real implementation, you would fetch order details from your database
+    console.log('Generating order confirmation email for order:', orderUuid);
+    
+    const orderData = {
+      order: {
+        uuid: orderUuid,
+        order_number_display: `ORD-${orderUuid.substring(0, 8).toUpperCase()}`,
+        customer_name: 'Valued Customer',
+        customer_email: targetEmail || 'customer@example.com',
+        order_total: 99.99,
+        date: new Date().toISOString(),
+        status: 'Paid'
+      },
+      orderItems: [
+        {
+          ProductName: 'Sample Product',
+          quantity: 1,
+          unitprice: 99.99,
+          discount: 0,
+          total: 99.99
+        }
+      ],
+      storefront: {
+        id: storefrontId || 'default',
+        name: 'Your Store',
+        url: 'https://yourstore.com',
+        logo_url: '',
+        is_online: true
+      }
+    };
+
+    const htmlContent = generateOrderConfirmationHTML(orderData);
+    console.log('HTML content generated for order confirmation, length:', htmlContent.length);
+
+    const msg = {
+      to: orderData.order.customer_email,
+      from: {
+        email: process.env.SENDGRID_FROM_EMAIL,
+        name: orderData.storefront.name
+      },
+      subject: `Order Confirmation - ${orderData.order.order_number_display}`,
+      html: htmlContent,
+      text: `
+Hello ${orderData.order.customer_name},
+
+Thank you for your order!
+
+Order Number: ${orderData.order.order_number_display}
+Order Date: ${new Date(orderData.order.date).toLocaleDateString()}
+Total: $${orderData.order.order_total.toFixed(2)}
+
+This is a confirmation email for order ${orderUuid}.
+
+Thank you for choosing ${orderData.storefront.name}!
+      `.trim()
+    };
+
+    console.log('Attempting to send order confirmation email via SendGrid to:', orderData.order.customer_email);
+    const result = await sgMail.send(msg);
+    console.log('SendGrid send result:', result[0].statusCode);
+    
+    console.log('Order confirmation email sent successfully for order:', orderUuid);
+    return true;
+  } catch (error) {
+    console.error('Error sending order confirmation email:', {
+      message: error.message,
+      code: error.code,
+      response: error.response && error.response.body ? error.response.body : undefined
+    });
+    throw error;
+  }
+}
+
+// CommonJS exports
+module.exports = {
+  generateOrderConfirmationHTML,
+  sendTestOrderConfirmationEmail,
+  sendOrderConfirmationEmail
+};

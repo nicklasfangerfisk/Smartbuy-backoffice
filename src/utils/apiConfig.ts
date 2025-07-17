@@ -11,7 +11,9 @@ const getApiBaseUrl = (): string => {
 
 // API endpoint configuration
 export const API_CONFIG = {
-  baseUrl: getApiBaseUrl(),
+  get baseUrl() {
+    return getApiBaseUrl(); // Make this dynamic
+  },
   endpoints: {
     checkSendGridConfig: '/api/check-sendgrid-config',
     sendOrderConfirmation: '/api/send-order-confirmation',
@@ -31,40 +33,93 @@ export const buildApiUrl = (endpoint: string): string => {
 /**
  * Make an API request with proper error handling
  */
-export const apiRequest = async (
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<Response> => {
-  const url = buildApiUrl(endpoint);
+export async function apiRequest(endpoint: string, options: RequestInit = {}): Promise<any> {
+  const apiBaseUrl = getApiBaseUrl();
+  const url = `${apiBaseUrl}${endpoint}`;
   
-  // Log API requests if enabled
-  if (DEV_CONFIG.LOG_API_REQUESTS && typeof window !== 'undefined') {
-    console.log(`🔌 API Request: ${options.method || 'GET'} ${url}`);
-  }
-  
-  const defaultOptions: RequestInit = {
+  // Ensure CORS is handled properly
+  const finalOptions: RequestInit = {
+    ...options,
+    mode: 'cors',
+    credentials: 'omit',
     headers: {
       'Content-Type': 'application/json',
+      'Accept': 'application/json',
       ...options.headers,
     },
   };
 
-  const finalOptions = { ...defaultOptions, ...options };
+  if (DEV_CONFIG.LOG_API_REQUESTS) {
+    console.log('API Request:', {
+      url,
+      method: finalOptions.method || 'GET',
+      headers: finalOptions.headers,
+      body: finalOptions.body,
+      mode: finalOptions.mode,
+      credentials: finalOptions.credentials,
+    });
+  }
 
   try {
+    console.log('Making fetch request to:', url);
     const response = await fetch(url, finalOptions);
     
-    // Log response status if enabled
-    if (DEV_CONFIG.LOG_API_REQUESTS && typeof window !== 'undefined') {
-      console.log(`📡 API Response: ${response.status} ${response.statusText}`);
+    if (DEV_CONFIG.LOG_API_REQUESTS) {
+      console.log('API Response:', {
+        url,
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries()),
+      });
+    }
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+    }
+
+    const data = await response.json();
+    console.log('API Response data:', data);
+    return data;
+  } catch (error) {
+    console.error('API Request Error details:', {
+      url,
+      error: error instanceof Error ? {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+      } : error,
+      requestOptions: finalOptions,
+      navigator: {
+        onLine: navigator.onLine,
+        userAgent: navigator.userAgent
+      }
+    });
+    
+    // Additional error context
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      console.error('Network Error - possible causes:');
+      console.error('1. CORS issue (but server has CORS headers)');
+      console.error('2. Network connectivity problem');
+      console.error('3. DNS resolution issue');
+      console.error('4. SSL/TLS certificate issue');
+      console.error('5. Firewall/proxy blocking request');
     }
     
-    return response;
-  } catch (error) {
-    console.error(`❌ API request failed for ${endpoint}:`, error);
+    if (DEV_CONFIG.LOG_API_REQUESTS) {
+      console.error('API Request Error:', {
+        url,
+        error: error instanceof Error ? {
+          name: error.name,
+          message: error.message,
+          stack: error.stack
+        } : error,
+        requestOptions: finalOptions
+      });
+    }
     throw error;
   }
-};
+}
 
 /**
  * Check if we're running in development mode
