@@ -35,7 +35,6 @@ import PersonIcon from '@mui/icons-material/Person';
 import './App.css'; // Import custom styles
 import LoginLayout from './auth/LoginLayout';
 import PageMovements from './Page/PageMovements';
-import PageEmailSettings from './Page/PageEmailSettings';
 import PageModules from './Page/PageModules';
 import PageSettings from './Page/PageSettings';
 import PageFunctions from './Page/PageFunctions';

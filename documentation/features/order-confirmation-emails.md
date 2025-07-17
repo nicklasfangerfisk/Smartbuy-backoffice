@@ -196,7 +196,8 @@ src/
 │   ├── send-order-confirmation.ts    # Main email API
 │   └── resend-order-confirmation.ts  # Manual resend API
 ├── Page/
-│   └── PageEmailSettings.tsx   # Admin testing interface
+│   ├── PageModules.tsx         # Module management interface (includes email)
+│   └── PageFunctions.tsx       # API testing interface
 └── Dialog/
     ├── ActionDialogOrderCheckout.tsx  # Checkout integration
     └── DialogOrder.tsx          # Order creation/editing
