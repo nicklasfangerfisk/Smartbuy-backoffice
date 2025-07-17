@@ -68,7 +68,7 @@ function Layout() {
       '/sms-campaigns': 'dashboard', // SMS campaigns grouped under dashboard for mobile
       '/movements': 'dashboard', // Movements grouped under dashboard for mobile
       '/settings': 'profile', // Settings page maps to profile in mobile
-      '/email-settings': 'profile', // Email settings page maps to profile in mobile
+      '/modules': 'profile', // Modules page maps to profile in mobile
     };
     setMobileMenuValue(pathToValueMap[location.pathname] || 'dashboard');
   }, [location.pathname]);
@@ -114,7 +114,7 @@ function Layout() {
                 'movements': '/movements',
                 'profile': '/settings',
                 'settings': '/settings',
-                'emailsettings': '/email-settings',
+                'modules': '/modules',
                 'functions': '/functions'
               };
               
@@ -231,7 +231,7 @@ function Layout() {
             }
           />
           <Route
-            path="/email-settings"
+            path="/modules"
             element={
               <ProtectedRoute>
                 <PageModules />
