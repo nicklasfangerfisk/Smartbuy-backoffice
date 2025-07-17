@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { supabase } from '../utils/supabaseClient';
 import { formatCurrencyWithSymbol } from '../utils/currencyUtils';
+import { createOrderWithItems } from '../utils/orderUtils';
 import Modal from '@mui/joy/Modal';
 import ModalDialog from '@mui/joy/ModalDialog';
 import ModalClose from '@mui/joy/ModalClose';
@@ -319,47 +320,26 @@ export default function DialogOrder({
 
         if (error) throw error;
       } else if (mode === 'add') {
-        // For add mode, exclude order_number as it's auto-generated
-        const orderData = {
-          // order_number: orderNumber, // Remove - auto-generated identity column
-          date: orderDate,
-          status: status,
+        // Use the utility function that handles email sending
+        const validItems = orderItems.filter(item => item.product && item.quantity > 0);
+        
+        const orderCreationData = {
           customer_name: customerName.trim(),
           customer_email: customerEmail.trim(),
-          // total: parseFloat(total), // Remove - should be computed from order items
+          storefront_id: storefrontId || undefined,
           discount: discount,
-          // notes: notes.trim() || null, // Temporarily disabled until column is added
-          storefront_id: storefrontId || null, // Include storefront ID
+          orderItems: validItems.map(item => ({
+            product_uuid: item.product!.id,
+            quantity: item.quantity,
+            unitprice: item.unitprice,
+            discount: item.discount
+          }))
         };
 
-        const { data, error } = await supabase
-          .from('Orders')
-          .insert([orderData])
-          .select()
-          .single();
-
-        if (error) throw error;
-
-        // Insert order items
-        if (data) {
-          const itemsToInsert = orderItems
-            .filter(item => item.product && item.quantity > 0)
-            .map(item => ({
-              order_uuid: data.uuid,
-              product_uuid: item.product!.id,
-              quantity: item.quantity,
-              unitprice: item.unitprice,
-              discount: item.discount,
-              price: (item.quantity * item.unitprice) * (1 - item.discount / 100)
-            }));
-
-          if (itemsToInsert.length > 0) {
-            const { error: itemsError } = await supabase
-              .from('OrderItems')
-              .insert(itemsToInsert);
-
-            if (itemsError) throw itemsError;
-          }
+        const result = await createOrderWithItems(orderCreationData, true); // Send confirmation email
+        
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to create order');
         }
       }
 
@@ -723,28 +703,25 @@ export default function DialogOrder({
               color="primary"
               onClick={async () => {
                 try {
-                  const response = await fetch('/api/resend-order-confirmation', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                      orderUuid: order.uuid,
-                      resendEmail: true 
-                    }),
-                  });
+                  // For development testing, show info about manual testing
+                  const confirmed = window.confirm(
+                    `To test email functionality in development mode:\n\n` +
+                    `1. Open terminal\n` +
+                    `2. Run: node test-email.js\n\n` +
+                    `This will send a test email to pernillealstrup88@gmail.com\n\n` +
+                    `Click OK to continue with this approach, or Cancel to skip.`
+                  );
                   
-                  const result = await response.json();
-                  if (result.success) {
-                    alert('Confirmation email sent successfully!');
-                  } else {
-                    alert('Failed to send email: ' + result.error);
+                  if (confirmed) {
+                    alert('Please run "node test-email.js" in the terminal to test email functionality.');
                   }
                 } catch (err: any) {
-                  alert('Error sending email: ' + err.message);
+                  alert('Error: ' + err.message);
                 }
               }}
               disabled={saving}
             >
-              Resend Email
+              Test Email (Dev Mode)
             </Button>
           )}
           
