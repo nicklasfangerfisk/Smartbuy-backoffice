@@ -271,16 +271,35 @@ export default function PageModules() {
       
       if (!contentType || !contentType.includes('application/json')) {
         const responseText = await response.text();
+        console.error('Non-JSON API response:', { 
+          status: response.status, 
+          statusText: response.statusText, 
+          contentType, 
+          responseText: responseText.substring(0, 500) 
+        });
+        
         if (responseText.includes('Authentication Required') || responseText.includes('Vercel Authentication')) {
           setTestResult({
             success: false,
             message: 'API endpoints require authentication. Please disable Vercel protection for API routes or authenticate.',
             timestamp: new Date()
           });
+        } else if (response.status >= 500) {
+          setTestResult({
+            success: false,
+            message: `Server error (${response.status}): ${response.statusText}. Check Vercel function logs for details.`,
+            timestamp: new Date()
+          });
+        } else if (response.status === 404) {
+          setTestResult({
+            success: false,
+            message: 'API endpoint not found. Ensure the API functions are properly deployed to Vercel.',
+            timestamp: new Date()
+          });
         } else {
           setTestResult({
             success: false,
-            message: 'API endpoints not available in development. Deploy to Vercel to test email functionality.',
+            message: `API request failed: ${response.status} ${response.statusText}. Response: ${responseText.substring(0, 100)}`,
             timestamp: new Date()
           });
         }
