@@ -1,4 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import PageLayout from '../layouts/PageLayout';
+import ResponsiveContainer from '../components/ResponsiveContainer';
+import ApiStatusDisplay from '../components/ApiStatusDisplay';
+import ApiConfigToggle from '../components/ApiConfigToggle';
 import Box from '@mui/joy/Box';
 import Typography from '@mui/joy/Typography';
 import Button from '@mui/joy/Button';
@@ -48,9 +52,6 @@ import CodeIcon from '@mui/icons-material/Code';
 import SearchIcon from '@mui/icons-material/Search';
 
 // Layout Components
-import PageLayout from '../layouts/PageLayout';
-import ResponsiveContainer from '../components/ResponsiveContainer';
-import ApiStatusDisplay from '../components/ApiStatusDisplay';
 
 // Hooks
 import { useResponsive } from '../hooks/useResponsive';
@@ -120,8 +121,8 @@ export default function PageModules() {
   const modules: ModuleTile[] = [
     {
       id: 'email-config',
-      name: 'Email Configuration',
-      description: 'Configure order confirmation emails and SendGrid integration',
+      name: 'Email Service',
+      description: 'Configure automatic emails and test smtp integration',
       icon: <EmailIcon />,
       status: 'Available',
       category: 'communication',
@@ -259,58 +260,13 @@ export default function PageModules() {
     setTestResult(null);
 
     try {
-      const response = await apiRequest(API_CONFIG.endpoints.sendOrderConfirmation, {
+      const result = await apiRequest(API_CONFIG.endpoints.sendOrderConfirmation, {
         method: 'POST',
         body: JSON.stringify({
           testEmail: testEmail.trim(),
           storefrontId: selectedStorefront || null
         }),
       });
-
-      const contentType = response.headers.get('content-type');
-      
-      if (!contentType || !contentType.includes('application/json')) {
-        const responseText = await response.text();
-        console.error('Non-JSON API response:', { 
-          status: response.status, 
-          statusText: response.statusText, 
-          contentType, 
-          responseText: responseText.substring(0, 500) 
-        });
-        
-        if (responseText.includes('Authentication Required') || responseText.includes('Vercel Authentication')) {
-          setTestResult({
-            success: false,
-            message: 'API endpoints require authentication. Please disable Vercel protection for API routes or authenticate.',
-            timestamp: new Date()
-          });
-        } else if (response.status >= 500) {
-          setTestResult({
-            success: false,
-            message: `Server error (${response.status}): ${response.statusText}. Check Vercel function logs for details.`,
-            timestamp: new Date()
-          });
-        } else if (response.status === 404) {
-          setTestResult({
-            success: false,
-            message: 'API endpoint not found. Ensure the API functions are properly deployed to Vercel.',
-            timestamp: new Date()
-          });
-        } else {
-          setTestResult({
-            success: false,
-            message: `API request failed: ${response.status} ${response.statusText}. Response: ${responseText.substring(0, 100)}`,
-            timestamp: new Date()
-          });
-        }
-        return;
-      }
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const result = await response.json();
 
       setTestResult({
         success: result.success,
@@ -728,7 +684,7 @@ export default function PageModules() {
       
       {/* Email Configuration Modal */}
       <Modal open={emailDialogOpen} onClose={() => setEmailDialogOpen(false)}>
-        <ModalDialog size="md" sx={{ maxWidth: '500px' }}>
+        <ModalDialog size="lg" sx={{ maxWidth: '650px', width: '90vw' }}>
           <ModalClose />
           <DialogTitle>
             <EmailIcon sx={{ mr: 1 }} />
@@ -736,29 +692,48 @@ export default function PageModules() {
           </DialogTitle>
           
           <DialogContent>
-            <Typography level="body-md" sx={{ mb: 3 }}>
-              Configure your SendGrid integration for order confirmation emails
-            </Typography>
+            {/* SendGrid Status - Moved to top */}
+            <Alert 
+              color={sendGridConfigured ? 'success' : 'warning'}
+              startDecorator={sendGridConfigured ? <CheckCircleIcon /> : <WarningIcon />}
+              sx={{ mb: 3 }}
+            >
+              <Typography level="title-sm">
+                {sendGridConfigured ? 'SendGrid Active' : 'SendGrid Inactive'}
+              </Typography>
+              <Typography level="body-sm">
+                {sendGridConfigured 
+                  ? 'E-mail integration is configured and ready to use.'
+                  : 'Configure SendGrid to enable e-mails and notifications.'
+                }
+              </Typography>
+            </Alert>
             
-            {/* API Status Display */}
-            <ApiStatusDisplay />
+            {/* API Environment Section - First */}
+            <Box sx={{ mb: 3 }}>
+              <Typography level="title-sm" sx={{ mb: 2, fontWeight: 'bold' }}>
+                API Environment
+              </Typography>
+              <Card variant="soft">
+                <CardContent>
+                  <ApiConfigToggle />
+                </CardContent>
+              </Card>
+            </Box>
+            
+            {/* API Configuration Section - Affected by toggle */}
+            <Box sx={{ mb: 3 }}>
+              <Typography level="title-sm" sx={{ mb: 2, fontWeight: 'bold' }}>
+                API Configuration
+              </Typography>
+              <Card variant="soft">
+                <CardContent>
+                  <ApiStatusDisplay />
+                </CardContent>
+              </Card>
+            </Box>
             
             <Stack spacing={3}>
-              <Alert 
-                color={sendGridConfigured ? 'success' : 'warning'}
-                startDecorator={sendGridConfigured ? <CheckCircleIcon /> : <WarningIcon />}
-              >
-                <Typography level="title-sm">
-                  {sendGridConfigured ? 'SendGrid Integration Active' : 'SendGrid Configuration Required'}
-                </Typography>
-                <Typography level="body-sm">
-                  {sendGridConfigured 
-                    ? 'Your email integration is properly configured and ready to use.'
-                    : 'Configure SendGrid to enable order confirmation emails and notifications.'
-                  }
-                </Typography>
-              </Alert>
-              
               {storefronts.length > 0 && (
                 <FormControl>
                   <FormLabel>Select Storefront</FormLabel>

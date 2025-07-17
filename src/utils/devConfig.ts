@@ -5,16 +5,17 @@
  * during development and testing.
  */
 
+// Mutable configuration object that can be changed at runtime
 export const DEV_CONFIG = {
   // Set to true to use production APIs during development
   // Useful for testing email functionality without local API server
-  USE_PRODUCTION_API: true,
+  USE_PRODUCTION_API: true,  // Default to production since it's working
+  
+  // Local API port - configurable in UI
+  LOCAL_API_PORT: 3000,
   
   // Production API URL (Vercel deployment)
-  PRODUCTION_API_URL: 'https://smartbuy-backoffice.vercel.app',
-  
-  // Local API URL (if running API server locally)
-  LOCAL_API_URL: 'http://localhost:3000',
+  PRODUCTION_API_URL: 'https://smartbuybackoffice.vercel.app',
   
   // Log API requests for debugging
   LOG_API_REQUESTS: true,
@@ -26,39 +27,24 @@ export const DEV_CONFIG = {
 export const getApiBaseUrl = (): string => {
   // In browser environment
   if (typeof window !== 'undefined') {
-    const hostname = window.location.hostname;
-    
-    // Check if we're in a development environment
-    const isDevelopment = hostname === 'localhost' || 
-                         hostname === '127.0.0.1' ||
-                         hostname.includes('github.dev') ||
-                         hostname.includes('gitpod.io') ||
-                         hostname.includes('codespaces') ||
-                         hostname.includes('stackblitz') ||
-                         hostname.includes('codesandbox');
-    
-    // If we're in production (deployed to actual domain), always use current domain
-    if (!isDevelopment) {
-      if (DEV_CONFIG.LOG_API_REQUESTS) {
-        console.log('🌐 Production environment detected, using current domain:', window.location.origin);
-      }
-      return window.location.origin;
-    }
-    
-    // In development, check configuration
+    // Always respect the USE_PRODUCTION_API setting first
     if (DEV_CONFIG.USE_PRODUCTION_API) {
       if (DEV_CONFIG.LOG_API_REQUESTS) {
-        console.log('🌐 Development environment using production API:', DEV_CONFIG.PRODUCTION_API_URL);
+        console.log('🌐 Using production API:', DEV_CONFIG.PRODUCTION_API_URL);
       }
       return DEV_CONFIG.PRODUCTION_API_URL;
-    } else {
-      if (DEV_CONFIG.LOG_API_REQUESTS) {
-        console.log('🏠 Development environment using local API:', DEV_CONFIG.LOCAL_API_URL);
-      }
-      return DEV_CONFIG.LOCAL_API_URL;
     }
+    
+    // For local API, use the configured port
+    const localUrl = `${window.location.protocol}//${window.location.hostname}:${DEV_CONFIG.LOCAL_API_PORT}`;
+    if (DEV_CONFIG.LOG_API_REQUESTS) {
+      console.log('🏠 Using local API:', localUrl);
+    }
+    return localUrl;
   }
   
   // Server-side environment
-  return '';
+  return DEV_CONFIG.USE_PRODUCTION_API 
+    ? DEV_CONFIG.PRODUCTION_API_URL 
+    : `http://localhost:${DEV_CONFIG.LOCAL_API_PORT}`;
 };

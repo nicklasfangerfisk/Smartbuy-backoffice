@@ -4,9 +4,10 @@ import { apiClient } from '../services/apiClient';
 /**
  * Send order confirmation email via API (browser-safe)
  */
-async function sendOrderConfirmationViaAPI(orderUuid: string, storefrontId?: string): Promise<void> {
+async function sendOrderConfirmationViaAPI(orderUuid: string, storefrontId?: string, customerEmail?: string): Promise<void> {
   try {
-    const result = await apiClient.sendOrderConfirmation(orderUuid, undefined, storefrontId);
+    console.log(`📧 Sending order confirmation email for order: ${orderUuid}`);
+    const result = await apiClient.sendOrderConfirmation(orderUuid, undefined, storefrontId, customerEmail);
     
     if (!result.success) {
       // If API returns 404, it means we're in development mode without Vercel
@@ -17,6 +18,8 @@ async function sendOrderConfirmationViaAPI(orderUuid: string, storefrontId?: str
       
       throw new Error(result.error || `API error! status: ${result.statusCode}`);
     }
+    
+    console.log('✅ Order confirmation email sent successfully');
   } catch (error: any) {
     // If fetch fails completely (network error), just log and continue
     if (error.message.includes('fetch') || error.name === 'TypeError') {
@@ -114,7 +117,7 @@ export async function createOrderWithItems(
     // Send confirmation email if requested and order is completed
     if (sendConfirmationEmail && orderData.customer_email) {
       try {
-        await sendOrderConfirmationViaAPI(orderUuid, orderData.storefront_id);
+        await sendOrderConfirmationViaAPI(orderUuid, orderData.storefront_id, orderData.customer_email);
       } catch (emailError) {
         console.warn('Failed to send confirmation email:', emailError);
         // Don't fail the order creation if email fails
@@ -203,7 +206,7 @@ export async function completeOrder(
     const finalEmail = customerInfo?.email || order.customer_email;
     if (finalEmail) {
       try {
-        await sendOrderConfirmationViaAPI(orderUuid, order.storefront_id);
+        await sendOrderConfirmationViaAPI(orderUuid, order.storefront_id, finalEmail);
       } catch (emailError) {
         console.warn('Failed to send confirmation email:', emailError);
         // Don't fail the order completion if email fails

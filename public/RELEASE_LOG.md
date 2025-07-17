@@ -10,6 +10,29 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
+## [4.0.0] - 2025-07-17 14:30:00
+**SendGrid Email Integration & Storefront Foundation**
+### Added
+- SendGrid email service integration for order confirmation emails
+- Email Configuration dialog with API environment toggle and test functionality
+- Unified API configuration system with production/local switching
+- Functions page - administrative interface for system functions
+- Modules page - storefront configuration and management foundation
+- Order confirmation email resend functionality in DialogOrder
+- CommonJS-compatible email service for Vercel serverless functions
+
+### Changed
+- Email Configuration moved to dedicated modal with improved layout
+- Email service architecture redesigned for production deployment compatibility
+- API client enhanced with dynamic configuration and customer email support
+- Dialog layouts improved with wider modals and better section organization
+
+### Fixed
+- ES6 import statement issues in Vercel serverless environment
+- Email service module compatibility for production deployment
+- Order confirmation email flow with proper customer email handling
+- API method signatures aligned across client and server components
+
 ## [3.2.18] - 2025-07-14 17:15:00
 **Unit Test Infrastructure Improvements**
 ### Fixed

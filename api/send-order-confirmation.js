@@ -40,7 +40,7 @@ export default async function handler(req, res) {
       });
     }
 
-    const { orderUuid, storefrontId, testEmail } = req.body;
+    const { orderUuid, storefrontId, testEmail, customerEmail } = req.body;
 
     // Handle test email
     if (testEmail) {
@@ -48,7 +48,7 @@ export default async function handler(req, res) {
       try {
         // Import the server-side email service
         console.log('Attempting to import server-side email service...');
-        const { sendTestOrderConfirmationEmail } = await import('./emailService.js');
+        const { sendTestOrderConfirmationEmail } = require('./emailService.js');
         console.log('Server-side email service imported successfully');
         
         if (!sendTestOrderConfirmationEmail) {
@@ -87,24 +87,33 @@ export default async function handler(req, res) {
 
     console.log('Sending order confirmation for:', orderUuid);
     try {
-      const { sendOrderConfirmationEmail } = await import('../src/utils/emailService.js');
-      const success = await sendOrderConfirmationEmail(orderUuid, storefrontId);
+      // Use the server-side email service
+      console.log('Attempting to import server-side email service for order confirmation...');
+      const { sendOrderConfirmationEmail } = require('./emailService.js');
+      console.log('Server-side email service imported successfully');
       
-      if (success) {
-        console.log('Order confirmation sent successfully');
-        res.status(200).json({ 
-          success: true, 
-          message: 'Order confirmation email sent successfully' 
-        });
-      } else {
-        console.log('Order confirmation failed');
-        res.status(500).json({ 
+      if (!sendOrderConfirmationEmail) {
+        console.error('sendOrderConfirmationEmail function not found in server-side module');
+        return res.status(500).json({ 
           success: false, 
-          error: 'Failed to send order confirmation email' 
+          error: 'Order confirmation email service function not found' 
         });
       }
+      
+      console.log('Calling server-side sendOrderConfirmationEmail...');
+      const success = await sendOrderConfirmationEmail(orderUuid, storefrontId, customerEmail);
+      console.log('Order confirmation email result:', success);
+      
+      return res.status(200).json({ 
+        success, 
+        message: success ? 'Order confirmation email sent successfully' : 'Failed to send order confirmation email'
+      });
     } catch (emailError) {
-      console.error('Email service error:', emailError);
+      console.error('Email service error details:', {
+        message: emailError.message,
+        stack: emailError.stack,
+        name: emailError.name
+      });
       return res.status(500).json({ 
         success: false, 
         error: `Email service error: ${emailError.message}` 

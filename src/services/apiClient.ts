@@ -89,10 +89,10 @@ class ApiClient {
   }
 
   // Email API methods
-  async sendOrderConfirmation(orderUuid?: string, testEmail?: string, storefrontId?: string) {
+  async sendOrderConfirmation(orderUuid?: string, testEmail?: string, storefrontId?: string, customerEmail?: string) {
     return this.makeRequest('/api/send-order-confirmation', {
       method: 'POST',
-      body: { orderUuid, testEmail, storefrontId }
+      body: { orderUuid, testEmail, storefrontId, customerEmail }
     });
   }
 
