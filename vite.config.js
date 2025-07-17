@@ -10,7 +10,6 @@ export default defineConfig({
     fastRefresh: false // Keep React refresh disabled to prevent errors
   })],
   publicDir: 'public',
-  assetsInclude: ['**/*.html'], // Fix HTML parsing issue
   define: {
     // Inject version information
     __APP_VERSION__: JSON.stringify(packageJson.version),
