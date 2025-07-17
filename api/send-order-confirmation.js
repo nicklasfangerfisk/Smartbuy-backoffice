@@ -46,15 +46,33 @@ export default async function handler(req, res) {
     if (testEmail) {
       console.log('Sending test email to:', testEmail);
       try {
-        const { sendTestOrderConfirmationEmail } = await import('../src/utils/emailService.js');
+        // Import the server-side email service
+        console.log('Attempting to import server-side email service...');
+        const { sendTestOrderConfirmationEmail } = await import('./emailService.js');
+        console.log('Server-side email service imported successfully');
+        
+        if (!sendTestOrderConfirmationEmail) {
+          console.error('sendTestOrderConfirmationEmail function not found in server-side module');
+          return res.status(500).json({ 
+            success: false, 
+            error: 'Email service function not found in server module' 
+          });
+        }
+        
+        console.log('Calling server-side sendTestOrderConfirmationEmail...');
         const success = await sendTestOrderConfirmationEmail(testEmail, storefrontId);
         console.log('Test email result:', success);
+        
         return res.status(200).json({ 
           success, 
           message: success ? 'Test email sent successfully' : 'Failed to send test email'
         });
       } catch (emailError) {
-        console.error('Email service error:', emailError);
+        console.error('Email service error details:', {
+          message: emailError.message,
+          stack: emailError.stack,
+          name: emailError.name
+        });
         return res.status(500).json({ 
           success: false, 
           error: `Email service error: ${emailError.message}` 
