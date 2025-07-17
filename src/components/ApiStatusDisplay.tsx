@@ -12,12 +12,19 @@ interface ApiStatusDisplayProps {
 }
 
 export default function ApiStatusDisplay({ compact = false }: ApiStatusDisplayProps) {
-  const isProduction = typeof window !== 'undefined' && 
-    window.location.hostname !== 'localhost' && 
-    window.location.hostname !== '127.0.0.1';
+  const currentHostname = typeof window !== 'undefined' ? window.location.hostname : 'unknown';
+  const isDevelopment = typeof window !== 'undefined' && (
+    currentHostname === 'localhost' || 
+    currentHostname === '127.0.0.1' ||
+    currentHostname.includes('github.dev') ||
+    currentHostname.includes('gitpod.io') ||
+    currentHostname.includes('codespaces') ||
+    currentHostname.includes('stackblitz') ||
+    currentHostname.includes('codesandbox')
+  );
   
   const currentApiUrl = API_CONFIG.baseUrl;
-  const usingProductionApi = currentApiUrl.includes('vercel.app') || isProduction;
+  const usingProductionApi = currentApiUrl.includes('vercel.app') || (!isDevelopment && !currentApiUrl);
 
   if (compact) {
     return (
@@ -39,6 +46,12 @@ export default function ApiStatusDisplay({ compact = false }: ApiStatusDisplayPr
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography level="body-xs">Hostname:</Typography>
+            <Typography level="body-xs" sx={{ fontFamily: 'monospace', color: 'text.secondary' }}>
+              {currentHostname}
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Typography level="body-xs">Base URL:</Typography>
             <Typography level="body-xs" sx={{ fontFamily: 'monospace', color: 'text.secondary' }}>
               {currentApiUrl || 'relative'}
@@ -48,10 +61,10 @@ export default function ApiStatusDisplay({ compact = false }: ApiStatusDisplayPr
             <Typography level="body-xs">Environment:</Typography>
             <Chip
               size="sm"
-              color={isProduction ? 'success' : 'warning'}
+              color={isDevelopment ? 'warning' : 'success'}
               variant="soft"
             >
-              {isProduction ? 'Production' : 'Development'}
+              {isDevelopment ? 'Development' : 'Production'}
             </Chip>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -64,7 +77,7 @@ export default function ApiStatusDisplay({ compact = false }: ApiStatusDisplayPr
               {usingProductionApi ? 'Production APIs' : 'Local APIs'}
             </Chip>
           </Box>
-          {!isProduction && (
+          {isDevelopment && (
             <Typography level="body-xs" sx={{ color: 'text.tertiary', mt: 1 }}>
               💡 To use local APIs, set USE_PRODUCTION_API to false in devConfig.ts
             </Typography>

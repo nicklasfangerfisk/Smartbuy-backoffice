@@ -26,20 +26,34 @@ export const DEV_CONFIG = {
 export const getApiBaseUrl = (): string => {
   // In browser environment
   if (typeof window !== 'undefined') {
-    // If we're in production (deployed), always use current domain
-    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    const hostname = window.location.hostname;
+    
+    // Check if we're in a development environment
+    const isDevelopment = hostname === 'localhost' || 
+                         hostname === '127.0.0.1' ||
+                         hostname.includes('github.dev') ||
+                         hostname.includes('gitpod.io') ||
+                         hostname.includes('codespaces') ||
+                         hostname.includes('stackblitz') ||
+                         hostname.includes('codesandbox');
+    
+    // If we're in production (deployed to actual domain), always use current domain
+    if (!isDevelopment) {
+      if (DEV_CONFIG.LOG_API_REQUESTS) {
+        console.log('🌐 Production environment detected, using current domain:', window.location.origin);
+      }
       return window.location.origin;
     }
     
     // In development, check configuration
     if (DEV_CONFIG.USE_PRODUCTION_API) {
       if (DEV_CONFIG.LOG_API_REQUESTS) {
-        console.log('🌐 Using production API:', DEV_CONFIG.PRODUCTION_API_URL);
+        console.log('🌐 Development environment using production API:', DEV_CONFIG.PRODUCTION_API_URL);
       }
       return DEV_CONFIG.PRODUCTION_API_URL;
     } else {
       if (DEV_CONFIG.LOG_API_REQUESTS) {
-        console.log('🏠 Using local API:', DEV_CONFIG.LOCAL_API_URL);
+        console.log('🏠 Development environment using local API:', DEV_CONFIG.LOCAL_API_URL);
       }
       return DEV_CONFIG.LOCAL_API_URL;
     }
