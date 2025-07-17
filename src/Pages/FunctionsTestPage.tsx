@@ -109,7 +109,7 @@ const API_TEST_DEFINITIONS: ApiEndpoint[] = [
   }
 ];
 
-export default function PageFunctions() {
+export default function FunctionsTestPage() {
   const [testResults, setTestResults] = useState<Record<string, TestResult>>({});
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const [parameters, setParameters] = useState<Record<string, Record<string, any>>>({});
@@ -197,7 +197,7 @@ export default function PageFunctions() {
   return (
     <Box sx={{ p: 3 }}>
       <Typography level="h2" sx={{ mb: 3 }}>
-        Functions Console
+        API Functions Test Console
       </Typography>
       
       <Alert color="primary" sx={{ mb: 3 }}>
