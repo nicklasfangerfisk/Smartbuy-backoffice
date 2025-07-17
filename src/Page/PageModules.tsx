@@ -50,6 +50,7 @@ import SearchIcon from '@mui/icons-material/Search';
 // Layout Components
 import PageLayout from '../layouts/PageLayout';
 import ResponsiveContainer from '../components/ResponsiveContainer';
+import ApiStatusDisplay from '../components/ApiStatusDisplay';
 
 // Hooks
 import { useResponsive } from '../hooks/useResponsive';
@@ -59,6 +60,7 @@ import fonts from '../theme/fonts';
 
 // Utils
 import { supabase } from '../utils/supabaseClient';
+import { apiRequest, API_CONFIG } from '../utils/apiConfig';
 
 interface StorefrontItem {
   id: string;
@@ -225,7 +227,7 @@ export default function PageModules() {
 
   const checkSendGridConfig = async () => {
     try {
-      const response = await fetch('/api/check-sendgrid-config');
+      const response = await apiRequest(API_CONFIG.endpoints.checkSendGridConfig);
       if (response.ok) {
         const contentType = response.headers.get('content-type');
         if (contentType && contentType.includes('application/json')) {
@@ -257,11 +259,8 @@ export default function PageModules() {
     setTestResult(null);
 
     try {
-      const response = await fetch('/api/send-order-confirmation', {
+      const response = await apiRequest(API_CONFIG.endpoints.sendOrderConfirmation, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           testEmail: testEmail.trim(),
           storefrontId: selectedStorefront || null
@@ -721,6 +720,9 @@ export default function PageModules() {
             <Typography level="body-md" sx={{ mb: 3 }}>
               Configure your SendGrid integration for order confirmation emails
             </Typography>
+            
+            {/* API Status Display */}
+            <ApiStatusDisplay />
             
             <Stack spacing={3}>
               <Alert 
