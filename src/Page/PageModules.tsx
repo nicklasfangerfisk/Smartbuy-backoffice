@@ -2,35 +2,60 @@ import React, { useState, useEffect } from 'react';
 import Box from '@mui/joy/Box';
 import Typography from '@mui/joy/Typography';
 import Button from '@mui/joy/Button';
-import Input from '@mui/joy/Input';
-import FormControl from '@mui/joy/FormControl';
-import FormLabel from '@mui/joy/FormLabel';
-import Stack from '@mui/joy/Stack';
 import Card from '@mui/joy/Card';
 import CardContent from '@mui/joy/CardContent';
-import Divider from '@mui/joy/Divider';
-import Alert from '@mui/joy/Alert';
-import Chip from '@mui/joy/Chip';
+import Stack from '@mui/joy/Stack';
 import Grid from '@mui/joy/Grid';
-import CircularProgress from '@mui/joy/CircularProgress';
+import Chip from '@mui/joy/Chip';
+import IconButton from '@mui/joy/IconButton';
+import Alert from '@mui/joy/Alert';
+import LinearProgress from '@mui/joy/LinearProgress';
 import Modal from '@mui/joy/Modal';
 import ModalDialog from '@mui/joy/ModalDialog';
 import ModalClose from '@mui/joy/ModalClose';
-import AspectRatio from '@mui/joy/AspectRatio';
+import DialogTitle from '@mui/joy/DialogTitle';
+import DialogContent from '@mui/joy/DialogContent';
+import DialogActions from '@mui/joy/DialogActions';
+import FormControl from '@mui/joy/FormControl';
+import FormLabel from '@mui/joy/FormLabel';
+import Input from '@mui/joy/Input';
+import CircularProgress from '@mui/joy/CircularProgress';
+import Select from '@mui/joy/Select';
+import Option from '@mui/joy/Option';
 
 // Icons
 import EmailIcon from '@mui/icons-material/Email';
-import SendIcon from '@mui/icons-material/Send';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
+import WarningIcon from '@mui/icons-material/Warning';
+import SendIcon from '@mui/icons-material/Send';
 import SettingsIcon from '@mui/icons-material/Settings';
+import InfoIcon from '@mui/icons-material/Info';
 import PaymentIcon from '@mui/icons-material/Payment';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import ChatIcon from '@mui/icons-material/Chat';
 import AnalyticsIcon from '@mui/icons-material/Analytics';
 import SecurityIcon from '@mui/icons-material/Security';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import IntegrationInstructionsIcon from '@mui/icons-material/IntegrationInstructions';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import ExtensionIcon from '@mui/icons-material/Extension';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import StorefrontIcon from '@mui/icons-material/Storefront';
+import LaunchIcon from '@mui/icons-material/Launch';
+import BuildIcon from '@mui/icons-material/Build';
+import PendingIcon from '@mui/icons-material/Pending';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import CodeIcon from '@mui/icons-material/Code';
+import SearchIcon from '@mui/icons-material/Search';
+
+// Layout Components
+import PageLayout from '../layouts/PageLayout';
+import ResponsiveContainer from '../components/ResponsiveContainer';
+
+// Hooks
+import { useResponsive } from '../hooks/useResponsive';
+
+// Theme
+import fonts from '../theme/fonts';
 
 // Utils
 import { supabase } from '../utils/supabaseClient';
@@ -54,9 +79,18 @@ interface ModuleTile {
   name: string;
   description: string;
   icon: React.ReactNode;
-  status: 'available' | 'coming-soon' | 'configured';
+  status: 'Available' | 'Coming Soon' | 'Configured';
   category: 'communication' | 'payments' | 'analytics' | 'security' | 'integration';
   onClick?: () => void;
+  features?: string[];
+  version?: string;
+}
+
+interface ModuleStats {
+  totalModules: number;
+  activeModules: number;
+  configuredModules: number;
+  integrationHealth: number;
 }
 
 export default function PageModules() {
@@ -67,6 +101,18 @@ export default function PageModules() {
   const [testResult, setTestResult] = useState<EmailTestResult | null>(null);
   const [sendGridConfigured, setSendGridConfigured] = useState(false);
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Module statistics
+  const [moduleStats] = useState<ModuleStats>({
+    totalModules: 8,
+    activeModules: 1,
+    configuredModules: 1,
+    integrationHealth: 87.5
+  });
+
+  const { isMobile } = useResponsive();
 
   // Module definitions
   const modules: ModuleTile[] = [
@@ -75,69 +121,84 @@ export default function PageModules() {
       name: 'Email Configuration',
       description: 'Configure order confirmation emails and SendGrid integration',
       icon: <EmailIcon />,
-      status: 'available',
+      status: 'Available',
       category: 'communication',
-      onClick: () => setEmailDialogOpen(true)
+      onClick: () => setEmailDialogOpen(true),
+      features: ['Order Confirmations', 'Custom Templates', 'Multi-storefront'],
+      version: '1.0.0'
     },
     {
       id: 'payment-gateway',
       name: 'Payment Gateway',
-      description: 'Stripe, PayPal, and other payment processor integrations',
+      description: 'Integrate payment processing solutions',
       icon: <PaymentIcon />,
-      status: 'coming-soon',
-      category: 'payments'
+      status: 'Coming Soon',
+      category: 'payments',
+      features: ['Stripe Integration', 'PayPal Support', 'Multi-currency'],
+      version: '2.0.0'
     },
     {
-      id: 'shopping-cart',
-      name: 'Shopping Cart Widget',
-      description: 'Customizable cart component for storefronts',
-      icon: <ShoppingCartIcon />,
-      status: 'coming-soon',
-      category: 'integration'
-    },
-    {
-      id: 'live-chat',
-      name: 'Live Chat Support',
-      description: 'Real-time customer support chat widget',
-      icon: <ChatIcon />,
-      status: 'coming-soon',
-      category: 'communication'
-    },
-    {
-      id: 'analytics',
+      id: 'analytics-dashboard',
       name: 'Analytics Dashboard',
-      description: 'Google Analytics and custom tracking integration',
+      description: 'Advanced analytics and reporting tools',
       icon: <AnalyticsIcon />,
-      status: 'coming-soon',
-      category: 'analytics'
+      status: 'Coming Soon',
+      category: 'analytics',
+      features: ['Real-time Metrics', 'Custom Reports', 'Export Options'],
+      version: '1.5.0'
     },
     {
-      id: 'security',
-      name: 'Security Module',
-      description: 'SSL certificates, security headers, and fraud protection',
+      id: 'security-audit',
+      name: 'Security Audit',
+      description: 'Security monitoring and compliance tools',
       icon: <SecurityIcon />,
-      status: 'coming-soon',
-      category: 'security'
+      status: 'Coming Soon',
+      category: 'security',
+      features: ['Vulnerability Scanning', 'Compliance Reports', 'Access Logs'],
+      version: '1.2.0'
     },
     {
-      id: 'notifications',
+      id: 'push-notifications',
       name: 'Push Notifications',
-      description: 'Browser push notifications for order updates',
+      description: 'Real-time notifications for customers and staff',
       icon: <NotificationsIcon />,
-      status: 'coming-soon',
-      category: 'communication'
+      status: 'Coming Soon',
+      category: 'communication',
+      features: ['Customer Alerts', 'Staff Updates', 'Custom Triggers'],
+      version: '1.1.0'
     },
     {
       id: 'api-integrations',
       name: 'API Integrations',
-      description: 'Connect with external services and webhooks',
+      description: 'Connect with third-party services and platforms',
       icon: <IntegrationInstructionsIcon />,
-      status: 'coming-soon',
-      category: 'integration'
+      status: 'Coming Soon',
+      category: 'integration',
+      features: ['REST APIs', 'Webhooks', 'Custom Connectors'],
+      version: '2.1.0'
+    },
+    {
+      id: 'inventory-sync',
+      name: 'Inventory Sync',
+      description: 'Synchronize inventory across multiple channels',
+      icon: <RefreshIcon />,
+      status: 'Coming Soon',
+      category: 'integration',
+      features: ['Multi-channel Sync', 'Real-time Updates', 'Conflict Resolution'],
+      version: '1.3.0'
+    },
+    {
+      id: 'customer-portal',
+      name: 'Customer Portal',
+      description: 'Self-service portal for customers',
+      icon: <StorefrontIcon />,
+      status: 'Coming Soon',
+      category: 'communication',
+      features: ['Order History', 'Account Management', 'Support Tickets'],
+      version: '1.4.0'
     }
   ];
 
-  // Load storefronts on component mount
   useEffect(() => {
     fetchStorefronts();
     checkSendGridConfig();
@@ -239,303 +300,503 @@ export default function PageModules() {
         timestamp: new Date()
       });
     } catch (error: any) {
-      if (error.message.includes('Unexpected token')) {
-        setTestResult({
-          success: false,
-          message: 'API endpoints require authentication or are not available. Please check Vercel project settings.',
-          timestamp: new Date()
-        });
-      } else {
-        setTestResult({
-          success: false,
-          message: error.message || 'Error sending test email',
-          timestamp: new Date()
-        });
-      }
+      setTestResult({
+        success: false,
+        message: error.message || 'Unknown error occurred',
+        timestamp: new Date()
+      });
     } finally {
       setLoading(false);
     }
   };
 
+  // Helper functions
+  const getCategoryColor = (category: string) => {
+    const colors = {
+      communication: 'primary.500',
+      payments: 'success.500',
+      analytics: 'warning.500',
+      security: 'danger.500',
+      integration: 'neutral.500'
+    };
+    return colors[category as keyof typeof colors] || 'neutral.500';
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'available': return 'success';
-      case 'configured': return 'primary';
-      case 'coming-soon': return 'neutral';
+      case 'Available': return 'success';
+      case 'Coming Soon': return 'warning';
+      case 'Configured': return 'primary';
       default: return 'neutral';
     }
   };
 
   const getStatusText = (status: string) => {
-    switch (status) {
-      case 'available': return 'Available';
-      case 'configured': return 'Configured';
-      case 'coming-soon': return 'Coming Soon';
-      default: return 'Unknown';
-    }
+    return status;
   };
 
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case 'communication': return '#2196F3';
-      case 'payments': return '#4CAF50';
-      case 'analytics': return '#FF9800';
-      case 'security': return '#F44336';
-      case 'integration': return '#9C27B0';
-      default: return '#757575';
-    }
-  };
+  // Filter modules by category and search
+  const filteredModules = modules.filter(module => {
+    const matchesCategory = selectedCategory === 'all' || module.category === selectedCategory;
+    const matchesSearch = !searchTerm || 
+      module.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      module.description.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
+
+  // Get unique categories
+  const categories = ['all', ...Array.from(new Set(modules.map(m => m.category)))];
 
   const selectedStorefrontData = storefronts.find(s => s.id === selectedStorefront);
 
-  return (
-    <Box sx={{ p: 3, maxWidth: '1400px', mx: 'auto' }}>
-      <Typography level="h2" sx={{ mb: 1 }}>
-        Storefront Modules
+  // Mobile View Component
+  const MobileView = () => (
+    <Box sx={{ width: '100%', minHeight: '100vh' }}>
+      <ResponsiveContainer padding="medium">
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Typography level="h2" sx={{ fontSize: fonts.sizes.xlarge }}>
+            Modules
+          </Typography>
+          <IconButton 
+            variant="soft" 
+            color="primary"
+            onClick={() => {
+              fetchStorefronts();
+              checkSendGridConfig();
+            }}
+          >
+            <RefreshIcon />
+          </IconButton>
+        </Box>
+        
+        {/* Stats Overview for Mobile */}
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          <Grid xs={6}>
+            <Card variant="soft" sx={{ height: '100%' }}>
+              <CardContent>
+                <Typography level="h3" sx={{ fontWeight: 'bold', color: 'primary.500' }}>
+                  {moduleStats.totalModules}
+                </Typography>
+                <Typography level="body-xs" color="neutral">
+                  Total Modules
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid xs={6}>
+            <Card variant="soft" sx={{ height: '100%' }}>
+              <CardContent>
+                <Typography level="h3" sx={{ fontWeight: 'bold', color: 'success.500' }}>
+                  {moduleStats.activeModules}
+                </Typography>
+                <Typography level="body-xs" color="neutral">
+                  Active
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+        
+        {/* Module Grid for Mobile */}
+        <Grid container spacing={2} sx={{ mt: 0, mb: 4 }}>
+          {filteredModules.map((module) => (
+            <Grid xs={12} sm={6} key={module.id} sx={{ display: 'flex' }}>
+              <Card
+                variant="outlined"
+                sx={{
+                  width: '100%',
+                  height: '100%',
+                  cursor: module.status === 'Available' ? 'pointer' : 'default',
+                  opacity: module.status === 'Coming Soon' ? 0.75 : 1,
+                  boxSizing: 'border-box',
+                  '&:hover': module.status === 'Available' ? {
+                    boxShadow: 'md',
+                    transform: 'translateY(-2px)',
+                    zIndex: 1
+                  } : {}
+                }}
+                onClick={module.onClick}
+              >
+                <CardContent>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                    <Box sx={{ fontSize: '1.5rem', color: getCategoryColor(module.category) }}>
+                      {module.icon}
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography level="title-sm" sx={{ fontWeight: 'bold' }}>
+                        {module.name}
+                      </Typography>
+                      <Chip
+                        size="sm"
+                        color={getStatusColor(module.status)}
+                        variant="soft"
+                      >
+                        {getStatusText(module.status)}
+                      </Chip>
+                    </Box>
+                  </Box>
+                  <Typography level="body-xs" color="neutral">
+                    {module.description}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      </ResponsiveContainer>
+    </Box>
+  );
+
+  // Desktop View Component
+  const DesktopView = () => (
+    <ResponsiveContainer variant="table-page">
+      <Typography level="h2" sx={{ mb: 3, fontSize: fonts.sizes.xlarge }}>
+        Modules
       </Typography>
-      <Typography level="body-lg" sx={{ mb: 4, color: 'text.secondary' }}>
-        Enhance your storefronts with powerful modules and integrations
-      </Typography>
+      
+      {/* Enhanced Stats Overview */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid xs={12} md={3}>
+          <Card variant="soft" sx={{ 
+            height: '100%',
+            background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
+            border: '1px solid rgba(102, 126, 234, 0.2)'
+          }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                <Box sx={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: '12px',
+                  bgcolor: 'primary.500',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <ExtensionIcon sx={{ color: 'white', fontSize: 20 }} />
+                </Box>
+                <Box>
+                  <Typography level="body-xs" color="neutral">
+                    Total Modules
+                  </Typography>
+                  <Typography level="h3" sx={{ fontWeight: 'bold' }}>
+                    {moduleStats.totalModules}
+                  </Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid xs={12} md={3}>
+          <Card variant="soft" sx={{ 
+            height: '100%',
+            background: 'linear-gradient(135deg, rgba(46, 125, 50, 0.1) 0%, rgba(102, 187, 106, 0.1) 100%)',
+            border: '1px solid rgba(46, 125, 50, 0.2)'
+          }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                <Box sx={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: '12px',
+                  bgcolor: 'success.500',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <CheckCircleIcon sx={{ color: 'white', fontSize: 20 }} />
+                </Box>
+                <Box>
+                  <Typography level="body-xs" color="neutral">
+                    Active
+                  </Typography>
+                  <Typography level="h3" sx={{ fontWeight: 'bold' }}>
+                    {moduleStats.activeModules}
+                  </Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid xs={12} md={3}>
+          <Card variant="soft" sx={{ 
+            height: '100%',
+            background: 'linear-gradient(135deg, rgba(237, 108, 2, 0.1) 0%, rgba(255, 152, 0, 0.1) 100%)',
+            border: '1px solid rgba(237, 108, 2, 0.2)'
+          }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                <Box sx={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: '12px',
+                  bgcolor: 'warning.500',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <PendingIcon sx={{ color: 'white', fontSize: 20 }} />
+                </Box>
+                <Box>
+                  <Typography level="body-xs" color="neutral">
+                    Configured
+                  </Typography>
+                  <Typography level="h3" sx={{ fontWeight: 'bold' }}>
+                    {moduleStats.configuredModules}
+                  </Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid xs={12} md={3}>
+          <Card variant="soft" sx={{ 
+            height: '100%',
+            background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
+            border: '1px solid rgba(102, 126, 234, 0.2)'
+          }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                <Box sx={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: '12px',
+                  bgcolor: 'primary.600',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <TrendingUpIcon sx={{ color: 'white', fontSize: 20 }} />
+                </Box>
+                <Box>
+                  <Typography level="body-xs" color="neutral">
+                    Health Score
+                  </Typography>
+                  <Typography level="h3" sx={{ fontWeight: 'bold' }}>
+                    {moduleStats.integrationHealth}%
+                  </Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      {/* Search and Filter */}
+      <Box sx={{ display: 'flex', gap: 2, mb: 3, alignItems: 'center' }}>
+        <Input
+          placeholder="Search modules..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          startDecorator={<SearchIcon />}
+          sx={{ flex: 1 }}
+        />
+        <Select
+          placeholder="Filter by category"
+          value={selectedCategory}
+          onChange={(_, value) => setSelectedCategory(value || 'all')}
+          sx={{ minWidth: 200 }}
+        >
+          <Option value="all">All Categories</Option>
+          <Option value="communication">Communication</Option>
+          <Option value="payments">Payments</Option>
+          <Option value="analytics">Analytics</Option>
+          <Option value="security">Security</Option>
+          <Option value="integration">Integration</Option>
+        </Select>
+        <Button variant="solid" startDecorator={<BuildIcon />}>
+          Module Builder
+        </Button>
+      </Box>
 
       {/* Module Grid */}
-      <Grid container spacing={3}>
-        {modules.map((module) => (
-          <Grid xs={12} sm={6} md={4} lg={3} key={module.id}>
+      <Grid container spacing={3} sx={{ mt: 0, mb: 4 }}>
+        {filteredModules.map((module) => (
+          <Grid xs={12} sm={6} lg={4} xl={3} key={module.id} sx={{ display: 'flex' }}>
             <Card
               variant="outlined"
               sx={{
+                width: '100%',
                 height: '100%',
-                cursor: module.status === 'available' ? 'pointer' : 'default',
-                transition: 'all 0.2s ease-in-out',
+                cursor: module.status === 'Available' ? 'pointer' : 'default',
+                transition: 'all 0.3s ease-in-out',
                 position: 'relative',
-                '&:hover': module.status === 'available' ? {
-                  transform: 'translateY(-2px)',
-                  boxShadow: 'lg',
-                  borderColor: getCategoryColor(module.category)
+                boxSizing: 'border-box',
+                '&:hover': module.status === 'Available' ? {
+                  transform: 'translateY(-4px)',
+                  boxShadow: 'xl',
+                  borderColor: getCategoryColor(module.category),
+                  zIndex: 1
                 } : {},
-                opacity: module.status === 'coming-soon' ? 0.7 : 1
+                opacity: module.status === 'Coming Soon' ? 0.75 : 1
               }}
               onClick={module.onClick}
             >
-              <AspectRatio ratio="1" sx={{ bgcolor: 'background.level1' }}>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    p: 2,
-                    height: '100%'
-                  }}
-                >
-                  <Box
-                    sx={{
-                      fontSize: '3rem',
-                      color: getCategoryColor(module.category),
-                      mb: 2
-                    }}
-                  >
-                    {module.icon}
+              <CardContent sx={{ p: 3 }}>
+                <Stack spacing={2}>
+                  {/* Module Header */}
+                  <Stack direction="row" alignItems="center" justifyContent="space-between">
+                    <Box
+                      sx={{
+                        fontSize: '2.5rem',
+                        color: getCategoryColor(module.category),
+                      }}
+                    >
+                      {module.icon}
+                    </Box>
+                    <Chip
+                      size="sm"
+                      color={getStatusColor(module.status)}
+                      variant="soft"
+                    >
+                      {getStatusText(module.status)}
+                    </Chip>
+                  </Stack>
+                  
+                  {/* Module Info */}
+                  <Box>
+                    <Typography level="title-lg" sx={{ mb: 1 }}>
+                      {module.name}
+                    </Typography>
+                    <Typography level="body-sm" sx={{ color: 'text.secondary', mb: 2 }}>
+                      {module.description}
+                    </Typography>
                   </Box>
-                  
-                  <Typography level="title-md" textAlign="center" sx={{ mb: 1 }}>
-                    {module.name}
-                  </Typography>
-                  
-                  <Typography level="body-sm" textAlign="center" sx={{ color: 'text.secondary', mb: 2 }}>
-                    {module.description}
-                  </Typography>
-                  
-                  <Chip
-                    color={getStatusColor(module.status)}
-                    size="sm"
-                    variant="soft"
-                  >
-                    {getStatusText(module.status)}
-                  </Chip>
-                </Box>
-              </AspectRatio>
+
+                  {/* Features */}
+                  {module.features && (
+                    <Box>
+                      <Typography level="body-xs" sx={{ color: 'text.secondary', mb: 1 }}>
+                        Features:
+                      </Typography>
+                      <Stack spacing={0.5}>
+                        {module.features.map((feature, index) => (
+                          <Typography key={index} level="body-xs" sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center',
+                            color: 'text.secondary'
+                          }}>
+                            • {feature}
+                          </Typography>
+                        ))}
+                      </Stack>
+                    </Box>
+                  )}
+
+                  {/* Version */}
+                  {module.version && (
+                    <Typography level="body-xs" sx={{ 
+                      color: 'text.tertiary',
+                      textAlign: 'right'
+                    }}>
+                      v{module.version}
+                    </Typography>
+                  )}
+                </Stack>
+              </CardContent>
             </Card>
           </Grid>
         ))}
       </Grid>
+    </ResponsiveContainer>
+  );
 
-      {/* Categories Legend */}
-      <Box sx={{ mt: 4, pt: 3, borderTop: '1px solid', borderColor: 'divider' }}>
-        <Typography level="title-sm" sx={{ mb: 2 }}>
-          Module Categories
-        </Typography>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-          {['communication', 'payments', 'analytics', 'security', 'integration'].map((category) => (
-            <Chip
-              key={category}
-              variant="outlined"
-              sx={{
-                borderColor: getCategoryColor(category),
-                color: getCategoryColor(category)
-              }}
-            >
-              {category.charAt(0).toUpperCase() + category.slice(1)}
-            </Chip>
-          ))}
-        </Box>
-      </Box>
-
-      {/* Email Configuration Dialog */}
+  return (
+    <PageLayout>
+      {isMobile ? <MobileView /> : <DesktopView />}
+      
+      {/* Email Configuration Modal */}
       <Modal open={emailDialogOpen} onClose={() => setEmailDialogOpen(false)}>
-        <ModalDialog size="lg" sx={{ maxWidth: '800px', maxHeight: '90vh', overflow: 'auto' }}>
+        <ModalDialog size="md" sx={{ maxWidth: '500px' }}>
           <ModalClose />
-          <Typography level="h3" sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
-            <EmailIcon />
+          <DialogTitle>
+            <EmailIcon sx={{ mr: 1 }} />
             Email Configuration
-          </Typography>
-
-          <Stack spacing={4}>
-            {/* SendGrid Configuration Status */}
-            <Card variant="outlined">
-              <CardContent>
-                <Typography level="title-md" sx={{ mb: 2 }}>
-                  SendGrid Configuration
+          </DialogTitle>
+          
+          <DialogContent>
+            <Typography level="body-md" sx={{ mb: 3 }}>
+              Configure your SendGrid integration for order confirmation emails
+            </Typography>
+            
+            <Stack spacing={3}>
+              <Alert 
+                color={sendGridConfigured ? 'success' : 'warning'}
+                startDecorator={sendGridConfigured ? <CheckCircleIcon /> : <WarningIcon />}
+              >
+                <Typography level="title-sm">
+                  {sendGridConfigured ? 'SendGrid Integration Active' : 'SendGrid Configuration Required'}
                 </Typography>
-                
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                  <Chip 
-                    color={sendGridConfigured ? 'success' : 'warning'}
-                    variant="soft"
-                    startDecorator={sendGridConfigured ? <CheckCircleIcon /> : <ErrorIcon />}
+                <Typography level="body-sm">
+                  {sendGridConfigured 
+                    ? 'Your email integration is properly configured and ready to use.'
+                    : 'Configure SendGrid to enable order confirmation emails and notifications.'
+                  }
+                </Typography>
+              </Alert>
+              
+              {storefronts.length > 0 && (
+                <FormControl>
+                  <FormLabel>Select Storefront</FormLabel>
+                  <Select 
+                    value={selectedStorefront}
+                    onChange={(_, value) => setSelectedStorefront(value || '')}
                   >
-                    {sendGridConfigured ? 'Ready for Testing' : 'Development Mode'}
-                  </Chip>
-                </Box>
-
-                {!sendGridConfigured && (
-                  <Alert color="neutral" sx={{ mb: 2 }}>
-                    <div>
-                      <Typography level="title-sm">Development Mode</Typography>
-                      <Typography level="body-sm">
-                        Configuration check unavailable in development. Ensure these environment variables are set:
-                      </Typography>
-                      <ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
-                        <li><code>SENDGRID_API_KEY</code> - Your SendGrid API key</li>
-                        <li><code>SENDGRID_FROM_EMAIL</code> - The sender email address</li>
-                      </ul>
-                    </div>
-                  </Alert>
-                )}
-
-                <Typography level="body-sm" color="neutral">
-                  Order confirmation emails are automatically sent when customers complete checkout.
-                  Each storefront can have its own branding in the email template.
-                </Typography>
-              </CardContent>
-            </Card>
-
-            {/* Test Email Functionality */}
-            <Card variant="outlined">
-              <CardContent>
-                <Typography level="title-md" sx={{ mb: 3 }}>
-                  Test Order Confirmation Email
-                </Typography>
-
-                <Grid container spacing={3}>
-                  <Grid xs={12} md={6}>
-                    <Stack spacing={2}>
-                      <FormControl>
-                        <FormLabel>Select Storefront</FormLabel>
-                        <select
-                          value={selectedStorefront}
-                          onChange={(e) => setSelectedStorefront(e.target.value)}
-                          style={{
-                            padding: '8px 12px',
-                            borderRadius: '6px',
-                            border: '1px solid #ccc',
-                            fontSize: '14px'
-                          }}
-                        >
-                          <option value="">Default (No Storefront)</option>
-                          {storefronts.map(storefront => (
-                            <option key={storefront.id} value={storefront.id}>
-                              {storefront.name}
-                            </option>
-                          ))}
-                        </select>
-                      </FormControl>
-
-                      <FormControl>
-                        <FormLabel>Test Email Address</FormLabel>
-                        <Input
-                          type="email"
-                          placeholder="test@example.com"
-                          value={testEmail}
-                          onChange={(e) => setTestEmail(e.target.value)}
-                        />
-                      </FormControl>
-
-                      <Button
-                        variant="solid"
-                        startDecorator={loading ? <CircularProgress size="sm" /> : <SendIcon />}
-                        onClick={handleSendTestEmail}
-                        disabled={loading || !sendGridConfigured}
-                        sx={{ mt: 1 }}
-                      >
-                        {loading ? 'Sending...' : 'Send Test Email'}
-                      </Button>
-                    </Stack>
-                  </Grid>
-
-                  <Grid xs={12} md={6}>
-                    {selectedStorefrontData && (
-                      <Card variant="soft">
-                        <CardContent>
-                          <Typography level="title-sm" sx={{ mb: 2 }}>
-                            Selected Storefront Preview
-                          </Typography>
-                          
-                          <Stack spacing={1}>
-                            <Typography level="body-sm">
-                              <strong>Name:</strong> {selectedStorefrontData.name}
-                            </Typography>
-                            {selectedStorefrontData.url && (
-                              <Typography level="body-sm">
-                                <strong>URL:</strong> {selectedStorefrontData.url}
-                              </Typography>
-                            )}
-                            {selectedStorefrontData.logo_url && (
-                              <Typography level="body-sm">
-                                <strong>Logo:</strong> Configured
-                              </Typography>
-                            )}
-                            <Typography level="body-sm">
-                              <strong>Status:</strong> {selectedStorefrontData.is_online ? 'Online' : 'Offline'}
-                            </Typography>
-                          </Stack>
-                        </CardContent>
-                      </Card>
-                    )}
-                  </Grid>
-                </Grid>
-
-                {testResult && (
-                  <Alert
-                    color={testResult.success ? 'success' : 'danger'}
-                    sx={{ mt: 3 }}
-                  >
-                    <div>
-                      <Typography level="title-sm">
-                        {testResult.success ? 'Success!' : 'Error'}
-                      </Typography>
-                      <Typography level="body-sm">{testResult.message}</Typography>
-                      <Typography level="body-xs" sx={{ mt: 1, opacity: 0.7 }}>
-                        {testResult.timestamp.toLocaleString()}
-                      </Typography>
-                    </div>
-                  </Alert>
-                )}
-              </CardContent>
-            </Card>
-          </Stack>
+                    {storefronts.map((storefront) => (
+                      <Option key={storefront.id} value={storefront.id}>
+                        {storefront.name}
+                      </Option>
+                    ))}
+                  </Select>
+                </FormControl>
+              )}
+              
+              <FormControl>
+                <FormLabel>Test Email Address</FormLabel>
+                <Input
+                  type="email"
+                  placeholder="test@example.com"
+                  value={testEmail}
+                  onChange={(e) => setTestEmail(e.target.value)}
+                  disabled={loading}
+                />
+              </FormControl>
+              
+              {testResult && (
+                <Alert 
+                  color={testResult.success ? 'success' : 'danger'}
+                  startDecorator={testResult.success ? <CheckCircleIcon /> : <ErrorIcon />}
+                >
+                  <Typography level="body-sm">
+                    {testResult.message}
+                  </Typography>
+                  <Typography level="body-xs" sx={{ mt: 1 }}>
+                    {testResult.timestamp.toLocaleTimeString()}
+                  </Typography>
+                </Alert>
+              )}
+            </Stack>
+          </DialogContent>
+          
+          <DialogActions>
+            <Button variant="outlined" onClick={() => setEmailDialogOpen(false)}>
+              Close
+            </Button>
+            <Button
+              variant="solid"
+              color="primary"
+              onClick={handleSendTestEmail}
+              loading={loading}
+              startDecorator={<SendIcon />}
+            >
+              Send Test Email
+            </Button>
+          </DialogActions>
         </ModalDialog>
       </Modal>
-    </Box>
+    </PageLayout>
   );
 }
