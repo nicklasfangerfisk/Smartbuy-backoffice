@@ -703,25 +703,66 @@ export default function DialogOrder({
               color="primary"
               onClick={async () => {
                 try {
-                  // For development testing, show info about manual testing
+                  // Try API first (works in production/Vercel)
+                  const response = await fetch('/api/send-order-confirmation', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                      orderUuid: order.uuid,
+                      storefront_id: storefrontId
+                    }),
+                  });
+                  
+                  if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                      alert('Confirmation email sent successfully!');
+                    } else {
+                      alert('Failed to send email: ' + result.error);
+                    }
+                  } else if (response.status === 404) {
+                    // API not available - development mode
+                    const confirmed = window.confirm(
+                      `Email API not available in development mode.\n\n` +
+                      `To test email functionality:\n` +
+                      `1. Run: node send-order-email.js ${order.order_number}\n` +
+                      `2. Or run: node test-email.js\n\n` +
+                      `Click OK to continue, or Cancel to skip.`
+                    );
+                    
+                    if (confirmed) {
+                      alert(`Run this command in terminal:\nnode send-order-email.js ${order.order_number}`);
+                    }
+                  } else {
+                    // Try to get error message, but handle empty response
+                    let errorMessage = 'Unknown error occurred';
+                    try {
+                      const result = await response.json();
+                      errorMessage = result.error || errorMessage;
+                    } catch (jsonError) {
+                      // Empty or invalid JSON response
+                      errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+                    }
+                    alert('Failed to send email: ' + errorMessage);
+                  }
+                } catch (err: any) {
+                  // Network error - likely development mode
                   const confirmed = window.confirm(
-                    `To test email functionality in development mode:\n\n` +
-                    `1. Open terminal\n` +
-                    `2. Run: node test-email.js\n\n` +
-                    `This will send a test email to pernillealstrup88@gmail.com\n\n` +
-                    `Click OK to continue with this approach, or Cancel to skip.`
+                    `Network error - likely in development mode.\n\n` +
+                    `To test email functionality:\n` +
+                    `1. Run: node send-order-email.js ${order.order_number}\n` +
+                    `2. Or run: node test-email.js\n\n` +
+                    `Click OK to continue, or Cancel to skip.`
                   );
                   
                   if (confirmed) {
-                    alert('Please run "node test-email.js" in the terminal to test email functionality.');
+                    alert(`Run this command in terminal:\nnode send-order-email.js ${order.order_number}`);
                   }
-                } catch (err: any) {
-                  alert('Error: ' + err.message);
                 }
               }}
               disabled={saving}
             >
-              Test Email (Dev Mode)
+              Resend Email
             </Button>
           )}
           

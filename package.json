@@ -8,6 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "jest",
+    "test:api": "node test-api-architecture.js",
+    "dev:vercel": "vercel dev --listen 3000",
     "sync-version": "node sync-version.js",
     "release": "npm run sync-version && npm run build",
     "auto-release": "node release-automation.js",

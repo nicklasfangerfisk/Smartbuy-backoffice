@@ -5,7 +5,7 @@ async function testAPIEndpoint() {
   try {
     console.log('🧪 Testing API endpoint...');
     
-    const response = await fetch('http://localhost:3000/api/send-order-confirmation', {
+    const response = await fetch('http://localhost:3002/api/send-order-confirmation', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

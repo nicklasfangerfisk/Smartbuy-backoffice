@@ -37,6 +37,7 @@ import LoginLayout from './auth/LoginLayout';
 import PageMovements from './Page/PageMovements';
 import PageEmailSettings from './Page/PageEmailSettings';
 import PageSettings from './Page/PageSettings';
+import PageFunctions from './Page/PageFunctions';
 import { MenuValue } from './navigation/menuConfig';
 
 function Layout() {
@@ -113,7 +114,8 @@ function Layout() {
                 'movements': '/movements',
                 'profile': '/settings',
                 'settings': '/settings',
-                'emailsettings': '/email-settings'
+                'emailsettings': '/email-settings',
+                'functions': '/functions'
               };
               
               const targetRoute = routeMap[value] || `/${value}`;
@@ -233,6 +235,14 @@ function Layout() {
             element={
               <ProtectedRoute>
                 <PageEmailSettings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/functions"
+            element={
+              <ProtectedRoute>
+                <PageFunctions />
               </ProtectedRoute>
             }
           />

@@ -1,37 +1,22 @@
 import { supabase } from './supabaseClient';
+import { apiClient } from '../services/apiClient';
 
 /**
  * Send order confirmation email via API (browser-safe)
  */
 async function sendOrderConfirmationViaAPI(orderUuid: string, storefrontId?: string): Promise<void> {
   try {
-    // Try API first (for production/Vercel environment)
-    const response = await fetch('/api/send-order-confirmation', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        orderUuid,
-        storefront_id: storefrontId
-      }),
-    });
-
-    if (response.ok) {
-      // API worked, we're done
-      return;
-    }
+    const result = await apiClient.sendOrderConfirmation(orderUuid, undefined, storefrontId);
     
-    // If API returns 404, it means we're in development mode without Vercel
-    if (response.status === 404) {
-      console.warn('Email API not available. To test email functionality, run with "vercel dev" instead of "npm run dev".');
-      // Don't throw error - just log warning and continue
-      return;
+    if (!result.success) {
+      // If API returns 404, it means we're in development mode without Vercel
+      if (result.statusCode === 404) {
+        console.warn('Email API not available. To test email functionality, run with "vercel dev" instead of "npm run dev".');
+        return;
+      }
+      
+      throw new Error(result.error || `API error! status: ${result.statusCode}`);
     }
-
-    // Other API errors
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
   } catch (error: any) {
     // If fetch fails completely (network error), just log and continue
     if (error.message.includes('fetch') || error.name === 'TypeError') {
