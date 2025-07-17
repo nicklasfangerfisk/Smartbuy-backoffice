@@ -14,6 +14,7 @@ import BadgeIcon from '@mui/icons-material/Badge';
 import EmailIcon from '@mui/icons-material/Email';
 import LanguageIcon from '@mui/icons-material/Language';
 import ApiIcon from '@mui/icons-material/Api';
+import ExtensionIcon from '@mui/icons-material/Extension';
 
 export type MenuValue = 'home' | 'dashboard' | 'orders' | 'users' | 'customers' | 'employees' | 'suppliers' | 'products' | 'purchaseorders' | 'tickets' | 'smscampaigns' | 'movements' | 'settings' | 'profile' | 'storefronts' | 'emailsettings' | 'functions';
 
@@ -69,7 +70,7 @@ export const menuByArea: Record<MenuArea, MenuItem[]> = {
   ],
   Administration: [
     { label: 'Employees', icon: React.createElement(BadgeIcon), value: 'employees', route: '/employees', showInMobile: true },
-    { label: 'Email Settings', icon: React.createElement(EmailIcon), value: 'emailsettings', route: '/email-settings', showInMobile: true },
+    { label: 'Modules', icon: React.createElement(ExtensionIcon), value: 'emailsettings', route: '/email-settings', showInMobile: true },
     { label: 'Functions', icon: React.createElement(ApiIcon), value: 'functions', route: '/functions', showInMobile: true },
     { label: 'My Profile', icon: React.createElement(PersonIcon), value: 'profile', route: '/settings', showInMobile: true },
   ],
