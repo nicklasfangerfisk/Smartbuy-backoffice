@@ -291,7 +291,7 @@ export async function getStorefrontById(storefrontId: string): Promise<Storefron
 export async function getOrderItems(orderUuid: string) {
   try {
     const { data, error } = await supabase
-      .from('OrderItems')
+      .from('orderitems')
       .select(`
         uuid,
         quantity,
@@ -328,7 +328,7 @@ export async function sendOrderConfirmationEmail(orderUuid: string, storefrontId
 
     // Fetch order details
     const { data: orderData, error: orderError } = await supabase
-      .from('Orders')
+      .from('orders')
       .select('*')
       .eq('uuid', orderUuid)
       .single();

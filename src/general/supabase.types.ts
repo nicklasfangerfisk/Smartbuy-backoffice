@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      order_events: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          event_data: Json
+          event_type: string
+          id: string
+          order_uuid: string
+          title: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          event_data: Json
+          event_type: string
+          id?: string
+          order_uuid: string
+          title?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          event_data?: Json
+          event_type?: string
+          id?: string
+          order_uuid?: string
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_events_order_uuid_fkey"
+            columns: ["order_uuid"]
+            isOneToOne: false
+            referencedRelation: "Orders"
+            referencedColumns: ["uuid"]
+          },
+        ]
+      }
       OrderItems: {
         Row: {
           "Created at": string
@@ -93,6 +134,7 @@ export type Database = {
           customer_name: string | null
           date: string | null
           discount: number
+          notes: string | null
           "Order reference": string | null
           order_items_count: number | null
           order_number: number
@@ -102,6 +144,7 @@ export type Database = {
           order_total_exchrate: number
           Origin: string | null
           status: Database["public"]["Enums"]["order_status"] | null
+          storefront_id: string | null
           uuid: string
         }
         Insert: {
@@ -112,6 +155,7 @@ export type Database = {
           customer_name?: string | null
           date?: string | null
           discount?: number
+          notes?: string | null
           "Order reference"?: string | null
           order_items_count?: number | null
           order_number?: never
@@ -121,6 +165,7 @@ export type Database = {
           order_total_exchrate?: number
           Origin?: string | null
           status?: Database["public"]["Enums"]["order_status"] | null
+          storefront_id?: string | null
           uuid?: string
         }
         Update: {
@@ -131,6 +176,7 @@ export type Database = {
           customer_name?: string | null
           date?: string | null
           discount?: number
+          notes?: string | null
           "Order reference"?: string | null
           order_items_count?: number | null
           order_number?: never
@@ -140,9 +186,18 @@ export type Database = {
           order_total_exchrate?: number
           Origin?: string | null
           status?: Database["public"]["Enums"]["order_status"] | null
+          storefront_id?: string | null
           uuid?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "Orders_storefront_id_fkey"
+            columns: ["storefront_id"]
+            isOneToOne: false
+            referencedRelation: "storefronts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       Products: {
         Row: {
@@ -384,6 +439,36 @@ export type Database = {
           },
         ]
       }
+      storefronts: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_online: boolean | null
+          logo_url: string | null
+          name: string
+          updated_at: string | null
+          url: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_online?: boolean | null
+          logo_url?: string | null
+          name: string
+          updated_at?: string | null
+          url?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_online?: boolean | null
+          logo_url?: string | null
+          name?: string
+          updated_at?: string | null
+          url?: string | null
+        }
+        Relationships: []
+      }
       Suppliers: {
         Row: {
           address: string | null
@@ -539,9 +624,11 @@ export type Database = {
           created_at: string | null
           department: string | null
           email: string
+          first_name: string | null
           id: string
           last_login: string | null
-          name: string | null
+          last_name: string | null
+          phone_number: string | null
           role: string | null
         }
         Insert: {
@@ -549,9 +636,11 @@ export type Database = {
           created_at?: string | null
           department?: string | null
           email: string
+          first_name?: string | null
           id: string
           last_login?: string | null
-          name?: string | null
+          last_name?: string | null
+          phone_number?: string | null
           role?: string | null
         }
         Update: {
@@ -559,9 +648,11 @@ export type Database = {
           created_at?: string | null
           department?: string | null
           email?: string
+          first_name?: string | null
           id?: string
           last_login?: string | null
-          name?: string | null
+          last_name?: string | null
+          phone_number?: string | null
           role?: string | null
         }
         Relationships: []
@@ -571,6 +662,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_order_event: {
+        Args: {
+          p_order_uuid: string
+          p_event_type: string
+          p_event_data: Json
+          p_title: string
+          p_description?: string
+          p_created_by?: string
+        }
+        Returns: string
+      }
       is_employee: {
         Args: Record<PropertyKey, never>
         Returns: boolean
@@ -590,7 +692,16 @@ export type Database = {
       }
     }
     Enums: {
-      order_status: "Draft" | "Paid" | "Refunded" | "Cancelled"
+      order_status:
+        | "Draft"
+        | "Paid"
+        | "Refunded"
+        | "Cancelled"
+        | "Confirmed"
+        | "Packed"
+        | "Delivery"
+        | "Complete"
+        | "Returned"
       ProductCategory: "Beer" | "Wine" | "Bread" | "Soda" | "Champagne"
     }
     CompositeTypes: {
@@ -719,7 +830,17 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      order_status: ["Draft", "Paid", "Refunded", "Cancelled"],
+      order_status: [
+        "Draft",
+        "Paid",
+        "Refunded",
+        "Cancelled",
+        "Confirmed",
+        "Packed",
+        "Delivery",
+        "Complete",
+        "Returned",
+      ],
       ProductCategory: ["Beer", "Wine", "Bread", "Soda", "Champagne"],
     },
   },

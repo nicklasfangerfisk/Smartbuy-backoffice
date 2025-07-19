@@ -10,6 +10,28 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
+## [4.1.0] - 2025-07-19 16:45:00
+**Order Timeline & Status Management Enhancements**
+### Added
+- Unified OrderTimeline component with MUI Joy Stepper design for professional order progression display
+- Manual Send Order Confirmation functionality with ActionDialogSendConfirmation warning dialog
+- Order status progression: Draft → Paid → Confirmed → Packed → Delivery → Complete
+- Payment method display in timeline ("Paid by Credit Card") with checkout viewing capability
+- Confirmation timestamp tracking with confirmation_sent_at database column
+- Dynamic timeline updates without dialog refresh for seamless user experience
+
+### Changed
+- Order status workflow enhanced with manual confirmation trigger between Paid and Confirmed states
+- Timeline design upgraded from custom implementation to MUI Joy Stepper for consistency
+- Order confirmation emails now require explicit user action instead of automatic sending
+- DialogOrder layout improved with timeline integration and enhanced action buttons
+
+### Fixed
+- Dynamic order dialog updates after checkout completion and confirmation sending
+- Timeline component reactivity to status changes with automatic data reloading
+- Order items display showing product GUIDs instead of product names in view mode
+- Timeline stepper not updating immediately after status progression actions
+
 ## [4.0.0] - 2025-07-17 14:30:00
 **SendGrid Email Integration & Storefront Foundation**
 ### Added

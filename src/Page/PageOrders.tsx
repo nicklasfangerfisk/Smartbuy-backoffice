@@ -153,7 +153,7 @@ const PageOrders = () => {
         setLoading(true);
         try {
             const { data, error } = await supabase
-                .from('Orders')
+                .from('orders')
                 .select('*');
 
             if (error) {
@@ -197,7 +197,7 @@ const PageOrders = () => {
     const fetchOrderItems = async (orderUuid: string) => {
         try {
             const { data, error } = await supabase
-                .from('OrderItems')
+                .from('orderitems')
                 .select('*, Products:product_uuid(ProductName)')
                 .eq('order_uuid', orderUuid);
 

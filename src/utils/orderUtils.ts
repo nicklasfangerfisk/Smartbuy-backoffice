@@ -65,7 +65,7 @@ export async function createOrderWithItems(
   try {
     // Create the order (total will be computed by database triggers from OrderItems)
     const { data: orderResult, error: orderError } = await supabase
-      .from('Orders')
+      .from('orders')
       .insert({
         customer_name: orderData.customer_name,
         customer_email: orderData.customer_email,
@@ -96,13 +96,13 @@ export async function createOrderWithItems(
     }));
 
     const { error: itemsError } = await supabase
-      .from('OrderItems')
+      .from('orderitems')
       .insert(orderItemsData);
 
     if (itemsError) {
       console.error('Error creating order items:', itemsError);
       // Try to delete the created order
-      await supabase.from('Orders').delete().eq('uuid', orderUuid);
+      await supabase.from('orders').delete().eq('uuid', orderUuid);
       return { success: false, error: itemsError.message };
     }
 
@@ -144,7 +144,7 @@ export async function completeOrder(
   try {
     // Get current order details
     const { data: order, error: fetchError } = await supabase
-      .from('Orders')
+      .from('orders')
       .select('*')
       .eq('uuid', orderUuid)
       .single();
@@ -164,7 +164,7 @@ export async function completeOrder(
     }
 
     const { error: updateError } = await supabase
-      .from('Orders')
+      .from('orders')
       .update(updateData)
       .eq('uuid', orderUuid);
 

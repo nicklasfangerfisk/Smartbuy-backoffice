@@ -81,7 +81,7 @@ export default function DialogPurchaseOrder({ open, onClose, onCreated, mode = '
   React.useEffect(() => {
     if (open) {
       console.log('[DialogPurchaseOrder] Modal opened');
-      supabase.from('Suppliers').select('id, name').then(({ data }) => {
+      supabase.from('suppliers').select('id, name').then(({ data }) => {
         setSuppliers(data || []);
       });
       if ((mode === 'edit' || mode === 'view') && order?.id) {
@@ -121,7 +121,7 @@ export default function DialogPurchaseOrder({ open, onClose, onCreated, mode = '
   // After adding a supplier, refresh and select the new supplier
   const handleSupplierAdded = async (newSupplierId?: string | number) => {
     console.log('[DialogPurchaseOrder] handleSupplierAdded called');
-    const { data } = await supabase.from('Suppliers').select('id, name');
+    const { data } = await supabase.from('suppliers').select('id, name');
     setSuppliers(data || []);
     if (newSupplierId) {
       setSupplierId(String(newSupplierId));
@@ -173,12 +173,12 @@ export default function DialogPurchaseOrder({ open, onClose, onCreated, mode = '
     let result;
     let purchaseOrderId = order?.id;
     if (mode === 'add') {
-      result = await supabase.from('PurchaseOrders').insert([payload]).select();
+      result = await supabase.from('purchaseorders').insert([payload]).select();
       if (!result.error && result.data && result.data[0]) {
         purchaseOrderId = result.data[0].id;
       }
     } else if (order) { // Ensure 'order' is defined before accessing 'order.id'
-      result = await supabase.from('PurchaseOrders').update(payload).eq('id', order.id);
+      result = await supabase.from('purchaseorders').update(payload).eq('id', order.id);
     }
     if (result && !result.error && mode === 'add' && purchaseOrderId && items.length > 0) {
       // Insert items

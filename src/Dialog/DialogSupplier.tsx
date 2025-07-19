@@ -118,7 +118,7 @@ export default function DialogSupplier({
     
     try {
       const { data, error } = await supabase
-        .from('PurchaseOrders')
+        .from('purchaseorders')
         .select('id, order_number, order_date, status, total, notes')
         .eq('supplier_id', supplier.id)
         .order('order_date', { ascending: false });
@@ -232,14 +232,14 @@ export default function DialogSupplier({
 
       if (mode === 'edit' && supplier?.id) {
         const { error } = await supabase
-          .from('Suppliers')
+          .from('suppliers')
           .update(supplierData)
           .eq('id', supplier.id);
 
         if (error) throw error;
       } else {
         const { data, error } = await supabase
-          .from('Suppliers')
+          .from('suppliers')
           .insert([supplierData])
           .select();
 
@@ -265,7 +265,7 @@ export default function DialogSupplier({
     if (!confirm('Are you sure you want to delete this supplier?')) return;
     
     try {
-      const { error } = await supabase.from('Suppliers').delete().eq('id', supplier.id);
+      const { error } = await supabase.from('suppliers').delete().eq('id', supplier.id);
       if (error) throw error;
       onDelete(supplier.id);
       onClose();

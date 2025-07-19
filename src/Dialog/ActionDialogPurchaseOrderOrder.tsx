@@ -87,7 +87,7 @@ export default function ActionDialogPurchaseOrderOrder({
     try {
       // Fetch supplier details
       const { data: supplierData, error: supplierError } = await supabase
-        .from('Suppliers')
+        .from('suppliers')
         .select('*')
         .eq('id', order.supplier_id)
         .single();
@@ -117,7 +117,7 @@ export default function ActionDialogPurchaseOrderOrder({
     try {
       // Update purchase order status to 'Ordered'
       const { error: updateError } = await supabase
-        .from('PurchaseOrders')
+        .from('purchaseorders')
         .update({ status: 'Ordered' })
         .eq('id', order.id);
 

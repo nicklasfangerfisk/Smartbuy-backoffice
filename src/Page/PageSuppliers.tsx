@@ -92,7 +92,7 @@ const PageSuppliers = () => {
     setError(null);
     
     try {
-      const { data, error } = await supabase.from('Suppliers').select('*');
+      const { data, error } = await supabase.from('suppliers').select('*');
       
       if (error) throw error;
       

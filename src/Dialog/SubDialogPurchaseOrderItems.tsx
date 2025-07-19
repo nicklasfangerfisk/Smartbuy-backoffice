@@ -61,7 +61,7 @@ export default function SubDialogPurchaseOrderItems({ orderId, editable, onItems
 
   React.useEffect(() => {
     setLoading(true);
-    supabase.from('Products').select('uuid, ProductName').then(({ data, error }) => {
+    supabase.from('products').select('uuid, ProductName').then(({ data, error }) => {
       if (error) {
         console.error('Failed to fetch products:', error.message);
       } else {

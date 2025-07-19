@@ -22,7 +22,7 @@ async function testEmailFunctionality() {
   console.log('📋 Test 2: Checking for existing orders in database...');
   try {
     const { data: orders, error } = await supabase
-      .from('Orders')
+      .from('orders')
       .select(`
         uuid,
         order_number_display,
@@ -62,7 +62,7 @@ async function testEmailFunctionality() {
       
       // We'll modify the order temporarily to use our test email
       const { error: updateError } = await supabase
-        .from('Orders')
+        .from('orders')
         .update({ customer_email: 'nicklas_bak@outlook.dk' })
         .eq('uuid', paidOrder.uuid);
 
@@ -76,7 +76,7 @@ async function testEmailFunctionality() {
 
       // Restore original email
       await supabase
-        .from('Orders')
+        .from('orders')
         .update({ customer_email: paidOrder.customer_email })
         .eq('uuid', paidOrder.uuid);
 

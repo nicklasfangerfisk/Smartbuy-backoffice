@@ -3,6 +3,7 @@ import { supabase } from '../utils/supabaseClient';
 import { formatCurrencyWithSymbol } from '../utils/currencyUtils';
 import { createOrderWithItems } from '../utils/orderUtils';
 import { apiClient } from '../services/apiClient';
+import { OrderTimelineService } from '../services/orderTimelineService';
 import Modal from '@mui/joy/Modal';
 import ModalDialog from '@mui/joy/ModalDialog';
 import ModalClose from '@mui/joy/ModalClose';
@@ -22,9 +23,12 @@ import FormLabel from '@mui/joy/FormLabel';
 import Add from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import type { Database } from '../general/supabase.types';
+import OrderTimeline from '../components/OrderTimeline';
+import OrderCheckoutDialog from '../components/OrderCheckoutDialog';
+import ActionDialogSendConfirmation from './ActionDialogSendConfirmation';
 
 // Types and interfaces
-type OrderStatus = 'Draft' | 'Paid' | 'Refunded' | 'Cancelled';
+type OrderStatus = 'Draft' | 'Paid' | 'Confirmed' | 'Packed' | 'Delivery' | 'Complete' | 'Returned' | 'Cancelled';
 
 interface Product {
   id: string;
@@ -122,6 +126,15 @@ export default function DialogOrder({
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [productsError, setProductsError] = React.useState<string | null>(null);
+  const [timelineKey, setTimelineKey] = React.useState(0); // Force timeline refresh
+
+  // Checkout states
+  const [checkoutOpen, setCheckoutOpen] = React.useState(false);
+  const [checkoutViewOpen, setCheckoutViewOpen] = React.useState(false);
+  const [checkoutData, setCheckoutData] = React.useState<any>(null);
+  
+  // Send confirmation states
+  const [sendConfirmationOpen, setSendConfirmationOpen] = React.useState(false);
 
   // Initialize form when modal opens or order changes
   React.useEffect(() => {
@@ -135,6 +148,11 @@ export default function DialogOrder({
       setDiscount(order.discount || 0);
       setNotes(order.notes || '');
       setStorefrontId((order as any).storefront_id || '');
+      
+      // Load checkout data if it exists
+      if ((order as any).checkout_data) {
+        setCheckoutData((order as any).checkout_data);
+      }
     } else if (open && mode === 'add') {
       // Reset form for add mode
       setOrderNumber(generateOrderNumber());
@@ -209,7 +227,7 @@ export default function DialogOrder({
     if (open && (mode === 'add' || mode === 'edit')) {
       setLoadingProducts(true);
       setProductsError(null);
-      supabase.from('Products').select('*').then(({ data, error }) => {
+      supabase.from('products').select('*').then(({ data, error }) => {
         if (!error && data) {
           if (data.length === 0) {
             setProductsError('No products available. Please add products first.');
@@ -315,7 +333,7 @@ export default function DialogOrder({
         };
 
         const { error } = await supabase
-          .from('Orders')
+          .from('orders')
           .update(orderData)
           .eq('id', order.id);
 
@@ -337,7 +355,7 @@ export default function DialogOrder({
           }))
         };
 
-        const result = await createOrderWithItems(orderCreationData, true); // Send confirmation email
+        const result = await createOrderWithItems(orderCreationData, false); // Don't send confirmation email for draft
         
         if (!result.success) {
           throw new Error(result.error || 'Failed to create order');
@@ -354,12 +372,167 @@ export default function DialogOrder({
     }
   };
 
+  // Handle checkout completion
+  const handleCheckoutSuccess = async () => {
+    setCheckoutOpen(false);
+    
+    // Refresh order data to show updated status and timeline
+    if (order && order.uuid) {
+      try {
+        const { data: updatedOrder, error } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('uuid', order.uuid)
+          .single();
+        
+        if (error) {
+          console.error('Error refreshing order data:', error);
+        } else if (updatedOrder) {
+          // Update the dialog state with fresh order data
+          setStatus(updatedOrder.status || 'Draft');
+          setCustomerName(updatedOrder.customer_name || '');
+          setCustomerEmail(updatedOrder.customer_email || '');
+          setTotal(updatedOrder.total ? String(updatedOrder.total) : '0');
+          
+          // Update checkout data if it exists
+          if (updatedOrder.checkout_data) {
+            setCheckoutData(updatedOrder.checkout_data);
+          }
+          
+          // Force timeline to refresh by incrementing the key
+          setTimelineKey(prev => prev + 1);
+        }
+      } catch (err) {
+        console.error('Error refreshing order:', err);
+      }
+    }
+    
+    if (onSaved) onSaved();
+  };
+
+  // Handle viewing checkout data from timeline
+  const handleViewCheckout = (eventData: any) => {
+    if (eventData && typeof eventData === 'object') {
+      // Handle both direct checkout data and event objects
+      const checkoutDataToView = eventData.event_data || eventData;
+      setCheckoutData(checkoutDataToView);
+      setCheckoutViewOpen(true);
+    }
+  };
+
+  // Handle sending order confirmation and updating status to Confirmed
+  const handleSendConfirmation = async () => {
+    if (!order?.uuid) {
+      throw new Error('Order UUID is required');
+    }
+
+    try {
+      // Send the order confirmation email
+      console.log(`📧 Sending order confirmation email for order: ${order.uuid}`);
+      const result = await apiClient.sendOrderConfirmation(
+        order.uuid,
+        undefined, // no test email
+        storefrontId,
+        order.customer_email // pass the customer email
+      );
+      
+      if (!result.success) {
+        if (result.statusCode === 404) {
+          // API not available - development mode
+          throw new Error(
+            'Email API not available in development mode. ' +
+            'To test email functionality, run with "vercel dev" instead of "npm run dev".'
+          );
+        } else {
+          throw new Error(result.error || 'Failed to send email');
+        }
+      }
+
+      console.log('✅ Order confirmation email sent successfully');
+
+      // Update order status to "Confirmed"
+      const { error: updateError } = await supabase
+        .from('orders')
+        .update({ 
+          status: 'Confirmed',
+          confirmation_sent_at: new Date().toISOString()
+        })
+        .eq('uuid', order.uuid);
+
+      if (updateError) {
+        console.error('Error updating order status:', updateError);
+        throw new Error('Email sent but failed to update order status');
+      }
+
+      // Log the email event to timeline
+      try {
+        await OrderTimelineService.addEmailSentEvent(
+          order.uuid,
+          'order_confirmation_sent',
+          order.customer_email,
+          'Order Confirmation'
+        );
+      } catch (emailLogError) {
+        console.warn('Could not log email event to timeline:', emailLogError);
+      }
+
+      // Log the status change to timeline
+      try {
+        await OrderTimelineService.addStatusChange(
+          order.uuid,
+          'Confirmed',
+          'Order confirmation sent to customer',
+          'Current User'
+        );
+      } catch (statusLogError) {
+        console.warn('Could not log status change to timeline:', statusLogError);
+      }
+
+      // Refresh order data from database to get updated status and fields
+      try {
+        const { data: updatedOrder, error: refreshError } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('uuid', order.uuid)
+          .single();
+        
+        if (refreshError) {
+          console.error('Error refreshing order data:', refreshError);
+        } else if (updatedOrder) {
+          // Update the dialog state with fresh order data
+          setStatus(updatedOrder.status || 'Draft');
+          setCustomerName(updatedOrder.customer_name || '');
+          setCustomerEmail(updatedOrder.customer_email || '');
+          setTotal(updatedOrder.total ? String(updatedOrder.total) : '0');
+          setStorefrontId(updatedOrder.storefront_id || '');
+          
+          // Update any other fields that might have changed
+          if (updatedOrder.checkout_data) {
+            setCheckoutData(updatedOrder.checkout_data);
+          }
+          
+          // Force timeline to refresh by incrementing the key
+          setTimelineKey(prev => prev + 1);
+        }
+      } catch (refreshErr) {
+        console.error('Error refreshing order after confirmation:', refreshErr);
+      }
+
+      // Refresh order data if callback is available
+      if (onSaved) onSaved();
+
+    } catch (error: any) {
+      console.error('Error in handleSendConfirmation:', error);
+      throw error; // Re-throw to be caught by the dialog
+    }
+  };
+
   const isReadOnly = mode === 'view';
   const isViewMode = mode === 'view';
 
   return (
     <Modal open={open} onClose={onClose}>
-      <ModalDialog sx={{ maxWidth: 1200, width: '100%', maxHeight: '90vh', overflow: 'auto' }}>
+      <ModalDialog sx={{ maxWidth: 1400, width: '100%', maxHeight: '90vh', overflow: 'auto' }}>
         <ModalClose />
         <Typography level="title-lg" sx={{ mb: 2 }}>
           {mode === 'add' ? 'Create Order' : mode === 'edit' ? 'Edit Order' : 'Order Details'}
@@ -367,7 +540,7 @@ export default function DialogOrder({
 
         <Box sx={{ 
           display: 'grid', 
-          gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
+          gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 300px' }, 
           gap: 3,
           minHeight: '400px'
         }}>
@@ -409,7 +582,11 @@ export default function DialogOrder({
                 >
                   <Option value="Draft">Draft</Option>
                   <Option value="Paid">Paid</Option>
-                  <Option value="Refunded">Refunded</Option>
+                  <Option value="Confirmed">Confirmed</Option>
+                  <Option value="Packed">Packed</Option>
+                  <Option value="Delivery">In Delivery</Option>
+                  <Option value="Complete">Complete</Option>
+                  <Option value="Returned">Returned</Option>
                   <Option value="Cancelled">Cancelled</Option>
                 </Select>
               </FormControl>
@@ -547,7 +724,7 @@ export default function DialogOrder({
                         <tr key={item.id || item.uuid || index}>
                           <td>
                             <Typography level="body-sm" sx={{ fontWeight: 'bold' }}>
-                              {item.ProductName || item.name || item.product_uuid}
+                              {item.ProductName || item.product_name || item.name || item.product_uuid}
                             </Typography>
                           </td>
                           <td style={{ textAlign: 'right' }}>
@@ -680,6 +857,30 @@ export default function DialogOrder({
               </Box>
             )}
           </Box>
+
+          {/* Third Column: Order Timeline - only show for existing orders */}
+          {order?.uuid && (
+            <Box sx={{ 
+              display: { xs: 'none', md: 'flex' },
+              flexDirection: 'column',
+              borderLeft: '1px solid',
+              borderColor: 'divider',
+              minHeight: '500px'
+            }}>
+              <OrderTimeline
+                key={timelineKey} // Force refresh when checkout completes
+                orderUuid={order.uuid}
+                currentStatus={status}
+                onStatusChange={(newStatus) => {
+                  setStatus(newStatus);
+                  // Could trigger a save here or show a save indicator
+                }}
+                onEventClick={handleViewCheckout}
+                readOnly={isReadOnly}
+                showSecondaryEvents={true}
+              />
+            </Box>
+          )}
         </Box>
 
         {/* Error Message */}
@@ -696,6 +897,32 @@ export default function DialogOrder({
           <Button variant="plain" onClick={onClose} disabled={saving}>
             {isReadOnly ? 'Close' : 'Cancel'}
           </Button>
+          
+          {/* Checkout Button - only show for draft orders */}
+          {order && order.status === 'Draft' && (
+            <Button
+              variant="solid"
+              color="success"
+              onClick={() => setCheckoutOpen(true)}
+              disabled={saving}
+              startDecorator={<span>🛒</span>}
+            >
+              Proceed to Checkout
+            </Button>
+          )}
+          
+          {/* Send Confirmation Button - only show for paid orders with email (primary action) */}
+          {order && order.status === 'Paid' && order.customer_email && (
+            <Button
+              variant="solid"
+              color="primary"
+              onClick={() => setSendConfirmationOpen(true)}
+              disabled={saving}
+              startDecorator={<span>📧</span>}
+            >
+              Send Confirmation
+            </Button>
+          )}
           
           {/* Resend Email Button - only show for paid orders with email */}
           {order && order.status === 'Paid' && order.customer_email && (
@@ -716,6 +943,20 @@ export default function DialogOrder({
                   if (result.success) {
                     console.log('✅ Order confirmation email resent successfully');
                     alert('Confirmation email sent successfully!');
+                    
+                    // Log the email event to timeline
+                    try {
+                      if (order.uuid) {
+                        await OrderTimelineService.addEmailSentEvent(
+                          order.uuid,
+                          'order_confirmation_resend',
+                          order.customer_email,
+                          'Order Confirmation'
+                        );
+                      }
+                    } catch (emailLogError) {
+                      console.warn('Could not log email event to timeline:', emailLogError);
+                    }
                   } else {
                     if (result.statusCode === 404) {
                       // API not available - development mode
@@ -765,6 +1006,41 @@ export default function DialogOrder({
             </Button>
           )}
         </Box>
+
+        {/* Checkout Dialog */}
+        {order && order.uuid && (
+          <OrderCheckoutDialog
+            open={checkoutOpen}
+            onClose={() => setCheckoutOpen(false)}
+            order={order as any} // Type assertion since we've checked uuid exists
+            onSuccess={handleCheckoutSuccess}
+            mode="checkout"
+          />
+        )}
+
+        {/* Checkout View Dialog */}
+        {order && order.uuid && checkoutData && (
+          <OrderCheckoutDialog
+            open={checkoutViewOpen}
+            onClose={() => setCheckoutViewOpen(false)}
+            order={order as any} // Type assertion since we've checked uuid exists
+            onSuccess={() => {}}
+            mode="view"
+            existingCheckoutData={checkoutData}
+          />
+        )}
+
+        {/* Send Confirmation Dialog */}
+        {order && order.status === 'Paid' && order.customer_email && (
+          <ActionDialogSendConfirmation
+            open={sendConfirmationOpen}
+            onClose={() => setSendConfirmationOpen(false)}
+            onConfirm={handleSendConfirmation}
+            customerEmail={order.customer_email}
+            orderNumber={order.order_number || 'N/A'}
+            customerName={order.customer_name}
+          />
+        )}
       </ModalDialog>
     </Modal>
   );

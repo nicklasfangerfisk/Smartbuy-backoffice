@@ -24,7 +24,7 @@ async function sendOrderConfirmationByOrderNumber(orderNumber) {
     
     // Get order details
     const { data: order, error: orderError } = await supabase
-      .from('Orders')
+      .from('orders')
       .select('*')
       .eq('order_number', orderNumber)
       .single();
@@ -43,7 +43,7 @@ async function sendOrderConfirmationByOrderNumber(orderNumber) {
     
     // Get order items
     const { data: orderItems, error: itemsError } = await supabase
-      .from('OrderItems')
+      .from('orderitems')
       .select(`
         *,
         products:product_uuid (ProductName, SalesPrice)

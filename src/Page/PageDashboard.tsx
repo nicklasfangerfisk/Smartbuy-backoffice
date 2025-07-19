@@ -54,7 +54,7 @@ async function fetchDashboardStatsHelper() {
   const prevEnd = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000 - 1).toISOString().slice(0, 10);
 
   const ordersRes = await supabase
-    .from('Orders')
+    .from('orders')
     .select('order_total, customer_email, date', { count: 'exact' })
     .not('order_total', 'is', null);
 

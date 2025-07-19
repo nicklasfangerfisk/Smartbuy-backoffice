@@ -174,7 +174,7 @@ export default function ActionDialogOrderCheckout({ open, onClose, order, onSucc
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('OrderItems')
+        .from('orderitems')
         .select(`
           uuid,
           product_uuid,

@@ -123,7 +123,7 @@ const PagePurchaseOrders = () => {
     
     try {
       const { data, error } = await supabase
-        .from('PurchaseOrders')
+        .from('purchaseorders')
         .select(`
           id, 
           order_number, 
@@ -132,7 +132,7 @@ const PagePurchaseOrders = () => {
           total, 
           notes,
           supplier_id,
-          Suppliers(name)
+          suppliers(name)
         `)
         .order('order_date', { ascending: false });
 
@@ -193,7 +193,7 @@ const PagePurchaseOrders = () => {
       // Direct update for other status changes
       try {
         const { error } = await supabase
-          .from('PurchaseOrders')
+          .from('purchaseorders')
           .update({ status: newStatus })
           .eq('id', orderId);
 
@@ -241,7 +241,7 @@ const PagePurchaseOrders = () => {
     
     try {
       const { data, error } = await supabase
-        .from('Suppliers')
+        .from('suppliers')
         .select('*')
         .eq('id', supplierId)
         .single();
