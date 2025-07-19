@@ -20,8 +20,10 @@ import Divider from '@mui/joy/Divider';
 import Table from '@mui/joy/Table';
 import FormControl from '@mui/joy/FormControl';
 import FormLabel from '@mui/joy/FormLabel';
+import Sheet from '@mui/joy/Sheet';
 import Add from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import PhoneIcon from '@mui/icons-material/Phone';
 import type { Database } from '../general/supabase.types';
 import OrderTimeline from '../components/OrderTimeline';
 import OrderCheckoutDialog from '../components/OrderCheckoutDialog';
@@ -103,8 +105,10 @@ export default function DialogOrder({
   const [storefrontId, setStorefrontId] = React.useState<string>('');
   const [customerName, setCustomerName] = React.useState('');
   const [customerEmail, setCustomerEmail] = React.useState('');
+  const [customerPhone, setCustomerPhone] = React.useState('');
   const [total, setTotal] = React.useState('0');
   const [discount, setDiscount] = React.useState(0);
+  const [shipmentCost, setShipmentCost] = React.useState(0);
   const [notes, setNotes] = React.useState('');
   
   // Order items states
@@ -144,8 +148,10 @@ export default function DialogOrder({
       setStatus(order.status || 'Draft');
       setCustomerName(order.customer_name || '');
       setCustomerEmail(order.customer_email || '');
+      setCustomerPhone((order as any).customer_phone || '');
       setTotal(order.total ? String(order.total) : '0');
       setDiscount(order.discount || 0);
+      setShipmentCost((order as any).shipment_cost || 0);
       setNotes(order.notes || '');
       setStorefrontId((order as any).storefront_id || '');
       
@@ -160,8 +166,10 @@ export default function DialogOrder({
       setStatus('Draft');
       setCustomerName('');
       setCustomerEmail('');
+      setCustomerPhone('');
       setTotal('0');
       setDiscount(0);
+      setShipmentCost(0);
       setNotes('');
       setStorefrontId('');
       setOrderItems([{ id: crypto.randomUUID(), product: null, quantity: 1, unitprice: 0, discount: 0 }]);
@@ -326,8 +334,10 @@ export default function DialogOrder({
           status: status,
           customer_name: customerName.trim(),
           customer_email: customerEmail.trim(),
+          customer_phone: customerPhone.trim() || null,
           // total: parseFloat(total), // Remove - should be computed from order items
           discount: discount,
+          shipment_cost: shipmentCost,
           // notes: notes.trim() || null, // Temporarily disabled until column is added
           storefront_id: storefrontId || null, // Include storefront ID
         };
@@ -345,8 +355,10 @@ export default function DialogOrder({
         const orderCreationData = {
           customer_name: customerName.trim(),
           customer_email: customerEmail.trim(),
+          customer_phone: customerPhone.trim() || undefined,
           storefront_id: storefrontId || undefined,
           discount: discount,
+          shipment_cost: shipmentCost,
           orderItems: validItems.map(item => ({
             product_uuid: item.product!.id,
             quantity: item.quantity,
@@ -392,7 +404,9 @@ export default function DialogOrder({
           setStatus(updatedOrder.status || 'Draft');
           setCustomerName(updatedOrder.customer_name || '');
           setCustomerEmail(updatedOrder.customer_email || '');
+          setCustomerPhone(updatedOrder.customer_phone || '');
           setTotal(updatedOrder.total ? String(updatedOrder.total) : '0');
+          setShipmentCost(updatedOrder.shipment_cost || 0);
           
           // Update checkout data if it exists
           if (updatedOrder.checkout_data) {
@@ -481,7 +495,7 @@ export default function DialogOrder({
         await OrderTimelineService.addStatusChange(
           order.uuid,
           'Confirmed',
-          'Order confirmation sent to customer',
+          'Confirmation sent to customer',
           'Current User'
         );
       } catch (statusLogError) {
@@ -503,8 +517,10 @@ export default function DialogOrder({
           setStatus(updatedOrder.status || 'Draft');
           setCustomerName(updatedOrder.customer_name || '');
           setCustomerEmail(updatedOrder.customer_email || '');
+          setCustomerPhone(updatedOrder.customer_phone || '');
           setTotal(updatedOrder.total ? String(updatedOrder.total) : '0');
           setStorefrontId(updatedOrder.storefront_id || '');
+          setShipmentCost(updatedOrder.shipment_cost || 0);
           
           // Update any other fields that might have changed
           if (updatedOrder.checkout_data) {
@@ -535,12 +551,12 @@ export default function DialogOrder({
       <ModalDialog sx={{ maxWidth: 1400, width: '100%', maxHeight: '90vh', overflow: 'auto' }}>
         <ModalClose />
         <Typography level="title-lg" sx={{ mb: 2 }}>
-          {mode === 'add' ? 'Create Order' : mode === 'edit' ? 'Edit Order' : 'Order Details'}
+          {mode === 'add' ? 'Create Order' : mode === 'edit' ? `Edit Order - ${orderNumber || 'New'}` : `Order - ${orderNumber || order?.order_number || 'N/A'}`}
         </Typography>
 
         <Box sx={{ 
           display: 'grid', 
-          gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 300px' }, 
+          gridTemplateColumns: { xs: '1fr', md: '300px 1fr 300px' }, 
           gap: 3,
           minHeight: '400px'
         }}>
@@ -548,7 +564,7 @@ export default function DialogOrder({
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {/* Order Information */}
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Typography level="title-sm">Order Information</Typography>
+              <Typography level="title-sm">Information</Typography>
               
               {/* Only show order number in edit mode - it's auto-generated in add mode */}
               {mode === 'edit' && (
@@ -590,36 +606,6 @@ export default function DialogOrder({
                   <Option value="Cancelled">Cancelled</Option>
                 </Select>
               </FormControl>
-            </Box>
-
-            <Divider />
-
-            {/* Customer Information */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Typography level="title-sm">Customer Information</Typography>
-              
-              <FormControl>
-                <FormLabel>Customer Name</FormLabel>
-                <Input
-                  value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="Customer name"
-                  required
-                />
-              </FormControl>
-              
-              <FormControl>
-                <FormLabel>Customer Email</FormLabel>
-                <Input
-                  type="email"
-                  value={customerEmail}
-                  onChange={(e) => setCustomerEmail(e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="customer@example.com"
-                  required
-                />
-              </FormControl>
 
               <FormControl>
                 <FormLabel>Storefront</FormLabel>
@@ -637,34 +623,7 @@ export default function DialogOrder({
                   ))}
                 </Select>
               </FormControl>
-            </Box>
 
-            <Divider />
-
-            {/* Order Summary */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Typography level="title-sm">Order Summary</Typography>
-              
-              <FormControl>
-                <FormLabel>Order Discount (%)</FormLabel>
-                <Input
-                  type="number"
-                  value={discount}
-                  onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-                  disabled={isReadOnly}
-                  slotProps={{ input: { min: 0, max: 100, step: 0.01 } }}
-                />
-              </FormControl>
-              
-              <FormControl>
-                <FormLabel>Total Amount</FormLabel>
-                <Input
-                  value={formatCurrencyWithSymbol(parseFloat(total))}
-                  disabled
-                  sx={{ fontWeight: 'bold' }}
-                />
-              </FormControl>
-              
               <FormControl>
                 <FormLabel>Notes</FormLabel>
                 <Input
@@ -675,13 +634,71 @@ export default function DialogOrder({
                 />
               </FormControl>
             </Box>
+
+            <Divider />
+
+            {/* Customer Information */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Typography level="title-sm">Customer</Typography>
+              
+              <FormControl>
+                <FormLabel>Name</FormLabel>
+                <Input
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="Customer name"
+                  required
+                />
+              </FormControl>
+              
+              <FormControl>
+                <FormLabel>Email</FormLabel>
+                <Input
+                  type="email"
+                  value={customerEmail}
+                  onChange={(e) => setCustomerEmail(e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="customer@example.com"
+                  required
+                />
+              </FormControl>
+              
+              <FormControl>
+                <FormLabel>Phone</FormLabel>
+                <Sheet sx={{ display: 'flex', gap: 1 }}>
+                  <Input
+                    type="tel"
+                    value={customerPhone}
+                    onChange={(e) => setCustomerPhone(e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="Phone number"
+                    sx={{ flex: 1 }}
+                  />
+                  {customerPhone && !isReadOnly && (
+                    <IconButton
+                      variant="outline"
+                      color="primary"
+                      onClick={() => window.open(`tel:${customerPhone}`, '_self')}
+                      size="sm"
+                    >
+                      <PhoneIcon />
+                    </IconButton>
+                  )}
+                </Sheet>
+              </FormControl>
+            </Box>
+
+            <Divider />
+
+            {/* Order Items */}
           </Box>
 
           {/* Right Column: Order Items */}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Typography level="title-sm">
-                {isViewMode ? 'Ordered Items' : 'Order Items'}
+                {isViewMode ? 'Items' : 'Items'}
               </Typography>
               {!isReadOnly && (
                 <Button
@@ -856,6 +873,47 @@ export default function DialogOrder({
                 </Box>
               </Box>
             )}
+
+            {/* Order Summary */}
+            <Box sx={{ mt: 2 }}>
+              <Typography level="title-sm" sx={{ mb: 2 }}>Order Summary</Typography>
+              
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <FormControl>
+                  <FormLabel>Order Discount (%)</FormLabel>
+                  <Input
+                    type="number"
+                    value={discount}
+                    onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
+                    disabled={isReadOnly}
+                    slotProps={{ input: { min: 0, max: 100, step: 0.01 } }}
+                    size="sm"
+                  />
+                </FormControl>
+                
+                <FormControl>
+                  <FormLabel>Shipment Cost</FormLabel>
+                  <Input
+                    type="number"
+                    value={shipmentCost}
+                    onChange={(e) => setShipmentCost(parseFloat(e.target.value) || 0)}
+                    disabled={isReadOnly}
+                    slotProps={{ input: { min: 0, step: 0.01 } }}
+                    size="sm"
+                  />
+                </FormControl>
+                
+                <FormControl>
+                  <FormLabel>Total Amount</FormLabel>
+                  <Input
+                    value={formatCurrencyWithSymbol(parseFloat(total))}
+                    disabled
+                    sx={{ fontWeight: 'bold' }}
+                    size="sm"
+                  />
+                </FormControl>
+              </Box>
+            </Box>
           </Box>
 
           {/* Third Column: Order Timeline - only show for existing orders */}

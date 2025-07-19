@@ -143,7 +143,7 @@ const PageProducts = () => {
         setLoading(true);
         try {
             const { data, error } = await supabase
-                .from('Products')
+                .from('products')
                 .select('*')
                 .order('CreatedAt', { ascending: false });
 
@@ -255,7 +255,7 @@ const PageProducts = () => {
         setSubmitting(true);
         try {
             const { error } = await supabase
-                .from('Products')
+                .from('products')
                 .delete()
                 .eq('uuid', uuid);
 
@@ -298,7 +298,7 @@ const PageProducts = () => {
             });
 
             const { data, error } = await supabase
-                .from('Products')
+                .from('products')
                 .insert([productData])
                 .select()
                 .single();
@@ -344,7 +344,7 @@ const PageProducts = () => {
             });
 
             const { error } = await supabase
-                .from('Products')
+                .from('products')
                 .update(productData)
                 .eq('uuid', editProduct.uuid);
 

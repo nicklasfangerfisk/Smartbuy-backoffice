@@ -10,6 +10,26 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
+## [4.3.0] - 2025-07-19 20:30:00
+**Order Dialog Enhancement & Database Table Fixes**
+### Added
+- Customer phone number field with integrated call button functionality in DialogOrder
+- Phone number storage and persistence in order management system
+- Click-to-call functionality using tel: protocol for direct phone dialing
+
+### Changed
+- DialogOrder layout optimized with improved three-column grid (300px | 1fr | 300px)
+- Order summary repositioned to middle column for better visual balance
+- Order number display enhanced in dialog title for better context
+- Order information section reorganized with streamlined field arrangement
+- Shipment cost field added to order summary with proper data persistence
+
+### Fixed
+- Database table references updated from "Products" to "products" in PageProducts and PageMovements
+- Product queries and joins now properly reference lowercase table names
+- Order timeline text corrected from "Confirmed sent" to "Confirmation sent"
+- Form state management improved for customer phone number across all order operations
+
 ## [4.2.1] - 2025-07-19 17:45:00
 **Navigation Component Cleanup**
 ### Changed

@@ -40,12 +40,12 @@ import PageLayout from '../layouts/PageLayout';
 import fonts from '../theme/fonts';
 import type { Database } from '../general/supabase.types';
 
-type Product = Database['public']['Tables']['Products']['Row'];
+type Product = Database['public']['Tables']['products']['Row'];
 type StockMovement = Database['public']['Tables']['stock_movements']['Row'];
 
 // Define the joined type for stock movements with product information
 type StockMovementWithProduct = StockMovement & {
-  Products?: Product;
+  products?: Product;
 };
 
 // Typography styles for consistency
@@ -96,7 +96,7 @@ const PageMovements = () => {
                 .from('stock_movements')
                 .select(`
                     *,
-                    Products (
+                    products (
                         ProductName,
                         ProductID
                     )
@@ -121,7 +121,7 @@ const PageMovements = () => {
     const fetchProducts = async () => {
         try {
             const { data: products, error } = await supabase
-                .from('Products')
+                .from('products')
                 .select('*')
                 .order('ProductName');
 
@@ -251,7 +251,7 @@ const PageMovements = () => {
             row.product_id.toLowerCase().includes(searchText) ||
             row.movement_type.toLowerCase().includes(searchText) ||
             (row.reason?.toLowerCase().includes(searchText) ?? false) ||
-            (row.Products?.ProductName?.toLowerCase().includes(searchText) ?? false)
+            (row.products?.ProductName?.toLowerCase().includes(searchText) ?? false)
         );
         
         // Movement type filter
@@ -436,7 +436,7 @@ const PageMovements = () => {
                                                 maxWidth: '60%'
                                             }}
                                         >
-                                            {movement.Products?.ProductName || 'Unknown Product'}
+                                            {movement.products?.ProductName || 'Unknown Product'}
                                         </Typography>
                                         
                                         {/* Quantity Chip */}
@@ -451,7 +451,7 @@ const PageMovements = () => {
                                     </Box>
                                     
                                     <Typography level="body-xs" color="neutral" sx={{ mb: 0.5 }}>
-                                        ID: {movement.Products?.ProductID || 'N/A'} • {new Date(movement.date).toLocaleDateString()}
+                                        ID: {movement.products?.ProductID || 'N/A'} • {new Date(movement.date).toLocaleDateString()}
                                     </Typography>
                                     
                                     {movement.reason && (
@@ -551,10 +551,10 @@ const PageMovements = () => {
                             <tr key={row.id} style={{ cursor: 'pointer' }}>
                                 <td style={typographyStyles}>{row.id.substring(0, 8)}...</td>
                                 <td style={typographyStyles}>
-                                    {row.Products ? (
+                                    {row.products ? (
                                         <div>
-                                            <div style={{ fontWeight: 'bold' }}>{row.Products.ProductName}</div>
-                                            <div style={{ fontSize: '0.8em', color: '#666' }}>ID: {row.Products.ProductID}</div>
+                                            <div style={{ fontWeight: 'bold' }}>{row.products.ProductName}</div>
+                                            <div style={{ fontSize: '0.8em', color: '#666' }}>ID: {row.products.ProductID}</div>
                                         </div>
                                     ) : (
                                         <span style={{ color: '#999', fontStyle: 'italic' }}>Unknown Product</span>
