@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Routes, useLocation, Navigate, useNavig
 import Box from '@mui/joy/Box';
 import { CssVarsProvider } from '@mui/joy/styles';
 
-import Sidebar from './navigation/Sidebar';
+import ResponsiveMenu from './navigation/ResponsiveMenu';
 import PageOrders from './Page/PageOrders';
 import PageProducts from './Page/PageProducts';
 import PageUsers from './Page/PageUsers';
@@ -15,8 +15,6 @@ import PagePurchaseOrders from './Page/PagePurchaseOrders';
 import Login from './auth/Login';
 import { supabase } from './utils/supabaseClient';
 import { useState } from 'react';
-import MobileMenu from './navigation/MobileMenu';
-import { MobileMenuItem } from './navigation/menuConfig';
 import PageTickets from './Page/PageTickets';
 import PageSmsCampaigns from './Page/PageSmsCampaigns';
 import { User, UserResponse } from '@supabase/supabase-js';
@@ -26,12 +24,6 @@ import { useResponsive } from './hooks/useResponsive';
 import PageDashboard from './Page/PageDashboard';
 import { Database } from './general/supabase.types';
 import ProtectedRoute from './auth/ProtectedRoute';
-import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
-import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
-import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
-import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
-import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
-import PersonIcon from '@mui/icons-material/Person';
 import './App.css'; // Import custom styles
 import LoginLayout from './auth/LoginLayout';
 import PageMovements from './Page/PageMovements';
@@ -43,87 +35,57 @@ import { MenuValue } from './navigation/menuConfig';
 function Layout() {
   const location = useLocation();
   const { isMobile } = useResponsive();
-  const navigate = useNavigate();
+  const [currentView, setCurrentView] = useState<MenuValue>('dashboard');
 
-  const [mobileMenuValue, setMobileMenuValue] = useState<MenuValue>('dashboard');
-
-  const mobileMenuItems: MobileMenuItem[] = [
-    { label: 'Dashboard', icon: <DashboardRoundedIcon />, value: 'dashboard' },
-    { label: 'Orders', icon: <ShoppingCartRoundedIcon />, value: 'orders' },
-    { label: 'Customers', icon: <GroupRoundedIcon />, value: 'customers' },
-    { label: 'My Profile', icon: <PersonIcon />, value: 'profile' },
-    { label: 'Settings', icon: <SettingsRoundedIcon />, value: 'settings' },
-  ];
-
+  // Update current view based on pathname
   React.useEffect(() => {
-    const pathToValueMap: Record<string, typeof mobileMenuValue> = {
+    const pathToValueMap: Record<string, MenuValue> = {
       '/': 'dashboard',
       '/dashboard': 'dashboard',
       '/orders': 'orders',
-      '/products': 'dashboard', // Products grouped under dashboard for mobile
+      '/products': 'products',
       '/users': 'users',
-      '/suppliers': 'dashboard', // Suppliers grouped under dashboard for mobile
-      '/purchase-orders': 'dashboard', // Purchase orders grouped under dashboard for mobile
-      '/tickets': 'dashboard', // Tickets grouped under dashboard for mobile
-      '/sms-campaigns': 'dashboard', // SMS campaigns grouped under dashboard for mobile
-      '/movements': 'dashboard', // Movements grouped under dashboard for mobile
-      '/settings': 'profile', // Settings page maps to profile in mobile
-      '/modules': 'profile', // Modules page maps to profile in mobile
+      '/customers': 'customers',
+      '/employees': 'employees',
+      '/suppliers': 'suppliers',
+      '/purchase-orders': 'purchaseorders',
+      '/tickets': 'tickets',
+      '/sms-campaigns': 'smscampaigns',
+      '/movements': 'movements',
+      '/settings': 'settings',
+      '/modules': 'modules',
+      '/functions': 'functions',
+      '/storefronts': 'storefronts',
     };
-    setMobileMenuValue(pathToValueMap[location.pathname] || 'dashboard');
+    setCurrentView(pathToValueMap[location.pathname] || 'dashboard');
   }, [location.pathname]);
 
-  console.log('isMobile:', isMobile);
-
   return (
-    <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
-      {location.pathname !== '/login' && !isMobile && <Sidebar setView={(view) => console.log(view)} view="home" />}
+    <Box sx={{ 
+      display: 'flex', 
+      height: '100vh', 
+      overflow: 'hidden',
+      width: '100vw',
+      boxSizing: 'border-box',
+    }}>
+      <ResponsiveMenu 
+        onViewChange={setCurrentView}
+        currentView={currentView}
+      />
       <Box
         component="main"
         sx={{
           flexGrow: 1,
           display: 'flex',
           flexDirection: 'column',
-          height: '100%', // Use 100% instead of 100vh to take available space
+          height: '100%',
           bgcolor: 'background.default',
-          p: 0, // Remove app-level padding, let PageLayout handle all padding consistently
-          width: isMobile ? '100%' : 'calc(100% - var(--Sidebar-width, 240px))',
-          marginBottom: isMobile ? '56px' : 0, // Adjust for MobileMenu height
-          overflow: 'auto', // Allow main content to scroll
+          p: 0,
+          minWidth: 0, // Allow content to shrink properly
+          overflow: 'auto',
+          boxSizing: 'border-box',
         }}
       >
-        {isMobile && location.pathname !== '/login' && (
-          <MobileMenu
-            items={mobileMenuItems}
-            value={mobileMenuValue}
-            onChange={(value: typeof mobileMenuValue) => {
-              setMobileMenuValue(value);
-              // Create route mapping from menu value to actual route
-              const routeMap: Record<string, string> = {
-                'home': '/',
-                'dashboard': '/dashboard',
-                'orders': '/orders',
-                'products': '/products',
-                'users': '/users',
-                'customers': '/customers',
-                'employees': '/employees',
-                'suppliers': '/suppliers',
-                'purchaseorders': '/purchase-orders',
-                'tickets': '/tickets',
-                'smscampaigns': '/sms-campaigns',
-                'movements': '/movements',
-                'profile': '/settings',
-                'settings': '/settings',
-                'modules': '/modules',
-                'functions': '/functions'
-              };
-              
-              const targetRoute = routeMap[value] || `/${value}`;
-              navigate(targetRoute);
-            }}
-            toggleSidebar={() => console.log('Sidebar toggled')} // Provide toggleSidebar prop
-          />
-        )}
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route

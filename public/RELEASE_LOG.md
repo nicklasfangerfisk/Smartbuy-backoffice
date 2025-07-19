@@ -10,6 +10,23 @@ DEVELOPER INSTRUCTION: How to write release notes
 - Place newest releases at the top.
 -->
 
+## [4.2.0] - 2025-07-19 17:30:00
+**Unified Responsive Navigation System**
+### Added
+- ResponsiveMenu component combining desktop sidebar and mobile drawer functionality
+- Mobile-optimized floating action button for menu access
+- Default expanded state for all menu areas
+
+### Changed
+- Consolidated Sidebar and MobileMenu components into single responsive solution
+- Improved mobile navigation with bottom-right menu positioning
+- Enhanced layout overflow prevention and responsive behavior
+
+### Fixed
+- Sidebar width constraints and mobile drawer positioning issues
+- Box-sizing inconsistencies causing horizontal overflow
+- Mobile menu padding and spacing alignment
+
 ## [4.1.0] - 2025-07-19 16:45:00
 **Order Timeline & Status Management Enhancements**
 ### Added
