@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Routes, useLocation, Navigate, useNavig
 import Box from '@mui/joy/Box';
 import { CssVarsProvider } from '@mui/joy/styles';
 
-import ResponsiveMenu from './navigation/ResponsiveMenu';
+import Menu from './navigation/Menu';
 import PageOrders from './Page/PageOrders';
 import PageProducts from './Page/PageProducts';
 import PageUsers from './Page/PageUsers';
@@ -68,7 +68,7 @@ function Layout() {
       width: '100vw',
       boxSizing: 'border-box',
     }}>
-      <ResponsiveMenu 
+      <Menu 
         onViewChange={setCurrentView}
         currentView={currentView}
       />

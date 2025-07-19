@@ -1,0 +1,1 @@
+*,*:before,*:after{box-sizing:border-box}html,body{margin:0;padding:0;height:100%;overflow-x:hidden}#root{height:100vh;width:100vw;overflow-x:hidden}.mobile-menu{position:fixed;bottom:0;left:0;right:0;z-index:1000;background-color:#fff;border-top:1px solid #ccc}.JoySheetRoot{display:none!important}
